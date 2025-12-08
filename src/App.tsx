@@ -14,6 +14,7 @@ import RoomDetailPage from "@/pages/RoomDetailPage";
 import CreateEventPage from "@/pages/CreateEventPage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import ActivitiesPage from "@/pages/ActivitiesPage";
+import ActivityDetailPage from "@/pages/ActivityDetailPage";
 import TeamPage from "@/pages/TeamPage";
 import ProfilePage from "@/pages/ProfilePage";
 import MapPage from "@/pages/MapPage";
@@ -87,6 +88,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <ActivitiesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activities/:activityId"
+            element={
+              <ProtectedRoute>
+                <ActivityDetailPage />
               </ProtectedRoute>
             }
           />
