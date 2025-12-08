@@ -1,5 +1,6 @@
 import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
+import type { ApiResult } from "@/types/api";
 
 // ============================================ 
 // AI TYPES
@@ -17,28 +18,6 @@ export interface AiRecommendation {
   activityId: string;
   score: number;
   reason: string;
-}
-
-// ============================================ 
-// API TYPES
-// ============================================ 
-
-export interface ApiError {
-  code: string;
-  message: string;
-  details?: unknown;
-}
-
-export interface ApiResult<T> {
-  data: T;
-  error?: ApiError;
-}
-
-export interface Paginated<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
 }
 
 // ============================================ 
@@ -156,7 +135,7 @@ const mockActivities: Activity[] = [
     priceComment: "Pakete (z.B. 3 Spiele + Getränk) liegen bei ca. 22 €; Exklusivmiete der Arena für Firmenfeiern möglich.",
     shortDescription: "Actionreicher Lasertag-Spaß für Teams mit Strategie, Adrenalin und viel Bewegung.",
     longDescription: "In der futuristischen Lasertag-Arena tretet ihr in Teams gegeneinander an, trainiert Taktik, Reaktion und Kommunikation – perfekt, um Kolleg:innen spielerisch zusammenzuschweißen.",
-    imageUrl: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1544197150-599a58f2ca8?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "medium",
     typicalDurationHours: 3.5,
@@ -554,7 +533,7 @@ const mockActivities: Activity[] = [
     priceComment: "Reiner Verzehrwert; für ein 3-Gänge-Menü inkl. Getränke solltet ihr mit ca. 40–50 € p.P. rechnen.",
     shortDescription: "Österreichische Küche in gemütlicher Stubn-Atmosphäre.",
     longDescription: "In der warmen Wirtshaus-Atmosphäre genießt ihr traditionelle Speisen, regionale Produkte und viel Gemütlichkeit – ideal für gesellige Teamessen und kleinere Feiern.",
-    imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a21bce4?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "low",
     typicalDurationHours: 3,
@@ -687,7 +666,7 @@ const mockActivities: Activity[] = [
     priceComment: "Typischer Heurigen-Konsum oder 'Reindl-Essen' kommt auf ca. 35–45 € inkl. Weinbegleitung.",
     shortDescription: "Gemütlicher Weinstadl mit regionaler Küche und schöner Weinauswahl.",
     longDescription: "In uriger Atmosphäre genießt ihr bodenständige Speisen, Jausen und passende Weine – perfekt für ein entspanntes, geselliges Beisammensein abseits des Büroalltags.",
-    imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2938?w=800&h=600&fit=crop",
     season: "summer",
     riskLevel: "low",
     typicalDurationHours: 3.5,
@@ -820,7 +799,7 @@ const mockActivities: Activity[] = [
     priceComment: "Premium Steakhouse; für Vorspeise, Steak und guten Wein muss man mit 70–90 € p.P. kalkulieren.",
     shortDescription: "Steak- und Grillrestaurant im Zentrum – Fokus auf hochwertigem Fleisch.",
     longDescription: "Saftige Steaks, Burger und Beilagen in modernem Ambiente: Hier wird Fleischliebe großgeschrieben und euer Teamdinner zum herzhaften Genusserlebnis.",
-    imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1544025162-d76694259947?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "low",
     typicalDurationHours: 3,
@@ -1018,7 +997,7 @@ const mockActivities: Activity[] = [
     priceComment: "Renn-Pakete (Training, Quali, Rennen) starten ab ca. 45 €; Premium-Events mit Siegerehrung bis 70 €.",
     shortDescription: "E-Kart-Action auf der modernen Indoor-Bahn – emissionsfrei und rasant.",
     longDescription: "Auf der modernen Indoor-E-Kartbahn jagt ihr emissionsfrei über die Strecke, fahrt Qualifying und Rennen und kürt am Ende euer Team-Podium – Adrenalin pur, auch bei Schlechtwetter.",
-    imageUrl: "https://images.unsplash.com/photo-1504945005722-33670dcaf685?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1504945005722-3367070af685?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "high",
     typicalDurationHours: 3,
@@ -1084,7 +1063,7 @@ const mockActivities: Activity[] = [
     priceComment: "Preisstaffelung: Ab 13 Personen ca. 34 € p.P., kleinere Gruppen zahlen etwas mehr (bis 39 €).",
     shortDescription: "Indoor-Actionspiel mit vielen Missionräumen, in denen Geschick und Teamwork zählen.",
     longDescription: "Auf mehreren hundert Quadratmetern warten unterschiedlichste Räume mit Aufgaben zu Reaktion, Geschicklichkeit, Logik und Teamplay – ihr sammelt Punkte, probiert Missionen aus und feuert euch gegenseitig an.",
-    imageUrl: "https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1511882150382-4056c89033?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "low",
     typicalDurationHours: 3.5,
@@ -1246,7 +1225,8 @@ export async function toggleFavorite(activityId: string): Promise<ApiResult<bool
   if (index > -1) {
     favoriteActivityIds.splice(index, 1);
     return { data: false };
-  } else {
+  }
+  else {
     favoriteActivityIds.push(activityId);
     return { data: true };
   }

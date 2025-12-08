@@ -24,7 +24,9 @@ EventHorizon is a social event planning application built with React, Vite, and 
 *   **Preview Build:** `npm run preview`
 
 ### Architecture & Structure
-*   `src/App.tsx`: Main application entry point, routing configuration, and global providers (QueryClient, Toaster).
+*   `frontend/`: Contains the React frontend application.
+    *   `src/App.tsx`: Main application entry point...
+*   `backend/`: (Future) Will contain the backend API.
 *   `src/components/`:
     *   `ui/`: Reusable, atomic UI components (Shadcn UI). **Do not modify these unless necessary for global styling fixes.**
     *   `layout/`: Structural components (AppLayout, Header, Sidebar).

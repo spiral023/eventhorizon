@@ -206,7 +206,13 @@ export default function EventDetailPage() {
       <EventPhaseHeader 
         currentPhase={event.phase} 
         canAdvance={canAdvance}
+        onAdvance={handleAdvancePhase}
       />
+
+      {/* Admin Actions */}
+      <div className="grid gap-6 md:grid-cols-3">
+        <EmailActions eventId={event.id} className="md:col-span-3" />
+      </div>
 
       {/* Phase Content */}
       <Tabs value={event.phase} className="space-y-6">

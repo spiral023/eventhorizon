@@ -16,6 +16,7 @@ interface EventPhaseHeaderProps {
   currentPhase: EventPhase;
   onPhaseClick?: (phase: EventPhase) => void;
   canAdvance?: boolean;
+  onAdvance?: () => void;
   className?: string;
 }
 
@@ -23,6 +24,7 @@ export function EventPhaseHeader({
   currentPhase, 
   onPhaseClick,
   canAdvance = false,
+  onAdvance,
   className 
 }: EventPhaseHeaderProps) {
   const phases = getAllPhases();
@@ -44,7 +46,7 @@ export function EventPhaseHeader({
                 onClick={() => onPhaseClick?.(phase)}
                 disabled={isUpcoming}
                 className={cn(
-                  "flex flex-col items-center gap-2 relative group",
+                  "flex flex-col items-center gap-2 relative group w-full",
                   !isUpcoming && "cursor-pointer",
                   isUpcoming && "cursor-not-allowed opacity-50"
                 )}
@@ -52,7 +54,7 @@ export function EventPhaseHeader({
                 {/* Circle */}
                 <div
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
+                    "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 z-10 relative bg-background",
                     isCompleted && "border-primary bg-primary text-primary-foreground",
                     isCurrent && "border-primary bg-primary/20 text-primary ring-4 ring-primary/20",
                     isUpcoming && "border-border bg-secondary text-muted-foreground"
@@ -77,7 +79,7 @@ export function EventPhaseHeader({
                   >
                     {PhaseLabels[phase]}
                   </p>
-                  <p className="text-xs text-muted-foreground hidden sm:block max-w-[120px]">
+                  <p className="text-xs text-muted-foreground hidden sm:block max-w-[120px] mx-auto">
                     {PhaseDescriptions[phase]}
                   </p>
                 </div>
@@ -85,11 +87,11 @@ export function EventPhaseHeader({
 
               {/* Connector Line */}
               {!isLast && (
-                <div className="flex-1 mx-2 sm:mx-4">
+                <div className="flex-1 h-0.5 bg-border -ml-6 -mr-6 relative top-[-28px] z-0">
                   <div
                     className={cn(
-                      "h-0.5 w-full transition-colors duration-300",
-                      isCompleted ? "bg-primary" : "bg-border"
+                      "h-full bg-primary transition-all duration-500",
+                      isCompleted ? "w-full" : "w-0"
                     )}
                   />
                 </div>
@@ -115,8 +117,11 @@ export function EventPhaseHeader({
               </p>
             </div>
           </div>
-          {canAdvance && (
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+          {canAdvance && onAdvance && (
+            <button 
+              onClick={onAdvance}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
               Zur nächsten Phase
               <ArrowRight className="h-4 w-4" />
             </button>
