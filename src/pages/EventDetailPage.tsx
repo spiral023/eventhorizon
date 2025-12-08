@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { VotingCard } from "@/components/events/VotingCard";
 import { DateOptionCard } from "@/components/events/DateOptionCard";
 import { EmailActions } from "@/components/events/EmailActions";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { AddDateOptionDialog } from "@/components/events/AddDateOptionDialog";
 import { 
   getEventById, 
   getActivities, 
@@ -19,7 +20,7 @@ import {
   selectWinningActivity,
   finalizeDateOption
 } from "@/services/apiClient";
-import type { Event, Activity, VoteType, DateResponseType, EventPhase } from "@/types/domain";
+import type { Event, Activity, VoteType, DateResponseType, EventPhase, DateOption } from "@/types/domain";
 import { 
   PhaseLabels, 
   RegionLabels, 

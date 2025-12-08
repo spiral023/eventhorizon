@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -225,48 +225,40 @@ export default function CreateEventPage() {
               {/* Time Window Type */}
               <div>
                 <Label className="mb-3 block">Grober Zeitraum</Label>
-                <RadioGroup
-                  value={timeWindowType}
-                  onValueChange={(v) => setTimeWindowType(v as TimeWindowType)}
-                  className="grid grid-cols-2 sm:grid-cols-4 gap-2"
-                >
-                  <div>
-                    <RadioGroupItem value="month" id="tw-month" className="peer sr-only" />
-                    <Label
-                      htmlFor="tw-month"
-                      className="flex flex-col items-center justify-between rounded-xl border-2 border-border bg-secondary/30 p-3 hover:bg-secondary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer"
-                    >
-                      Monat
-                    </Label>
-                  </div>
-                  <div>
-                    <RadioGroupItem value="season" id="tw-season" className="peer sr-only" />
-                    <Label
-                      htmlFor="tw-season"
-                      className="flex flex-col items-center justify-between rounded-xl border-2 border-border bg-secondary/30 p-3 hover:bg-secondary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer"
-                    >
-                      Saison
-                    </Label>
-                  </div>
-                  <div>
-                    <RadioGroupItem value="weekRange" id="tw-week" className="peer sr-only" />
-                    <Label
-                      htmlFor="tw-week"
-                      className="flex flex-col items-center justify-between rounded-xl border-2 border-border bg-secondary/30 p-3 hover:bg-secondary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer"
-                    >
-                      KW-Bereich
-                    </Label>
-                  </div>
-                  <div>
-                    <RadioGroupItem value="freeText" id="tw-free" className="peer sr-only" />
-                    <Label
-                      htmlFor="tw-free"
-                      className="flex flex-col items-center justify-between rounded-xl border-2 border-border bg-secondary/30 p-3 hover:bg-secondary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer"
-                    >
-                      Freitext
-                    </Label>
-                  </div>
-                </RadioGroup>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <Button
+                    type="button"
+                    variant={timeWindowType === "month" ? "default" : "secondary"}
+                    className="rounded-xl h-auto py-3"
+                    onClick={() => setTimeWindowType("month")}
+                  >
+                    Monat
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={timeWindowType === "season" ? "default" : "secondary"}
+                    className="rounded-xl h-auto py-3"
+                    onClick={() => setTimeWindowType("season")}
+                  >
+                    Saison
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={timeWindowType === "weekRange" ? "default" : "secondary"}
+                    className="rounded-xl h-auto py-3"
+                    onClick={() => setTimeWindowType("weekRange")}
+                  >
+                    KW-Bereich
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={timeWindowType === "freeText" ? "default" : "secondary"}
+                    className="rounded-xl h-auto py-3"
+                    onClick={() => setTimeWindowType("freeText")}
+                  >
+                    Freitext
+                  </Button>
+                </div>
               </div>
 
               {/* Time Window Value */}
@@ -371,32 +363,26 @@ export default function CreateEventPage() {
                   <FormItem>
                     <FormLabel>Budget-Typ</FormLabel>
                     <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="grid grid-cols-2 gap-2"
-                      >
-                        <div>
-                          <RadioGroupItem value="per_person" id="budget-pp" className="peer sr-only" />
-                          <Label
-                            htmlFor="budget-pp"
-                            className="flex flex-col items-center justify-between rounded-xl border-2 border-border bg-secondary/30 p-4 hover:bg-secondary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer"
-                          >
-                            <span className="font-medium">Pro Person</span>
-                            <span className="text-xs text-muted-foreground">z.B. 50€/Person</span>
-                          </Label>
-                        </div>
-                        <div>
-                          <RadioGroupItem value="total" id="budget-total" className="peer sr-only" />
-                          <Label
-                            htmlFor="budget-total"
-                            className="flex flex-col items-center justify-between rounded-xl border-2 border-border bg-secondary/30 p-4 hover:bg-secondary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer"
-                          >
-                            <span className="font-medium">Gesamtbudget</span>
-                            <span className="text-xs text-muted-foreground">z.B. 1000€ total</span>
-                          </Label>
-                        </div>
-                      </RadioGroup>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant={field.value === "per_person" ? "default" : "secondary"}
+                          className="rounded-xl h-auto py-4 flex-col"
+                          onClick={() => field.onChange("per_person")}
+                        >
+                          <span className="font-medium">Pro Person</span>
+                          <span className="text-xs opacity-70">z.B. 50€/Person</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={field.value === "total" ? "default" : "secondary"}
+                          className="rounded-xl h-auto py-4 flex-col"
+                          onClick={() => field.onChange("total")}
+                        >
+                          <span className="font-medium">Gesamtbudget</span>
+                          <span className="text-xs opacity-70">z.B. 1000€ total</span>
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

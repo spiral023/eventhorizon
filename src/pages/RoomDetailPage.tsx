@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Users, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ShareRoomDialog } from "@/components/shared/ShareRoomDialog";
+import { EditRoomDialog } from "@/components/shared/EditRoomDialog";
 import { getRoomById, getEventsByRoom } from "@/services/apiClient";
 import type { Room, Event } from "@/types/domain";
 
@@ -30,6 +32,10 @@ export default function RoomDetailPage() {
     };
     fetchData();
   }, [roomId]);
+
+  const handleRoomUpdated = (updatedRoom: Room) => {
+    setRoom(updatedRoom);
+  };
 
   if (loading) {
     return (
@@ -101,9 +107,15 @@ export default function RoomDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" size="icon" className="rounded-xl">
-            <Settings className="h-4 w-4" />
-          </Button>
+          <ShareRoomDialog
+            room={room}
+            trigger={
+              <Button variant="outline" size="icon" className="rounded-xl">
+                <Link2 className="h-4 w-4" />
+              </Button>
+            }
+          />
+          <EditRoomDialog room={room} onRoomUpdated={handleRoomUpdated} />
           <Button 
             className="gap-2 rounded-xl"
             onClick={() => navigate(`/rooms/${roomId}/events/new`)}
