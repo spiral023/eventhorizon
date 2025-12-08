@@ -130,23 +130,7 @@ export default function MapPage() {
                       eventHandlers={{
                         click: () => setSelectedActivity(activity),
                       }}
-                    >
-                      <Popup>
-                        <div className="p-1 min-w-[200px]">
-                          <h4 className="font-semibold text-foreground">
-                            {activity.title}
-                          </h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {activity.shortDescription}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2 text-xs">
-                            <span>{activity.estPricePerPerson}€ p.P.</span>
-                            <span>·</span>
-                            <span>{activity.duration}</span>
-                          </div>
-                        </div>
-                      </Popup>
-                    </Marker>
+                    />
                   ))}
                 </MapContainer>
               </div>
