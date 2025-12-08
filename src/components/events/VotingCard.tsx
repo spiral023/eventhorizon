@@ -42,7 +42,8 @@ export function VotingCard({
           />
           <Badge 
             className={cn(
-              "absolute top-3 left-3 rounded-lg font-medium",
+              "absolute top-3 left-3 rounded-lg font-medium shadow-md",
+              "bg-card/95 backdrop-blur-sm border border-border/50",
               CategoryColors[activity.category]
             )}
           >

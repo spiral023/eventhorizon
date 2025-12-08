@@ -1,10 +1,30 @@
-import { Settings, Moon, Sun, Bell, Globe } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Moon, Sun, Bell, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/shared/PageHeader";
 
 export default function SettingsPage() {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    // Check initial theme
+    const isDark = document.documentElement.classList.contains("dark");
+    setIsDarkMode(isDark);
+  }, []);
+
+  const handleThemeChange = (checked: boolean) => {
+    setIsDarkMode(checked);
+    if (checked) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
+
   return (
     <div>
       <PageHeader
@@ -17,7 +37,7 @@ export default function SettingsPage() {
         <Card className="rounded-2xl bg-card/60 border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Moon className="h-5 w-5 text-primary" />
+              {isDarkMode ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
               Erscheinungsbild
             </CardTitle>
           </CardHeader>
@@ -29,7 +49,11 @@ export default function SettingsPage() {
                   Dunkles Design für augenschonendes Arbeiten
                 </p>
               </div>
-              <Switch id="dark-mode" defaultChecked />
+              <Switch 
+                id="dark-mode" 
+                checked={isDarkMode}
+                onCheckedChange={handleThemeChange}
+              />
             </div>
           </CardContent>
         </Card>
