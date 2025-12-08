@@ -3,10 +3,6 @@ from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
-# Import enums from models or re-define if you prefer decoupling
-# For simplicity, I'll re-define strings or use simple types, but strictly they should match.
-# To keep it clean, I will use string literals for Enums in Pydantic for now.
-
 # --- Base Schema ---
 class BaseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -36,9 +32,9 @@ class RoomCreate(RoomBase):
 
 class Room(RoomBase):
     id: UUID
-    created_by_user_id: UUID
+    created_by_user_id: Optional[UUID] = None # Optional for now if no auth
     created_at: datetime
-    member_count: Optional[int] = 0 # Computed field often
+    member_count: Optional[int] = 0
 
 # --- Activity ---
 class ActivityBase(BaseSchema):
@@ -50,7 +46,7 @@ class ActivityBase(BaseSchema):
     est_price_per_person: Optional[float] = None
     short_description: str
     image_url: Optional[str] = None
-    coordinates: Optional[List[float]] = None # [lat, lng]
+    coordinates: Optional[List[float]] = None
 
 class ActivityCreate(ActivityBase):
     pass
@@ -67,20 +63,37 @@ class EventBase(BaseSchema):
     time_window: Optional[Any] = None
     budget_amount: Optional[float] = None
     location_region: Optional[str] = None
+    budget_type: Optional[str] = "per_person"
+    proposed_activity_ids: List[UUID] = []
 
 class EventCreate(EventBase):
-    room_id: UUID
+    # room_id is passed in URL usually
+    voting_deadline: Optional[datetime] = None
 
 class Event(EventBase):
     id: UUID
     room_id: UUID
-    created_by_user_id: UUID
+    created_by_user_id: Optional[UUID] = None
     created_at: datetime
     voting_deadline: Optional[datetime] = None
+    participants: List[Any] = [] # Simplified for now
+    activity_votes: List[Any] = [] # Simplified
+    date_options: List[Any] = []
 
-# --- Generic API Responses ---
-class PaginatedResponse(BaseSchema):
-    items: List[Any]
-    total: int
-    page: int
-    page_size: int
+# --- Actions ---
+class VoteCreate(BaseSchema):
+    activity_id: UUID
+    vote: str 
+
+class PhaseUpdate(BaseSchema):
+    phase: str
+
+class DateResponseCreate(BaseSchema):
+    response: str
+    contribution: Optional[float] = 0.0
+
+class SelectActivity(BaseSchema):
+    activity_id: UUID
+
+class FinalizeDate(BaseSchema):
+    date_option_id: UUID

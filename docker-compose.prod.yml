@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-eventhorizon}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - traefik
+
+  backend:
+    build: ./backend
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      POSTGRES_SERVER: db
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-eventhorizon}
+    depends_on:
+      - db
+    networks:
+      - traefik
+
+  frontend:
+    build: ./frontend
+    restart: always
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eventhorizon.rule=Host(`event-horizon.sp23.online`)"
+      - "traefik.http.routers.eventhorizon.entrypoints=websecure"
+      - "traefik.http.routers.eventhorizon.tls.certresolver=le"
+      - "traefik.http.services.eventhorizon.loadbalancer.server.port=80"
+
+networks:
+  traefik:
+    external: true
+
+volumes:
+  postgres_data:
