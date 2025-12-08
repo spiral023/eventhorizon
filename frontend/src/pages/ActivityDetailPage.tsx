@@ -250,6 +250,24 @@ export default function ActivityDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.0 }}
+          >
+            <Button 
+              className={cn(
+                "w-full rounded-xl h-12 text-base gap-2",
+                isFav && "bg-destructive hover:bg-destructive/90"
+              )}
+              onClick={handleFavoriteToggle}
+            >
+              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
+              {isFav ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
+            </Button>
+          </motion.div>
+
           {/* Quick Info */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -461,24 +479,6 @@ export default function ActivityDetailPage() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Button 
-              className={cn(
-                "w-full rounded-xl h-12 text-base gap-2",
-                isFav && "bg-destructive hover:bg-destructive/90"
-              )}
-              onClick={handleFavoriteToggle}
-            >
-              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
-              {isFav ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
-            </Button>
           </motion.div>
         </div>
       </div>
