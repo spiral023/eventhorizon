@@ -4,20 +4,32 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 // Pages
 import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
 import RoomsPage from "@/pages/RoomsPage";
 import RoomDetailPage from "@/pages/RoomDetailPage";
 import CreateEventPage from "@/pages/CreateEventPage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import ActivitiesPage from "@/pages/ActivitiesPage";
+import TeamPage from "@/pages/TeamPage";
 import ProfilePage from "@/pages/ProfilePage";
 import MapPage from "@/pages/MapPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// Protected route wrapper
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <RequireAuth>
+      <AppLayout>{children}</AppLayout>
+    </RequireAuth>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -26,80 +38,92 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Main App Routes with Layout */}
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected routes */}
           <Route
             path="/"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <HomePage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/rooms"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <RoomsPage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/rooms/:roomId"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <RoomDetailPage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/rooms/:roomId/events/new"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <CreateEventPage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/rooms/:roomId/events/:eventId"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <EventDetailPage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/activities"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <ActivitiesPage />
-              </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/team"
+            element={
+              <ProtectedRoute>
+                <TeamPage />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/profile"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <ProfilePage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/map"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <MapPage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/settings"
             element={
-              <AppLayout>
+              <ProtectedRoute>
                 <SettingsPage />
-              </AppLayout>
+              </ProtectedRoute>
             }
           />
-          {/* 404 - without layout */}
+          
+          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
