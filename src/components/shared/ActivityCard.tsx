@@ -1,23 +1,30 @@
-import { MapPin, Euro, Clock, Users, Heart } from "lucide-react";
+import { MapPin, Euro, Clock, Users, Heart, Star, Zap, Brain, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ScaleBar } from "@/components/shared/ScaleBar";
 import type { Activity } from "@/types/domain";
-import { CategoryLabels, RegionLabels, CategoryColors } from "@/types/domain";
+import { CategoryLabels, RegionLabels, CategoryColors, RiskLevelLabels, RiskLevelColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 interface ActivityCardProps {
   activity: Activity;
+  isFavorite?: boolean;
+  onFavoriteToggle?: (activityId: string) => void;
   onClick?: () => void;
+  showDetails?: boolean;
 }
 
-export function ActivityCard({ activity, onClick }: ActivityCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
-
+export function ActivityCard({ 
+  activity, 
+  isFavorite = false,
+  onFavoriteToggle,
+  onClick,
+  showDetails = false
+}: ActivityCardProps) {
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
+    onFavoriteToggle?.(activity.id);
   };
 
   return (
@@ -49,6 +56,16 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
           {CategoryLabels[activity.category]}
         </Badge>
 
+        {/* Risk Level */}
+        <Badge 
+          className={cn(
+            "absolute top-3 left-20 rounded-lg font-medium",
+            RiskLevelColors[activity.riskLevel]
+          )}
+        >
+          {RiskLevelLabels[activity.riskLevel]}
+        </Badge>
+
         {/* Favorite Button */}
         <Button
           variant="ghost"
@@ -62,6 +79,17 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
         >
           <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
         </Button>
+
+        {/* Rating */}
+        {activity.rating && (
+          <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-card/80 backdrop-blur-sm">
+            <Star className="h-3.5 w-3.5 text-warning fill-warning" />
+            <span className="text-sm font-medium">{activity.rating}</span>
+            {activity.reviewCount && (
+              <span className="text-xs text-muted-foreground">({activity.reviewCount})</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
@@ -77,25 +105,79 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
         <div className="flex flex-wrap items-center gap-3 mt-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <MapPin className="h-3.5 w-3.5" />
-            <span>{RegionLabels[activity.locationRegion]}</span>
+            <span>{activity.locationCity || RegionLabels[activity.locationRegion]}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Euro className="h-3.5 w-3.5" />
             <span>ab {activity.estPricePerPerson}€</span>
           </div>
-          {activity.duration && (
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{activity.duration}</span>
-            </div>
-          )}
-          {activity.groupSizeMin && activity.groupSizeMax && (
-            <div className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" />
-              <span>{activity.groupSizeMin}-{activity.groupSizeMax}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5" />
+            <span>{activity.duration}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            <span>{activity.groupSizeMin}-{activity.groupSizeMax}</span>
+          </div>
         </div>
+
+        {/* Scales (shown on detail view) */}
+        {showDetails && (
+          <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+            <ScaleBar 
+              value={activity.physicalIntensity} 
+              label="Körperlich" 
+              size="sm"
+              colorClass="bg-destructive"
+            />
+            <ScaleBar 
+              value={activity.mentalChallenge} 
+              label="Mental" 
+              size="sm"
+              colorClass="bg-purple-500"
+            />
+            <ScaleBar 
+              value={activity.funFactor} 
+              label="Spaßfaktor" 
+              size="sm"
+              colorClass="bg-success"
+            />
+            <ScaleBar 
+              value={activity.teamworkLevel} 
+              label="Teamwork" 
+              size="sm"
+              colorClass="bg-primary"
+            />
+          </div>
+        )}
+
+        {/* Quick Stats Icons */}
+        {!showDetails && (
+          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border/50">
+            <div className="flex items-center gap-1" title="Körperliche Intensität">
+              <Zap className={cn(
+                "h-4 w-4",
+                activity.physicalIntensity >= 4 ? "text-destructive" : 
+                activity.physicalIntensity >= 2 ? "text-warning" : "text-muted-foreground"
+              )} />
+              <span className="text-xs">{activity.physicalIntensity}/5</span>
+            </div>
+            <div className="flex items-center gap-1" title="Mentale Herausforderung">
+              <Brain className={cn(
+                "h-4 w-4",
+                activity.mentalChallenge >= 4 ? "text-purple-500" : "text-muted-foreground"
+              )} />
+              <span className="text-xs">{activity.mentalChallenge}/5</span>
+            </div>
+            <div className="flex items-center gap-1" title="Spaßfaktor">
+              <Sparkles className={cn(
+                "h-4 w-4",
+                activity.funFactor >= 4 ? "text-success" : "text-muted-foreground"
+              )} />
+              <span className="text-xs">{activity.funFactor}/5</span>
+            </div>
+          </div>
+        )}
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mt-3">

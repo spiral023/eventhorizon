@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RoomCard } from "@/components/shared/RoomCard";
@@ -10,6 +11,7 @@ import type { Room } from "@/types/domain";
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -62,7 +64,10 @@ export default function RoomsPage() {
               className="animate-fade-in-up"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <RoomCard room={room} />
+              <RoomCard 
+                room={room} 
+                onClick={() => navigate(`/rooms/${room.id}`)}
+              />
             </div>
           ))}
         </div>
