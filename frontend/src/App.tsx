@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Outlet } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PageTransition } from "@/components/shared/PageTransition";
@@ -26,119 +26,43 @@ import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Protected route wrapper
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+// Keep layout and auth mounted across route changes
+function ProtectedAppLayout() {
+  const location = useLocation();
+
   return (
     <RequireAuth>
-      <AppLayout>{children}</AppLayout>
+      <AppLayout>
+        <AnimatePresence mode="wait">
+          <Outlet key={location.pathname} />
+        </AnimatePresence>
+      </AppLayout>
     </RequireAuth>
   );
 }
 
-// Animated Routes
-function AnimatedRoutes() {
-  const location = useLocation();
-  
+function AppRoutes() {
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Public routes */}
-        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+    <Routes>
+      {/* Public routes */}
+      <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
 
-        {/* Protected routes */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <PageTransition><HomePage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/rooms"
-          element={
-            <ProtectedRoute>
-              <PageTransition><RoomsPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/rooms/:roomId"
-          element={
-            <ProtectedRoute>
-              <PageTransition><RoomDetailPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/rooms/:roomId/events/new"
-          element={
-            <ProtectedRoute>
-              <PageTransition><CreateEventPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/rooms/:roomId/events/:eventId"
-          element={
-            <ProtectedRoute>
-              <PageTransition><EventDetailPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/activities"
-          element={
-            <ProtectedRoute>
-              <PageTransition><ActivitiesPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/activities/:activityId"
-          element={
-            <ProtectedRoute>
-              <PageTransition><ActivityDetailPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/team"
-          element={
-            <ProtectedRoute>
-              <PageTransition><TeamPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <PageTransition><ProfilePage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/map"
-          element={
-            <ProtectedRoute>
-              <PageTransition><MapPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <PageTransition><SettingsPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* 404 */}
+      {/* Protected routes share one persistent layout */}
+      <Route element={<ProtectedAppLayout />}>
+        <Route index element={<PageTransition><HomePage /></PageTransition>} />
+        <Route path="rooms" element={<PageTransition><RoomsPage /></PageTransition>} />
+        <Route path="rooms/:roomId" element={<PageTransition><RoomDetailPage /></PageTransition>} />
+        <Route path="rooms/:roomId/events/new" element={<PageTransition><CreateEventPage /></PageTransition>} />
+        <Route path="rooms/:roomId/events/:eventId" element={<PageTransition><EventDetailPage /></PageTransition>} />
+        <Route path="activities" element={<PageTransition><ActivitiesPage /></PageTransition>} />
+        <Route path="activities/:activityId" element={<PageTransition><ActivityDetailPage /></PageTransition>} />
+        <Route path="team" element={<PageTransition><TeamPage /></PageTransition>} />
+        <Route path="profile" element={<PageTransition><ProfilePage /></PageTransition>} />
+        <Route path="map" element={<PageTransition><MapPage /></PageTransition>} />
+        <Route path="settings" element={<PageTransition><SettingsPage /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-      </Routes>
-    </AnimatePresence>
+      </Route>
+    </Routes>
   );
 }
 
@@ -159,7 +83,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AnimatedRoutes />
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

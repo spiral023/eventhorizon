@@ -40,6 +40,9 @@ export default function CreateEventPage() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [selectedActivityIds, setSelectedActivityIds] = useState<string[]>([]);
   const [timeWindowType, setTimeWindowType] = useState<TimeWindowType>("month");
+  const [monthValue, setMonthValue] = useState<string>(String(new Date().getMonth() + 2));
+  const [seasonValue, setSeasonValue] = useState<string>("summer");
+  const [freeTextValue, setFreeTextValue] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -73,7 +76,10 @@ export default function CreateEventPage() {
   }, []);
 
   useEffect(() => {
-    form.setValue("proposedActivityIds", selectedActivityIds);
+    // keep form errors in sync when selection changes
+    if (selectedActivityIds.length > 0) {
+      form.clearErrors("proposedActivityIds");
+    }
   }, [selectedActivityIds, form]);
 
   const toggleActivity = (activityId: string) => {
@@ -88,9 +94,9 @@ export default function CreateEventPage() {
     const values = form.getValues();
     switch (timeWindowType) {
       case "season":
-        return { type: "season", value: (values as any).seasonValue || "summer" };
+        return { type: "season", value: seasonValue };
       case "month":
-        return { type: "month", value: (values as any).monthValue || new Date().getMonth() + 2 };
+        return { type: "month", value: parseInt(monthValue) || new Date().getMonth() + 2 };
       case "weekRange":
         return { 
           type: "weekRange", 
@@ -98,7 +104,7 @@ export default function CreateEventPage() {
           toWeek: (values as any).toWeek || 4 
         };
       case "freeText":
-        return { type: "freeText", value: (values as any).freeTextValue || "" };
+        return { type: "freeText", value: freeTextValue || "" };
       default:
         return { type: "month", value: new Date().getMonth() + 2 };
     }
@@ -106,11 +112,15 @@ export default function CreateEventPage() {
 
   const onSubmit = async (data: CreateEventInput) => {
     if (!roomId) return;
-    
+    if (selectedActivityIds.length === 0) {
+      form.setError("proposedActivityIds", { type: "manual", message: "Mindestens eine Aktivität auswählen" });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const timeWindow = buildTimeWindow();
-      const result = await createEvent(roomId, { ...data, timeWindow });
+      const result = await createEvent(roomId, { ...data, proposedActivityIds: selectedActivityIds, timeWindow });
       
       toast({
         title: "Event erstellt!",

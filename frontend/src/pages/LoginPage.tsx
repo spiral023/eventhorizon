@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, LogIn, Sparkles } from "lucide-react";
@@ -10,39 +10,49 @@ import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("max.mustermann@firma.at");
+  const [username, setUsername] = useState("max");
+  const [name, setName] = useState("Max Mustermann");
   const [password, setPassword] = useState("demo123");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { login, isAuthenticated } = useAuthStore();
+
+  const { login, register, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    navigate(from, { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const success = await login(email, password);
+      const success =
+        mode === "login"
+          ? await login(email, password)
+          : await register({ email, username, name, password });
+
       if (success) {
         toast({
-          title: "Willkommen zurück!",
-          description: "Du wurdest erfolgreich angemeldet.",
+          title: mode === "login" ? "Willkommen zurück!" : "Account erstellt",
+          description:
+            mode === "login"
+              ? "Du wurdest erfolgreich angemeldet."
+              : "Dein Account wurde erstellt und du bist jetzt angemeldet.",
         });
         navigate(from, { replace: true });
       } else {
         toast({
-          title: "Login fehlgeschlagen",
-          description: "Bitte überprüfe deine Zugangsdaten.",
+          title: mode === "login" ? "Login fehlgeschlagen" : "Registrierung fehlgeschlagen",
+          description: "Bitte überprüfe deine Angaben.",
           variant: "destructive",
         });
       }
@@ -77,19 +87,41 @@ export default function LoginPage() {
 
         <Card className="bg-card/60 backdrop-blur-xl border-border/50 rounded-3xl shadow-2xl">
           <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl">Anmelden</CardTitle>
+            <CardTitle className="text-2xl">
+              {mode === "login" ? "Anmelden" : "Registrieren"}
+            </CardTitle>
             <CardDescription>
-              Melde dich an, um deine Team-Events zu planen
+              {mode === "login"
+                ? "Melde dich an, um deine Team-Events zu planen"
+                : "Erstelle deinen Account, um loszulegen"}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {mode === "register" && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Max Mustermann"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="rounded-xl"
+                    required
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="email">E-Mail</Label>
+                <Label htmlFor="email">
+                  {mode === "login" ? "E-Mail oder Benutzername" : "E-Mail"}
+                </Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="max@firma.at"
+                  type={mode === "login" ? "text" : "email"}
+                  placeholder={mode === "login" ? "max@firma.at oder max" : "max@firma.at"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="rounded-xl"
@@ -97,6 +129,22 @@ export default function LoginPage() {
                   autoComplete="email"
                 />
               </div>
+
+              {mode === "register" && (
+                <div className="space-y-2">
+                  <Label htmlFor="username">Benutzername</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="max"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="rounded-xl"
+                    required
+                    autoComplete="username"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="password">Passwort</Label>
@@ -109,7 +157,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="rounded-xl pr-10"
                     required
-                    autoComplete="current-password"
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
                   />
                   <Button
                     type="button"
@@ -134,23 +182,48 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  "Anmelden..."
+                  mode === "login" ? "Anmelden..." : "Registrieren..."
                 ) : (
                   <>
                     <LogIn className="h-4 w-4" />
-                    Anmelden
+                    {mode === "login" ? "Anmelden" : "Registrieren"}
                   </>
                 )}
               </Button>
             </form>
 
-            {/* Demo Hint */}
             <div className="mt-6 p-4 rounded-xl bg-secondary/30 text-center">
               <p className="text-sm text-muted-foreground">
-                <strong>Demo-Modus:</strong> Klicke einfach auf "Anmelden"
+                <strong>Demo-Modus:</strong> Klicke einfach auf "{mode === "login" ? "Anmelden" : "Registrieren"}"
                 <br />
                 (Vorausgefüllte Daten funktionieren)
               </p>
+            </div>
+
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              {mode === "login" ? (
+                <>
+                  Noch keinen Account?{" "}
+                  <button
+                    type="button"
+                    className="text-primary underline"
+                    onClick={() => setMode("register")}
+                  >
+                    Jetzt registrieren
+                  </button>
+                </>
+              ) : (
+                <>
+                  Bereits registriert?{" "}
+                  <button
+                    type="button"
+                    className="text-primary underline"
+                    onClick={() => setMode("login")}
+                  >
+                    Zum Login
+                  </button>
+                </>
+              )}
             </div>
 
             {/* SSO Placeholder */}

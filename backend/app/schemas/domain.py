@@ -10,16 +10,28 @@ class BaseSchema(BaseModel):
 # --- User ---
 class UserBase(BaseSchema):
     email: str
+    username: str
     name: str
     avatar_url: Optional[str] = None
     department: Optional[str] = None
 
 class UserCreate(UserBase):
-    pass
+    password: str
+
+class UserUpdate(BaseSchema):
+    name: Optional[str] = None
+    department: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 class User(UserBase):
     id: UUID
+    is_active: bool = True
     created_at: datetime
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: User
 
 # --- Room ---
 class RoomBase(BaseSchema):

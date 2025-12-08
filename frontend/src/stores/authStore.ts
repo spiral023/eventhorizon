@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User, RoomRole } from "@/types/domain";
-import { getCurrentUser, mockLogin, mockLogout } from "@/services/apiClient";
+import { getCurrentUser, login as apiLogin, logout as apiLogout, register as apiRegister } from "@/services/apiClient";
 
 interface AuthState {
   user: User | null;
@@ -11,7 +11,8 @@ interface AuthState {
   roomRoles: Record<string, RoomRole>; // roomId -> role
   
   // Actions
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (usernameOrEmail: string, password: string) => Promise<boolean>;
+  register: (input: { email: string; username: string; name: string; password: string }) => Promise<boolean>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setRoomRole: (roomId: string, role: RoomRole) => void;
@@ -33,18 +34,18 @@ export const useAuthStore = create<AuthState>()(
         "room-4": "owner",
       },
 
-      login: async (email: string, password: string) => {
+      login: async (usernameOrEmail: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const result = await mockLogin(email, password);
+          const result = await apiLogin(usernameOrEmail, password);
           if (result.error) {
             set({ error: result.error.message, isLoading: false });
             return false;
           }
-          set({ 
-            user: result.data, 
-            isAuthenticated: true, 
-            isLoading: false 
+          set({
+            user: result.data,
+            isAuthenticated: true,
+            isLoading: false,
           });
           return true;
         } catch (e) {
@@ -53,9 +54,29 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      register: async (input) => {
+        set({ isLoading: true, error: null });
+        try {
+          const result = await apiRegister(input);
+          if (result.error) {
+            set({ error: result.error.message, isLoading: false });
+            return false;
+          }
+          set({
+            user: result.data,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          return true;
+        } catch (e) {
+          set({ error: "Registrierung fehlgeschlagen", isLoading: false });
+          return false;
+        }
+      },
+
       logout: async () => {
         set({ isLoading: true });
-        await mockLogout();
+        await apiLogout();
         set({ 
           user: null, 
           isAuthenticated: false, 

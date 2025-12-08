@@ -11,8 +11,13 @@ from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema, 
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate
 )
+from app.api.endpoints import auth, users
 
 router = APIRouter()
+
+# Nested routers
+router.include_router(auth.router)
+router.include_router(users.router)
 
 @router.get("/health")
 async def health_check():

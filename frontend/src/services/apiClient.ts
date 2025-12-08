@@ -8,12 +8,35 @@ import type { ApiResult } from "@/types/api";
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 const API_BASE = '/api/v1';
+const AUTH_TOKEN_KEY = "eventhorizon_auth_token";
+
+const getStoredToken = () => {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const setStoredToken = (token: string | null) => {
+  try {
+    if (token) {
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+    }
+  } catch {
+    /* ignore storage errors */
+  }
+};
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiResult<T>> {
   try {
+    const token = getStoredToken();
     const response = await fetch(`${API_BASE}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options?.headers,
       },
       ...options,
@@ -136,14 +159,120 @@ const currentUser: User = {
   id: "user-current",
   name: "Max Mustermann",
   email: "max.mustermann@firma.at",
+  username: "max",
   avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
   department: "Marketing",
+  createdAt: "2024-01-01T00:00:00Z",
+  isActive: true,
   favoriteActivityIds: favoriteActivityIds,
 };
 
 // ============================================ 
 // API FUNCTIONS
 // ============================================ 
+
+// --- Auth ---
+
+function mapUserFromApi(apiUser: any): User {
+  if (!apiUser) return apiUser;
+  return {
+    id: apiUser.id,
+    email: apiUser.email,
+    username: apiUser.username || apiUser.email,
+    name: apiUser.name,
+    avatarUrl: apiUser.avatar_url,
+    department: apiUser.department,
+    birthday: apiUser.birthday,
+    createdAt: apiUser.created_at,
+    isActive: apiUser.is_active,
+    favoriteActivityIds: apiUser.favorite_activity_ids,
+  } as unknown as User;
+}
+
+export async function login(username: string, password: string): Promise<ApiResult<User>> {
+  if (USE_MOCKS) {
+    const result = await mockLogin(username, password);
+    if (result.data) {
+      setStoredToken("mock-token");
+    }
+    return result;
+  }
+
+  try {
+    const body = new URLSearchParams();
+    body.append("username", username);
+    body.append("password", password);
+
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      return { data: null as any, error: { code: String(response.status), message: err.detail || "Login fehlgeschlagen" } };
+    }
+
+    const data = await response.json();
+    setStoredToken(data.access_token);
+    return { data: mapUserFromApi(data.user) };
+  } catch (e) {
+    return { data: null as any, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
+  }
+}
+
+export async function register(user: { email: string; username: string; name: string; password: string }): Promise<ApiResult<User>> {
+  if (USE_MOCKS) {
+    const mockUser: User = {
+      id: `user-${Date.now()}`,
+      email: user.email,
+      username: user.username,
+      name: user.name,
+      avatarUrl: "",
+      department: "",
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    } as any;
+    setStoredToken("mock-token");
+    return { data: mockUser };
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      return { data: null as any, error: { code: String(response.status), message: err.detail || "Registrierung fehlgeschlagen" } };
+    }
+
+    const data = await response.json();
+    setStoredToken(data.access_token);
+    return { data: mapUserFromApi(data.user) };
+  } catch (e) {
+    return { data: null as any, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
+  }
+}
+
+export async function logout(): Promise<void> {
+  setStoredToken(null);
+}
+
+export async function getCurrentUser(): Promise<ApiResult<User | null>> {
+  if (USE_MOCKS) {
+    await delay(100);
+    return { data: isLoggedIn ? currentUser : null };
+  }
+  const result = await request<any>('/auth/me');
+  if (result.data) {
+    return { data: mapUserFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
 
 // --- Activities ---
 
@@ -439,25 +568,16 @@ export async function isFavorite(activityId: string): Promise<ApiResult<boolean>
 
 let isLoggedIn = true;
 
-export async function getCurrentUser(): Promise<ApiResult<User | null>> {
-  await delay(100);
-  return { data: isLoggedIn ? currentUser : null };
-}
-
-export async function mockLogin(email: string, password: string): Promise<ApiResult<User>> {
+async function mockLogin(email: string, password: string): Promise<ApiResult<User>> {
   await delay(500);
   isLoggedIn = true;
   return { data: currentUser };
 }
 
-export async function mockLogout(): Promise<ApiResult<void>> {
+async function mockLogout(): Promise<ApiResult<void>> {
   await delay(200);
   isLoggedIn = false;
   return { data: undefined };
-}
-
-export function isAuthenticated(): boolean {
-  return isLoggedIn;
 }
 
 // --- AI / Extras ---

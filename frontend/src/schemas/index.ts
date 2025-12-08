@@ -182,11 +182,14 @@ export const UserSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string().email(),
+  username: z.string(),
   avatarUrl: z.string().optional(),
   department: z.string().optional(),
   birthday: z.string().optional(),
   hobbies: z.array(z.string()).optional(),
   favoriteActivityIds: z.array(z.string()).optional(),
+  createdAt: z.string().optional(),
+  isActive: z.boolean().optional(),
 });
 
 // ============================================

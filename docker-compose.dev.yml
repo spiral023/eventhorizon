@@ -23,6 +23,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: eventhorizon
+      SECRET_KEY: dgdjds2352!!sddfg
     depends_on:
       - db
 
