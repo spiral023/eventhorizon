@@ -61,6 +61,29 @@ function FitBounds({ activities }: { activities: Activity[] }) {
   return null;
 }
 
+// Component for markers to avoid context issues
+function MapMarkers({ 
+  activityMarkers, 
+  onSelect 
+}: { 
+  activityMarkers: { activity: Activity; position: [number, number] }[];
+  onSelect: (activity: Activity) => void;
+}) {
+  return (
+    <>
+      {activityMarkers.map(({ activity, position }) => (
+        <Marker
+          key={activity.id}
+          position={position}
+          eventHandlers={{
+            click: () => onSelect(activity),
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function MapPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
@@ -122,16 +145,10 @@ export default function MapPage() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   <FitBounds activities={activities} />
-                  
-                  {activityMarkers.map(({ activity, position }) => (
-                    <Marker
-                      key={activity.id}
-                      position={position}
-                      eventHandlers={{
-                        click: () => setSelectedActivity(activity),
-                      }}
-                    />
-                  ))}
+                  <MapMarkers 
+                    activityMarkers={activityMarkers} 
+                    onSelect={setSelectedActivity} 
+                  />
                 </MapContainer>
               </div>
             </CardContent>
