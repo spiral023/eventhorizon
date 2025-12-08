@@ -30,6 +30,14 @@ FIELD_MAPPING = {
     "typical_duration_hours": "typical_duration_hours",
     "provider": "provider",
     "website": "website",
+    "description": "description",
+    "weather_dependent": "weather_dependent",
+    "accessibility_flags": "accessibility_flags",
+    "external_rating": "external_rating",
+    "travel_time_from_office_minutes": "travel_time_from_office_minutes",
+    "travel_time_from_office_minutes_walking": "travel_time_from_office_minutes_walking",
+    "primary_goal": "primary_goal",
+    "competition_level": "competition_level",
 
     # Renamed fields
     "est_price_pp": "est_price_per_person",

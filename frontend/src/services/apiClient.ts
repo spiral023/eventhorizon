@@ -147,12 +147,61 @@ const currentUser: User = {
 
 // --- Activities ---
 
+function mapActivityFromApi(apiActivity: any): Activity {
+  return {
+    ...apiActivity,
+    // Map snake_case to camelCase
+    locationRegion: apiActivity.location_region,
+    locationCity: apiActivity.location_city,
+    locationAddress: apiActivity.address || apiActivity.location_address, // support both aliases
+    estPricePerPerson: apiActivity.est_price_pp || apiActivity.est_price_per_person,
+    priceComment: apiActivity.price_comment,
+    shortDescription: apiActivity.short_description,
+    longDescription: apiActivity.long_description,
+    imageUrl: apiActivity.image_url,
+    galleryUrls: apiActivity.gallery_urls,
+    season: apiActivity.season,
+    riskLevel: apiActivity.risk_level,
+    typicalDurationHours: apiActivity.typical_duration_hours,
+    recommendedGroupSizeMin: apiActivity.recommended_group_size_min,
+    recommendedGroupSizeMax: apiActivity.recommended_group_size_max,
+    groupSizeMin: apiActivity.recommended_group_size_min, // Fallback/Alias
+    groupSizeMax: apiActivity.recommended_group_size_max, // Fallback/Alias
+    
+    physicalIntensity: apiActivity.physical_intensity,
+    mentalChallenge: apiActivity.mental_challenge,
+    socialInteractionLevel: apiActivity.social_interaction_level,
+    competitionLevel: apiActivity.competition_level,
+    
+    accessibilityFlags: apiActivity.accessibility_flags,
+    weatherDependent: apiActivity.weather_dependent,
+    
+    externalRating: apiActivity.external_rating,
+    primaryGoal: apiActivity.primary_goal,
+    
+    travelTimeMinutes: apiActivity.travel_time_from_office_minutes,
+    travelTimeMinutesWalking: apiActivity.travel_time_from_office_minutes_walking,
+    
+    provider: apiActivity.provider,
+    website: apiActivity.website,
+    contactPhone: apiActivity.phone || apiActivity.contact_phone,
+    contactEmail: apiActivity.email || apiActivity.contact_email,
+    
+    // Ensure ID is present
+    id: apiActivity.id,
+  } as Activity;
+}
+
 export async function getActivities(): Promise<ApiResult<Activity[]>> {
   if (USE_MOCKS) {
     await delay(400);
     return { data: mockActivities };
   }
-  return request<Activity[]>('/activities');
+  const result = await request<any[]>('/activities');
+  if (result.data) {
+    return { data: result.data.map(mapActivityFromApi) };
+  }
+  return { data: [], error: result.error };
 }
 
 export async function getActivityById(id: string): Promise<ApiResult<Activity | null>> {
@@ -161,7 +210,11 @@ export async function getActivityById(id: string): Promise<ApiResult<Activity | 
     const activity = mockActivities.find((a) => a.id === id) || null;
     return { data: activity };
   }
-  return request<Activity>(`/activities/${id}`);
+  const result = await request<any>(`/activities/${id}`);
+  if (result.data) {
+    return { data: mapActivityFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 // --- Rooms ---

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
 import { PageLoading } from "@/components/shared/PageLoading";
@@ -12,6 +13,7 @@ import { getActivities, getFavoriteActivityIds } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 
 export default function ActivitiesPage() {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,6 +133,7 @@ export default function ActivitiesPage() {
               key={activity.id}
               activity={activity}
               isFavorite={favoriteIds.includes(activity.id)}
+              onClick={() => navigate(`/activities/${activity.id}`)}
             />
           ))}
         </div>

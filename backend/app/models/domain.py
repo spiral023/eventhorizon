@@ -140,14 +140,20 @@ class Activity(Base):
     price_includes = Column(Text)
     price_comment = Column(Text)
     
+    # Descriptions
     short_description = Column(String, nullable=False)
     long_description = Column(Text)
+    description = Column(Text) # generic/middle description
+    
     image_url = Column(String)
     gallery_urls = Column(ARRAY(String))
     
     season = Column(SQLEnum(Season))
+    weather_dependent = Column(Boolean, default=False)
     risk_level = Column(SQLEnum(RiskLevel))
     
+    accessibility_flags = Column(ARRAY(String))
+
     duration = Column(String)
     typical_duration_hours = Column(Float)
     
@@ -158,12 +164,19 @@ class Activity(Base):
     physical_intensity = Column(Integer)
     mental_challenge = Column(Integer)
     social_interaction_level = Column(Integer)
-
+    competition_level = Column(Integer)
+    
     # Meta
     provider = Column(String)
     website = Column(String)
     contact_email = Column(String)
     contact_phone = Column(String)
+    external_rating = Column(Float)
+    primary_goal = Column(String)
+    
+    # Travel
+    travel_time_from_office_minutes = Column(Integer)
+    travel_time_from_office_minutes_walking = Column(Integer)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     

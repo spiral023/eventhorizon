@@ -1,7 +1,7 @@
 from typing import List, Optional, Any, Literal
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 # --- Base Schema ---
 class BaseSchema(BaseModel):
@@ -38,14 +38,49 @@ class Room(RoomBase):
 
 # --- Activity ---
 class ActivityBase(BaseSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
     title: str
     category: str
     tags: List[str] = []
     location_region: str
     location_city: Optional[str] = None
-    est_price_per_person: Optional[float] = None
-    short_description: str
+    address: Optional[str] = Field(None, validation_alias="location_address", serialization_alias="address")
+    
+    est_price_pp: Optional[float] = Field(None, validation_alias="est_price_per_person", serialization_alias="est_price_pp")
+    price_comment: Optional[str] = None
+    
+    accessibility_flags: List[str] = []
+    weather_dependent: bool = False
+    
     image_url: Optional[str] = None
+    description: Optional[str] = ""
+    short_description: str
+    long_description: Optional[str] = None
+    
+    season: Optional[str] = "all_year"
+    
+    physical_intensity: Optional[int] = None
+    mental_challenge: Optional[int] = None
+    social_interaction_level: Optional[int] = None
+    competition_level: Optional[int] = None
+    risk_level: Optional[str] = "low"
+    
+    external_rating: Optional[float] = None
+    primary_goal: Optional[str] = None
+    
+    travel_time_from_office_minutes: Optional[int] = None
+    travel_time_from_office_minutes_walking: Optional[int] = None
+    
+    website: Optional[str] = None
+    provider: Optional[str] = None
+    phone: Optional[str] = Field(None, validation_alias="contact_phone", serialization_alias="phone")
+    email: Optional[str] = Field(None, validation_alias="contact_email", serialization_alias="email")
+    
+    typical_duration_hours: Optional[float] = None
+    recommended_group_size_min: Optional[int] = Field(None, validation_alias="group_size_min", serialization_alias="recommended_group_size_min")
+    recommended_group_size_max: Optional[int] = Field(None, validation_alias="group_size_max", serialization_alias="recommended_group_size_max")
+
     coordinates: Optional[List[float]] = None
 
 class ActivityCreate(ActivityBase):

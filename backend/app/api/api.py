@@ -24,6 +24,14 @@ async def get_activities(skip: int = 0, limit: int = 100, db: AsyncSession = Dep
     result = await db.execute(select(Activity).offset(skip).limit(limit))
     return result.scalars().all()
 
+@router.get("/activities/{activity_id}", response_model=ActivitySchema)
+async def get_activity(activity_id: UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    return activity
+
 # --- Rooms ---
 @router.get("/rooms", response_model=List[RoomSchema])
 async def get_rooms(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
