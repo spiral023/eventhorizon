@@ -91,32 +91,46 @@ export interface Activity {
   locationAddress?: string;
   estPricePerPerson: number;
   priceIncludes?: string;
+  priceComment?: string;
   shortDescription: string;
   longDescription?: string;
   imageUrl: string;
   galleryUrls?: string[];
   season: Season;
   riskLevel: RiskLevel;
-  duration: string;
-  groupSizeMin: number;
-  groupSizeMax: number;
+  duration?: string;
+  typicalDurationHours?: number;
+  groupSizeMin?: number;
+  groupSizeMax?: number;
+  recommendedGroupSizeMin?: number;
+  recommendedGroupSizeMax?: number;
+  minParticipants?: number;
   // Scales 1-5
-  physicalIntensity: number;
-  mentalChallenge: number;
-  funFactor: number;
-  teamworkLevel: number;
-  creativityLevel: number;
+  physicalIntensity?: number;
+  mentalChallenge?: number;
+  funFactor?: number;
+  teamworkLevel?: number;
+  creativityLevel?: number;
+  socialInteractionLevel?: number;
+  competitionLevel?: number;
   // Time & logistics
   travelTimeMinutes?: number;
+  travelTimeMinutesWalking?: number;
+  leadTimeMinDays?: number;
   preparationNeeded?: string;
   equipmentProvided?: boolean;
-  accessibilityNotes?: string;
-  // Booking
-  bookingUrl?: string;
+  accessibilityFlags?: string[];
+  weatherDependent?: boolean;
+  // Provider info
+  provider?: string;
+  website?: string;
   contactEmail?: string;
   contactPhone?: string;
+  // Primary goal
+  primaryGoal?: PrimaryGoal;
   // Metadata
   rating?: number;
+  externalRating?: number;
   reviewCount?: number;
   createdAt?: string;
   updatedAt?: string;

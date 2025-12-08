@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Compass, Filter, X, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -10,6 +11,7 @@ import { getActivities, getFavoriteActivityIds, toggleFavorite } from "@/service
 import type { Activity } from "@/types/domain";
 
 export default function ActivitiesPage() {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -193,6 +195,7 @@ export default function ActivitiesPage() {
                 activity={activity}
                 isFavorite={favoriteIds.includes(activity.id)}
                 onFavoriteToggle={handleFavoriteToggle}
+                onClick={() => navigate(`/activities/${activity.id}`)}
               />
             </div>
           ))}
