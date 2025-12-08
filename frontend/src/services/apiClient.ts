@@ -105,7 +105,42 @@ const mockRooms: Room[] = [
       { userId: "user-3", userName: "Tom Weber", role: "member", joinedAt: "2024-01-17T10:00:00Z" },
     ],
   },
-  // ... (keeping mockRooms short for brevity in this turn, but normally full list)
+  {
+    id: "room-2",
+    name: "Dev-Team",
+    description: "Entwickler-Team Events",
+    memberCount: 8,
+    createdAt: "2024-02-01T10:00:00Z",
+    createdByUserId: "user-2",
+    avatarUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=100&h=100&fit=crop",
+    members: [
+      { userId: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", userName: "Max Mustermann", role: "member", joinedAt: "2024-02-01T10:00:00Z" },
+    ],
+  },
+  {
+    id: "room-3",
+    name: "Sales-Team",
+    description: "Vertriebsteam Aktivitäten",
+    memberCount: 15,
+    createdAt: "2024-03-01T10:00:00Z",
+    createdByUserId: "user-3",
+    avatarUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=100&h=100&fit=crop",
+    members: [
+      { userId: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", userName: "Max Mustermann", role: "member", joinedAt: "2024-03-01T10:00:00Z" },
+    ],
+  },
+  {
+    id: "room-4",
+    name: "Mein persönlicher Raum",
+    description: "Hier kann ich alles ausprobieren",
+    memberCount: 1,
+    createdAt: "2024-04-01T10:00:00Z",
+    createdByUserId: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", // Current user is owner
+    avatarUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=100&h=100&fit=crop",
+    members: [
+      { userId: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", userName: "Max Mustermann", role: "owner", joinedAt: "2024-04-01T10:00:00Z" },
+    ],
+  },
 ];
 
 const mockActivities: Activity[] = [
@@ -175,7 +210,7 @@ let events: Event[] = [
 let favoriteActivityIds: string[] = ["act-1"];
 
 const currentUser: User = {
-  id: "user-current",
+  id: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", // Backend Mock User ID
   name: "Max Mustermann",
   email: "max.mustermann@firma.at",
   username: "max",
@@ -406,6 +441,26 @@ export async function createRoom(input: { name: string; description?: string }):
   return request<Room>('/rooms', {
     method: 'POST',
     body: JSON.stringify(input),
+  });
+}
+
+export async function deleteRoom(roomId: string): Promise<ApiResult<void>> {
+  if (USE_MOCKS) {
+    await delay(300);
+    const index = mockRooms.findIndex((r) => r.id === roomId);
+    if (index === -1) {
+      return {
+        data: null as any,
+        error: { code: "NOT_FOUND", message: "Raum nicht gefunden" }
+      };
+    }
+    mockRooms.splice(index, 1);
+    // Also delete all events associated with this room
+    events = events.filter((e) => e.roomId !== roomId);
+    return { data: undefined };
+  }
+  return request<void>(`/rooms/${roomId}`, {
+    method: 'DELETE',
   });
 }
 

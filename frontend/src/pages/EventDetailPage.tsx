@@ -39,7 +39,7 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const currentUserId = "user-current"; // Mock current user
+  const currentUserId = "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1"; // Backend Mock User ID
 
   useEffect(() => {
     const fetchData = async () => {

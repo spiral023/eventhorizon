@@ -6,9 +6,10 @@ from uuid import UUID, uuid4
 from datetime import datetime
 
 from app.db.session import get_db
-from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant
+from app.api.deps import get_current_user
+from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User
 from app.schemas.domain import (
-    Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema, 
+    Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate
 )
 from app.api.endpoints import auth, users
@@ -59,10 +60,42 @@ async def get_room(room_id: UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Room not found")
     return room
 
+@router.delete("/rooms/{room_id}")
+async def delete_room(
+    room_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(select(Room).where(Room.id == room_id))
+    room = result.scalar_one_or_none()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    # Check if the current user is the creator of the room
+    if room.created_by_user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the room creator can delete this room"
+        )
+
+    # Delete the room (cascade will handle events, members, etc.)
+    await db.delete(room)
+    await db.commit()
+
+    return {"message": "Room deleted successfully"}
+
 @router.get("/rooms/{room_id}/events", response_model=List[EventSchema])
 async def get_room_events(room_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Event).where(Event.room_id == room_id))
     return result.scalars().all()
+
+def enhance_event_with_user_names_helper(event):
+    """Add user_name to votes from user relationship"""
+    if hasattr(event, 'votes') and event.votes:
+        for vote in event.votes:
+            if hasattr(vote, 'user') and vote.user:
+                vote.user_name = vote.user.name
+    return event
 
 @router.post("/rooms/{room_id}/events", response_model=EventSchema)
 async def create_event(room_id: UUID, event_in: EventCreate, db: AsyncSession = Depends(get_db)):
@@ -85,6 +118,7 @@ async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
+    event = enhance_event_with_user_names_helper(event)
     return event
 
 @router.patch("/events/{event_id}/phase", response_model=EventSchema)
@@ -100,13 +134,66 @@ async def update_event_phase(event_id: UUID, phase_in: PhaseUpdate, db: AsyncSes
 
 @router.post("/events/{event_id}/votes", response_model=EventSchema)
 async def vote_on_activity(event_id: UUID, vote_in: VoteCreate, db: AsyncSession = Depends(get_db)):
-    # Mock impl: just update the event object logic would be complex here (Upsert Vote)
-    # For MVP Phase 3 we assume "Fire and Forget" or simple insert
-    # In real world: check if user already voted, update existing or insert new.
-    # user_id would come from Auth token.
-    # Here we just return the event to satisfy the frontend contract
+    from app.models.domain import User, Vote as VoteModel
+
+    # Get or create a mock user for now (in production, this would come from auth token)
+    user_result = await db.execute(
+        select(User).where(User.email == "max.mustermann@firma.at")
+    )
+    user = user_result.scalar_one_or_none()
+
+    if not user:
+        # Create mock user if doesn't exist
+        from app.models.domain import User as UserModel
+        user = UserModel(
+            id=uuid4(),
+            email="max.mustermann@firma.at",
+            username="max",
+            name="Max Mustermann",
+            hashed_password="mock_password",  # In production, this would be properly hashed
+            is_active=True,
+            created_at=datetime.utcnow()
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    # Check if vote already exists
+    existing_vote_result = await db.execute(
+        select(VoteModel).where(
+            VoteModel.event_id == event_id,
+            VoteModel.activity_id == vote_in.activity_id,
+            VoteModel.user_id == user.id
+        )
+    )
+    existing_vote = existing_vote_result.scalar_one_or_none()
+
+    if existing_vote:
+        # Update existing vote
+        existing_vote.vote = vote_in.vote
+        existing_vote.voted_at = datetime.utcnow()
+    else:
+        # Create new vote
+        new_vote = VoteModel(
+            event_id=event_id,
+            activity_id=vote_in.activity_id,
+            user_id=user.id,
+            vote=vote_in.vote,
+            voted_at=datetime.utcnow()
+        )
+        db.add(new_vote)
+
+    await db.commit()
+
+    # Return the updated event
     result = await db.execute(select(Event).where(Event.id == event_id))
     event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Add user names to votes
+    event = enhance_event_with_user_names_helper(event)
+
     return event 
 
 @router.post("/events/{event_id}/date-options/{date_option_id}/response", response_model=EventSchema)

@@ -258,4 +258,10 @@ eventhorizon/
 - `frontend/src/components/auth/RequireAuth.tsx` - Auth guard
 - `frontend/src/components/auth/RequireRole.tsx` - RBAC guard
 
-**Info**: When needed login with username philipp.asanger@gmail.com and password athlon2006
+**Info**:
+Assume the dev server is already running at http://localhost:5173/ and backend is running at http://localhost:8000/
+The following containers serve the backend:
+CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
+311dbcd3fbd7 eventhorizon-backend "uvicorn app.main:ap…" 2 hours ago Up 9 minutes 0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp eventhorizon-backend-1
+845cb6997c9e postgres:15-alpine "docker-entrypoint.s…" 5 hours ago Up 2 hours 0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp eventhorizon-db-1
+When needed login with username philipp.asanger@gmail.com and password athlon2006

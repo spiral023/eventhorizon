@@ -112,7 +112,7 @@ class Room(Base):
     # Relationships
     creator = relationship("User", back_populates="created_rooms")
     members = relationship("RoomMember", back_populates="room", cascade="all, delete-orphan")
-    events = relationship("Event", back_populates="room")
+    events = relationship("Event", back_populates="room", cascade="all, delete-orphan")
 
 class RoomMember(Base):
     __tablename__ = "room_member"
@@ -232,15 +232,16 @@ class EventParticipant(Base):
 
 class Vote(Base):
     __tablename__ = "vote"
-    
+
     event_id = Column(UUID(as_uuid=True), ForeignKey("event.id"), primary_key=True)
     activity_id = Column(UUID(as_uuid=True), ForeignKey("activity.id"), primary_key=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), primary_key=True)
-    
+
     vote = Column(SQLEnum(VoteType), nullable=False)
     voted_at = Column(DateTime, default=datetime.utcnow)
-    
+
     event = relationship("Event", back_populates="votes")
+    user = relationship("User", lazy="selectin")
 
 class DateOption(Base):
     __tablename__ = "date_option"

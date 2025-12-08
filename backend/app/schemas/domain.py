@@ -1,7 +1,7 @@
 from typing import List, Optional, Any, Literal
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 # --- Base Schema ---
 class BaseSchema(BaseModel):
@@ -124,8 +124,17 @@ class Event(EventBase):
     created_at: datetime
     voting_deadline: Optional[datetime] = None
     participants: List[Any] = [] # Simplified for now
-    activity_votes: List[Any] = [] # Simplified
+    activity_votes: List["Vote"] = Field(default=[], validation_alias="votes", serialization_alias="activity_votes")
     date_options: List[Any] = []
+
+# --- Vote ---
+class Vote(BaseSchema):
+    event_id: UUID
+    activity_id: UUID
+    user_id: UUID
+    vote: str
+    voted_at: datetime
+    user_name: Optional[str] = None
 
 # --- Actions ---
 class VoteCreate(BaseSchema):
