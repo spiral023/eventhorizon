@@ -153,7 +153,12 @@ class Activity(Base):
     
     group_size_min = Column(Integer)
     group_size_max = Column(Integer)
-    
+
+    # Intensity/Challenge Ratings (1-5 scale)
+    physical_intensity = Column(Integer)
+    mental_challenge = Column(Integer)
+    social_interaction_level = Column(Integer)
+
     # Meta
     provider = Column(String)
     website = Column(String)
@@ -193,9 +198,9 @@ class Event(Base):
     
     # Relationships
     room = relationship("Room", back_populates="events")
-    participants = relationship("EventParticipant", back_populates="event", cascade="all, delete-orphan")
-    votes = relationship("Vote", back_populates="event", cascade="all, delete-orphan")
-    date_options = relationship("DateOption", back_populates="event", cascade="all, delete-orphan")
+    participants = relationship("EventParticipant", back_populates="event", cascade="all, delete-orphan", lazy="selectin")
+    votes = relationship("Vote", back_populates="event", cascade="all, delete-orphan", lazy="selectin")
+    date_options = relationship("DateOption", back_populates="event", cascade="all, delete-orphan", lazy="selectin")
 
 class EventParticipant(Base):
     __tablename__ = "event_participant"
@@ -233,7 +238,7 @@ class DateOption(Base):
     end_time = Column(String) # HH:mm
     
     event = relationship("Event", back_populates="date_options")
-    responses = relationship("DateResponse", back_populates="date_option", cascade="all, delete-orphan")
+    responses = relationship("DateResponse", back_populates="date_option", cascade="all, delete-orphan", lazy="selectin")
 
 class DateResponse(Base):
     __tablename__ = "date_response"
