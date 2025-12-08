@@ -8,6 +8,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 // Pages
 import HomePage from "@/pages/HomePage";
 import RoomsPage from "@/pages/RoomsPage";
+import RoomDetailPage from "@/pages/RoomDetailPage";
+import CreateEventPage from "@/pages/CreateEventPage";
+import EventDetailPage from "@/pages/EventDetailPage";
 import ActivitiesPage from "@/pages/ActivitiesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import MapPage from "@/pages/MapPage";
@@ -37,6 +40,30 @@ const App = () => (
             element={
               <AppLayout>
                 <RoomsPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/rooms/:roomId"
+            element={
+              <AppLayout>
+                <RoomDetailPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/rooms/:roomId/events/new"
+            element={
+              <AppLayout>
+                <CreateEventPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/rooms/:roomId/events/:eventId"
+            element={
+              <AppLayout>
+                <EventDetailPage />
               </AppLayout>
             }
           />
