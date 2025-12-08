@@ -68,11 +68,77 @@ export default function ActivitiesPage() {
         return false;
       }
 
+      // Primary goal filter
+      if (filters.primaryGoals.length > 0 && activity.primaryGoal && !filters.primaryGoals.includes(activity.primaryGoal)) {
+        return false;
+      }
+
       // Price range filter
       if (
         activity.estPricePerPerson < filters.priceRange[0] ||
-        (filters.priceRange[1] < 100 && activity.estPricePerPerson > filters.priceRange[1])
+        (filters.priceRange[1] < 200 && activity.estPricePerPerson > filters.priceRange[1])
       ) {
+        return false;
+      }
+
+      // Group size filter
+      const minGroup = activity.groupSizeMin || activity.recommendedGroupSizeMin || 1;
+      const maxGroup = activity.groupSizeMax || activity.recommendedGroupSizeMax || 100;
+      if (filters.groupSizeRange[0] > maxGroup || filters.groupSizeRange[1] < minGroup) {
+        return false;
+      }
+
+      // Duration filter (convert activity duration to minutes if available)
+      if (activity.typicalDurationHours) {
+        const durationMinutes = activity.typicalDurationHours * 60;
+        if (
+          durationMinutes < filters.durationRange[0] ||
+          (filters.durationRange[1] < 480 && durationMinutes > filters.durationRange[1])
+        ) {
+          return false;
+        }
+      }
+
+      // Physical intensity filter
+      if (activity.physicalIntensity) {
+        if (
+          activity.physicalIntensity < filters.physicalIntensity[0] ||
+          activity.physicalIntensity > filters.physicalIntensity[1]
+        ) {
+          return false;
+        }
+      }
+
+      // Mental challenge filter
+      if (activity.mentalChallenge) {
+        if (
+          activity.mentalChallenge < filters.mentalChallenge[0] ||
+          activity.mentalChallenge > filters.mentalChallenge[1]
+        ) {
+          return false;
+        }
+      }
+
+      // Teamwork level filter
+      if (activity.teamworkLevel) {
+        if (
+          activity.teamworkLevel < filters.teamworkLevel[0] ||
+          activity.teamworkLevel > filters.teamworkLevel[1]
+        ) {
+          return false;
+        }
+      }
+
+      // Weather independent filter
+      if (filters.weatherIndependent && activity.weatherDependent === true) {
+        return false;
+      }
+
+      // Indoor/Outdoor filter
+      if (filters.indoorOnly && activity.category === "outdoor") {
+        return false;
+      }
+      if (filters.outdoorOnly && activity.category !== "outdoor") {
         return false;
       }
 
@@ -85,7 +151,16 @@ export default function ActivitiesPage() {
     filters.regions.length +
     filters.seasons.length +
     filters.riskLevels.length +
-    (filters.priceRange[0] > 0 || filters.priceRange[1] < 100 ? 1 : 0) +
+    filters.primaryGoals.length +
+    (filters.priceRange[0] > 0 || filters.priceRange[1] < 200 ? 1 : 0) +
+    (filters.groupSizeRange[0] > 1 || filters.groupSizeRange[1] < 100 ? 1 : 0) +
+    (filters.durationRange[0] > 0 || filters.durationRange[1] < 480 ? 1 : 0) +
+    (filters.physicalIntensity[0] > 1 || filters.physicalIntensity[1] < 5 ? 1 : 0) +
+    (filters.mentalChallenge[0] > 1 || filters.mentalChallenge[1] < 5 ? 1 : 0) +
+    (filters.teamworkLevel[0] > 1 || filters.teamworkLevel[1] < 5 ? 1 : 0) +
+    (filters.indoorOnly ? 1 : 0) +
+    (filters.outdoorOnly ? 1 : 0) +
+    (filters.weatherIndependent ? 1 : 0) +
     (filters.favoritesOnly ? 1 : 0);
 
   return (
