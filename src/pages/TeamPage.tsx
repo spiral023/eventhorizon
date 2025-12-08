@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, Heart, Zap, Coffee, Mountain, Brain } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,7 @@ const vibeLabels = {
 
 export default function TeamPage() {
   const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState<TeamPreferenceSummary | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -221,6 +222,7 @@ export default function TeamPage() {
                 activity={activity}
                 isFavorite={favoriteIds.includes(activity.id)}
                 onFavoriteToggle={handleFavoriteToggle}
+                onClick={() => navigate(`/activities/${activity.id}`)}
               />
             </motion.div>
           ))}

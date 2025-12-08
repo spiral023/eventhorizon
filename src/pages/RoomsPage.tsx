@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Plus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RoomCard } from "@/components/shared/RoomCard";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
 import { getRooms } from "@/services/apiClient";
 import type { Room } from "@/types/domain";
 
@@ -13,26 +13,26 @@ export default function RoomsPage() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const fetchRooms = async () => {
+    const result = await getRooms();
+    setRooms(result.data);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchRooms = async () => {
-      const result = await getRooms();
-      setRooms(result.data);
-      setLoading(false);
-    };
     fetchRooms();
   }, []);
+
+  const handleRoomCreated = (newRoom: Room) => {
+    setRooms((prev) => [...prev, newRoom]);
+  };
 
   return (
     <div>
       <PageHeader
         title="Deine Räume"
         description="Verwalte deine Teams und Firmenräume. Jeder Raum ist ein eigener Bereich für gemeinsame Event-Planung."
-        action={
-          <Button className="gap-2 rounded-xl">
-            <Plus className="h-4 w-4" />
-            Neuer Raum
-          </Button>
-        }
+        action={<CreateRoomDialog onRoomCreated={handleRoomCreated} />}
       />
 
       {loading ? (
@@ -49,12 +49,7 @@ export default function RoomsPage() {
           icon={Users}
           title="Noch keine Räume"
           description="Erstelle deinen ersten Raum, um mit der Event-Planung zu starten."
-          action={
-            <Button className="gap-2 rounded-xl">
-              <Plus className="h-4 w-4" />
-              Raum erstellen
-            </Button>
-          }
+          action={<CreateRoomDialog onRoomCreated={handleRoomCreated} />}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
