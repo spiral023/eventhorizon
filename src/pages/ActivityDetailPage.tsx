@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ScaleBar } from "@/components/shared/ScaleBar";
-import { getActivityById } from "@/services/apiClient";
+import { getActivityById, isFavorite, toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { 
   CategoryLabels, 
@@ -39,6 +39,7 @@ import {
   RiskLevelColors
 } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const PrimaryGoalLabels: Record<string, string> = {
   teambuilding: "Teambuilding",
@@ -52,16 +53,28 @@ export default function ActivityDetailPage() {
   const { activityId } = useParams<{ activityId: string }>();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
     const fetchActivity = async () => {
       if (!activityId) return;
-      const result = await getActivityById(activityId);
-      setActivity(result.data);
+      const [activityResult, favResult] = await Promise.all([
+        getActivityById(activityId),
+        isFavorite(activityId)
+      ]);
+      setActivity(activityResult.data);
+      setIsFav(favResult.data);
       setLoading(false);
     };
     fetchActivity();
   }, [activityId]);
+
+  const handleFavoriteToggle = async () => {
+    if (!activityId) return;
+    const result = await toggleFavorite(activityId);
+    setIsFav(result.data);
+    toast.success(result.data ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
+  };
 
   if (loading) {
     return (
@@ -456,9 +469,15 @@ export default function ActivityDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Button className="w-full rounded-xl h-12 text-base gap-2">
-              <Heart className="h-5 w-5" />
-              Zu Favoriten hinzufügen
+            <Button 
+              className={cn(
+                "w-full rounded-xl h-12 text-base gap-2",
+                isFav && "bg-destructive hover:bg-destructive/90"
+              )}
+              onClick={handleFavoriteToggle}
+            >
+              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
+              {isFav ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
             </Button>
           </motion.div>
         </div>
