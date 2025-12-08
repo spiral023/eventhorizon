@@ -71,7 +71,7 @@ export default function CreateEventPage() {
       ]);
 
       setActivities(activitiesResult.data);
-      setFavoriteIds(favoritesResult.data);
+      setFavoriteIds(favoritesResult.data || []);
       
       // Pre-select all activities to satisfy validation
       const allIds = activitiesResult.data.map(a => a.id);

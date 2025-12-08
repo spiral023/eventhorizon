@@ -183,6 +183,12 @@ const mockActivities: Activity[] = [
   // ... (more activities would be here)
 ];
 
+let mockFavoriteCounts: Record<string, number> = {
+  "act-1": 5,
+};
+mockActivities.forEach((a) => {
+  a.favoritesCount = mockFavoriteCounts[a.id] || 0;
+});
 let events: Event[] = [
   {
     id: "event-1",
@@ -203,7 +209,8 @@ let events: Event[] = [
       { userId: "user-current", userName: "Max Mustermann", isOrganizer: true, hasVoted: true },
     ],
     createdAt: "2024-11-01T09:00:00Z",
-    createdByUserId: "user-current",
+    // Keep in sync with mock currentUser.id defined below to ensure owner checks work
+    createdByUserId: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1",
   }
 ];
 
@@ -241,6 +248,26 @@ function mapUserFromApi(apiUser: any): User {
     isActive: apiUser.is_active,
     favoriteActivityIds: apiUser.favorite_activity_ids,
   } as unknown as User;
+}
+
+function mapRoomFromApi(apiRoom: any): Room {
+  if (!apiRoom) return apiRoom;
+  return {
+    id: apiRoom.id,
+    name: apiRoom.name,
+    description: apiRoom.description,
+    memberCount: apiRoom.member_count ?? apiRoom.memberCount ?? 0,
+    createdAt: apiRoom.created_at ?? apiRoom.createdAt,
+    createdByUserId: apiRoom.created_by_user_id ?? apiRoom.createdByUserId,
+    avatarUrl: apiRoom.avatar_url ?? apiRoom.avatarUrl,
+    members: (apiRoom.members || []).map((member: any) => ({
+      userId: member.user_id ?? member.userId,
+      userName: member.user_name ?? member.userName,
+      avatarUrl: member.avatar_url ?? member.avatarUrl,
+      role: member.role,
+      joinedAt: member.joined_at ?? member.joinedAt,
+    })),
+  } as Room;
 }
 
 export async function login(username: string, password: string): Promise<ApiResult<User>> {
@@ -367,6 +394,7 @@ function mapActivityFromApi(apiActivity: any): Activity {
     weatherDependent: apiActivity.weather_dependent,
 
     externalRating: apiActivity.external_rating,
+    favoritesCount: apiActivity.favorites_count || apiActivity.favoritesCount || 0,
     primaryGoal: apiActivity.primary_goal,
 
     travelTimeMinutes: apiActivity.travel_time_from_office_minutes,
@@ -411,7 +439,11 @@ export async function getRooms(): Promise<ApiResult<Room[]>> {
     await delay(300);
     return { data: mockRooms };
   }
-  return request<Room[]>('/rooms');
+  const result = await request<any[]>('/rooms');
+  if (result.data) {
+    return { data: result.data.map(mapRoomFromApi) };
+  }
+  return { data: [], error: result.error };
 }
 
 export async function getRoomById(id: string): Promise<ApiResult<Room | null>> {
@@ -420,7 +452,11 @@ export async function getRoomById(id: string): Promise<ApiResult<Room | null>> {
     const room = mockRooms.find((r) => r.id === id) || null;
     return { data: room };
   }
-  return request<Room>(`/rooms/${id}`);
+  const result = await request<any>(`/rooms/${id}`);
+  if (result.data) {
+    return { data: mapRoomFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 export async function createRoom(input: { name: string; description?: string }): Promise<ApiResult<Room>> {
@@ -438,10 +474,14 @@ export async function createRoom(input: { name: string; description?: string }):
     mockRooms.push(newRoom);
     return { data: newRoom };
   }
-  return request<Room>('/rooms', {
+  const result = await request<any>('/rooms', {
     method: 'POST',
     body: JSON.stringify(input),
   });
+  if (result.data) {
+    return { data: mapRoomFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
 }
 
 export async function deleteRoom(roomId: string): Promise<ApiResult<void>> {
@@ -591,6 +631,31 @@ export async function getEventById(eventId: string): Promise<ApiResult<Event | n
     return { data: mapEventFromApi(result.data) };
   }
   return { data: null, error: result.error };
+}
+
+export async function deleteEvent(eventId: string): Promise<ApiResult<void>> {
+  if (USE_MOCKS) {
+    await delay(200);
+    const index = events.findIndex((e) => e.id === eventId);
+    if (index === -1) {
+      return {
+        data: null as any,
+        error: { code: "NOT_FOUND", message: "Event nicht gefunden" },
+      };
+    }
+    const event = events[index];
+    if (event.createdByUserId !== currentUser.id) {
+      return {
+        data: null as any,
+        error: { code: "FORBIDDEN", message: "Nur der Ersteller kann das Event lÇôschen" },
+      };
+    }
+    events.splice(index, 1);
+    return { data: undefined };
+  }
+  return request<void>(`/events/${eventId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function createEvent(roomId: string, input: CreateEventInput & { timeWindow: EventTimeWindow }): Promise<ApiResult<Event>> {
@@ -771,25 +836,62 @@ export async function finalizeDateOption(eventId: string, dateOptionId: string):
 // --- Favorites & Auth (Mock Only for now) ---
 
 export async function getFavoriteActivityIds(): Promise<ApiResult<string[]>> {
-  await delay(100);
-  return { data: favoriteActivityIds };
-}
-
-export async function toggleFavorite(activityId: string): Promise<ApiResult<boolean>> {
-  await delay(150);
-  const index = favoriteActivityIds.indexOf(activityId);
-  if (index > -1) {
-    favoriteActivityIds.splice(index, 1);
-    return { data: false };
-  } else {
-    favoriteActivityIds.push(activityId);
-    return { data: true };
+  if (USE_MOCKS) {
+    await delay(100);
+    return { data: favoriteActivityIds };
   }
+  const res = await request<string[]>('/activities/favorites');
+  if (res.error) {
+    return { data: [], error: res.error };
+  }
+  return res;
 }
 
-export async function isFavorite(activityId: string): Promise<ApiResult<boolean>> {
-  await delay(50);
-  return { data: favoriteActivityIds.includes(activityId) };
+export async function toggleFavorite(activityId: string): Promise<ApiResult<{ isFavorite: boolean; favoritesCount: number }>> {
+  if (USE_MOCKS) {
+    await delay(150);
+    const index = favoriteActivityIds.indexOf(activityId);
+    let updatedCount = mockFavoriteCounts[activityId] || 0;
+    if (index > -1) {
+      favoriteActivityIds.splice(index, 1);
+      mockFavoriteCounts[activityId] = Math.max((mockFavoriteCounts[activityId] || 1) - 1, 0);
+      updatedCount = mockFavoriteCounts[activityId] || 0;
+      const activity = mockActivities.find((a) => a.id === activityId);
+      if (activity) activity.favoritesCount = updatedCount;
+      return { data: { isFavorite: false, favoritesCount: updatedCount } };
+    } else {
+      favoriteActivityIds.push(activityId);
+      mockFavoriteCounts[activityId] = (mockFavoriteCounts[activityId] || 0) + 1;
+      updatedCount = mockFavoriteCounts[activityId];
+      const activity = mockActivities.find((a) => a.id === activityId);
+      if (activity) activity.favoritesCount = updatedCount;
+      return { data: { isFavorite: true, favoritesCount: updatedCount } };
+    }
+  }
+  const res = await request<{ is_favorite: boolean; favorites_count: number }>(`/activities/${activityId}/favorite`, {
+    method: 'POST',
+  });
+  if (res.data) {
+    return {
+      data: {
+        isFavorite: (res.data as any).is_favorite ?? (res.data as any).isFavorite,
+        favoritesCount: (res.data as any).favorites_count ?? (res.data as any).favoritesCount,
+      },
+    };
+  }
+  return { data: null as any, error: res.error };
+}
+
+export async function isFavorite(activityId: string): Promise<ApiResult<{ isFavorite: boolean; favoritesCount: number }>> {
+  if (USE_MOCKS) {
+    await delay(50);
+    return { data: { isFavorite: favoriteActivityIds.includes(activityId), favoritesCount: mockFavoriteCounts[activityId] || 0 } };
+  }
+  const res = await request<{ is_favorite: boolean; favorites_count: number }>(`/activities/${activityId}/favorite`);
+  if (res.data) {
+    return { data: { isFavorite: (res.data as any).is_favorite ?? (res.data as any).isFavorite, favoritesCount: (res.data as any).favorites_count ?? (res.data as any).favoritesCount } };
+  }
+  return { data: { isFavorite: false, favoritesCount: 0 }, error: res.error };
 }
 
 let isLoggedIn = true;

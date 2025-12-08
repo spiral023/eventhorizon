@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Link2 } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Users, Link2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ShareRoomDialog } from "@/components/shared/ShareRoomDialog";
 import { EditRoomDialog } from "@/components/shared/EditRoomDialog";
-import { getRoomById, getEventsByRoom } from "@/services/apiClient";
+import { getRoomById, getEventsByRoom, deleteEvent } from "@/services/apiClient";
 import type { Room, Event } from "@/types/domain";
+import { useAuthStore } from "@/stores/authStore";
+import { toast } from "sonner";
 
 export default function RoomDetailPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -18,6 +30,9 @@ export default function RoomDetailPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogEvent, setDeleteDialogEvent] = useState<Event | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +50,25 @@ export default function RoomDetailPage() {
 
   const handleRoomUpdated = (updatedRoom: Room) => {
     setRoom(updatedRoom);
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!deleteDialogEvent) return;
+    setDeleteLoading(true);
+    try {
+      const result = await deleteEvent(deleteDialogEvent.id);
+      if (result.error) {
+        toast.error(result.error.message || "Fehler beim LÇôschen des Events");
+        return;
+      }
+      setEvents((prev) => prev.filter((e) => e.id !== deleteDialogEvent.id));
+      toast.success("Event erfolgreich gelÇôscht!");
+      setDeleteDialogEvent(null);
+    } catch {
+      toast.error("Fehler beim LÇôschen des Events");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   if (loading) {
@@ -160,9 +194,23 @@ export default function RoomDetailPage() {
             activeEvents.map((event, index) => (
               <div
                 key={event.id}
-                className="animate-fade-in-up"
+                className="animate-fade-in-up relative"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
+                {user?.id && event.createdByUserId === user.id && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-2 text-destructive hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteDialogEvent(event);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
                 <EventCard
                   event={event}
                   onClick={() => navigate(`/rooms/${roomId}/events/${event.id}`)}
@@ -183,9 +231,23 @@ export default function RoomDetailPage() {
             pastEvents.map((event, index) => (
               <div
                 key={event.id}
-                className="animate-fade-in-up opacity-70"
+                className="animate-fade-in-up opacity-70 relative"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
+                {user?.id && event.createdByUserId === user.id && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-2 text-destructive hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteDialogEvent(event);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
                 <EventCard
                   event={event}
                   onClick={() => navigate(`/rooms/${roomId}/events/${event.id}`)}
@@ -220,6 +282,27 @@ export default function RoomDetailPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={!!deleteDialogEvent} onOpenChange={(open) => !open && setDeleteDialogEvent(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Event lÇôschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Dieses Event und alle zugehÇôrigen Daten werden dauerhaft gelÇôscht. "{deleteDialogEvent?.name}" wirklich entfernen?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteEvent}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? "LÇôsche..." : "Event lÇôschen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func
 from typing import List
 from uuid import UUID, uuid4
 from datetime import datetime
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
-from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User
+from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate
@@ -28,7 +29,28 @@ async def health_check():
 @router.get("/activities", response_model=List[ActivitySchema])
 async def get_activities(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Activity).offset(skip).limit(limit))
-    return result.scalars().all()
+    activities = result.scalars().all()
+
+    # Attach favorites counts in bulk
+    counts_result = await db.execute(
+        select(user_favorites.c.activity_id, func.count().label("cnt"))
+        .group_by(user_favorites.c.activity_id)
+    )
+    counts_map = {row.activity_id: row.cnt for row in counts_result}
+    for activity in activities:
+        activity.favorites_count = counts_map.get(activity.id, 0)
+
+    return activities
+
+@router.get("/activities/favorites", response_model=List[UUID])
+async def get_user_favorites(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(user_favorites.c.activity_id).where(user_favorites.c.user_id == current_user.id)
+    )
+    return [row.activity_id for row in result.fetchall()]
 
 @router.get("/activities/{activity_id}", response_model=ActivitySchema)
 async def get_activity(activity_id: UUID, db: AsyncSession = Depends(get_db)):
@@ -36,7 +58,94 @@ async def get_activity(activity_id: UUID, db: AsyncSession = Depends(get_db)):
     activity = result.scalar_one_or_none()
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
+
+    # Add favorites count
+    count_result = await db.execute(
+        select(func.count())
+        .select_from(user_favorites)
+        .where(user_favorites.c.activity_id == activity_id)
+    )
+    activity.favorites_count = count_result.scalar_one()
+
     return activity
+
+@router.get("/activities/{activity_id}/favorite")
+async def get_favorite_status(
+    activity_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Ensure activity exists
+    activity_result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    if not activity_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    fav_result = await db.execute(
+        select(user_favorites.c.activity_id)
+        .where(
+            user_favorites.c.activity_id == activity_id,
+            user_favorites.c.user_id == current_user.id
+        )
+    )
+    is_favorite = fav_result.scalar_one_or_none() is not None
+
+    count_result = await db.execute(
+        select(func.count())
+        .select_from(user_favorites)
+        .where(user_favorites.c.activity_id == activity_id)
+    )
+    favorites_count = count_result.scalar_one()
+
+    return {"is_favorite": is_favorite, "favorites_count": favorites_count}
+
+@router.post("/activities/{activity_id}/favorite")
+async def toggle_favorite_activity(
+    activity_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Ensure activity exists
+    activity_result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    if not activity_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    # Check if favorite exists
+    existing = await db.execute(
+        select(user_favorites)
+        .where(
+            user_favorites.c.activity_id == activity_id,
+            user_favorites.c.user_id == current_user.id
+        )
+    )
+    favorite_row = existing.first()
+
+    if favorite_row:
+        await db.execute(
+            user_favorites.delete().where(
+                user_favorites.c.activity_id == activity_id,
+                user_favorites.c.user_id == current_user.id
+            )
+        )
+        is_favorite = False
+    else:
+        await db.execute(
+            user_favorites.insert().values(
+                activity_id=activity_id,
+                user_id=current_user.id
+            )
+        )
+        is_favorite = True
+
+    await db.commit()
+
+    count_result = await db.execute(
+        select(func.count())
+        .select_from(user_favorites)
+        .where(user_favorites.c.activity_id == activity_id)
+    )
+    favorites_count = count_result.scalar_one()
+
+    return {"is_favorite": is_favorite, "favorites_count": favorites_count}
 
 # --- Rooms ---
 @router.get("/rooms", response_model=List[RoomSchema])
@@ -45,8 +154,18 @@ async def get_rooms(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(
     return result.scalars().all()
 
 @router.post("/rooms", response_model=RoomSchema)
-async def create_room(room_in: RoomCreate, db: AsyncSession = Depends(get_db)):
-    room = Room(**room_in.model_dump(), id=uuid4(), created_at=datetime.utcnow())
+async def create_room(
+    room_in: RoomCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Attach the authenticated user as the creator of the room
+    room = Room(
+        **room_in.model_dump(),
+        id=uuid4(),
+        created_at=datetime.utcnow(),
+        created_by_user_id=current_user.id
+    )
     db.add(room)
     await db.commit()
     await db.refresh(room)
@@ -98,13 +217,19 @@ def enhance_event_with_user_names_helper(event):
     return event
 
 @router.post("/rooms/{room_id}/events", response_model=EventSchema)
-async def create_event(room_id: UUID, event_in: EventCreate, db: AsyncSession = Depends(get_db)):
+async def create_event(
+    room_id: UUID,
+    event_in: EventCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     # Basic impl
     event = Event(
         **event_in.model_dump(),
         id=uuid4(),
         room_id=room_id,
-        created_at=datetime.utcnow()
+        created_at=datetime.utcnow(),
+        created_by_user_id=current_user.id
     )
     db.add(event)
     await db.commit()
@@ -120,6 +245,27 @@ async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Event not found")
     event = enhance_event_with_user_names_helper(event)
     return event
+
+@router.delete("/events/{event_id}")
+async def delete_event(
+    event_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the event creator can delete this event"
+        )
+
+    await db.delete(event)
+    await db.commit()
+    return {"message": "Event deleted successfully"}
 
 @router.patch("/events/{event_id}/phase", response_model=EventSchema)
 async def update_event_phase(event_id: UUID, phase_in: PhaseUpdate, db: AsyncSession = Depends(get_db)):

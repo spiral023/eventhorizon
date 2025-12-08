@@ -9,8 +9,9 @@ import { ActivityFilterPanel, defaultFilters, type ActivityFilters } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { getActivities, getFavoriteActivityIds } from "@/services/apiClient";
+import { getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
+import { toast } from "sonner";
 
 export default function ActivitiesPage() {
   const navigate = useNavigate();
@@ -37,10 +38,8 @@ export default function ActivitiesPage() {
       ]);
 
       if (activitiesResult.error) throw new Error(activitiesResult.error.message);
-      if (favoritesResult.error) throw new Error(favoritesResult.error.message);
-
       setActivities(activitiesResult.data);
-      setFavoriteIds(favoritesResult.data);
+      setFavoriteIds(favoritesResult.data || []);
     } catch (err) {
       setError("Aktivitäten konnten nicht geladen werden.");
     } finally {
@@ -114,6 +113,10 @@ export default function ActivitiesPage() {
 
     return true;
   });
+
+  const sortedActivities = [...filteredActivities].sort(
+    (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
+  );
 
   if (isLoading) {
     return (
@@ -193,11 +196,27 @@ export default function ActivitiesPage() {
         />
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredActivities.map((activity) => (
+          {sortedActivities.map((activity) => (
             <ActivityCard
               key={activity.id}
               activity={activity}
               isFavorite={favoriteIds.includes(activity.id)}
+              onFavoriteToggle={async (id) => {
+                const result = await toggleFavorite(id);
+                if (result.error) {
+                  toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
+                  return;
+                }
+                const isFav = result.data?.isFavorite;
+                setFavoriteIds((prev) =>
+                  isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
+                );
+                setActivities((prev) =>
+                  prev.map((a) =>
+                    a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
+                  )
+                );
+              }}
               onClick={() => navigate(`/activities/${activity.id}`)}
             />
           ))}

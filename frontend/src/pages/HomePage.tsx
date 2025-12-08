@@ -7,6 +7,7 @@ import { RoomCard } from "@/components/shared/RoomCard";
 import { ActivityCard } from "@/components/shared/ActivityCard";
 import { getRooms, getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Room, Activity } from "@/types/domain";
+import { toast } from "sonner";
 
 export default function HomePage() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -23,20 +24,37 @@ export default function HomePage() {
         getFavoriteActivityIds(),
       ]);
       setRooms(roomsResult.data.slice(0, 2));
-      setActivities(activitiesResult.data.slice(0, 4));
-      setFavoriteIds(favoritesResult.data);
+      setActivities(sortTopByFavorites(activitiesResult.data, 4));
+      setFavoriteIds(favoritesResult.data || []);
       setLoading(false);
     };
     fetchData();
   }, []);
 
+  const sortTopByFavorites = (list: Activity[], take?: number) => {
+    const sorted = [...list].sort(
+      (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
+    );
+    return typeof take === "number" ? sorted.slice(0, take) : sorted;
+  };
+
   const handleFavoriteToggle = async (activityId: string) => {
     const result = await toggleFavorite(activityId);
-    if (result.data) {
-      setFavoriteIds((prev) => [...prev, activityId]);
-    } else {
-      setFavoriteIds((prev) => prev.filter((id) => id !== activityId));
+    if (result.error) {
+      toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
+      return;
     }
+    const isFav = result.data?.isFavorite;
+    const count = result.data?.favoritesCount;
+    setFavoriteIds((prev) =>
+      isFav ? [...prev, activityId] : prev.filter((id) => id !== activityId)
+    );
+    setActivities((prev) => {
+      const updated = prev.map((a) =>
+        a.id === activityId ? { ...a, favoritesCount: count ?? a.favoritesCount ?? 0 } : a
+      );
+      return sortTopByFavorites(updated, 4);
+    });
   };
 
   return (

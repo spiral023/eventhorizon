@@ -54,6 +54,7 @@ export default function ActivityDetailPage() {
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -63,7 +64,10 @@ export default function ActivityDetailPage() {
         isFavorite(activityId)
       ]);
       setActivity(activityResult.data);
-      setIsFav(favResult.data);
+      setIsFav(favResult.data?.isFavorite ?? false);
+      setFavoriteCount(
+        favResult.data?.favoritesCount ?? activityResult.data?.favoritesCount ?? 0
+      );
       setLoading(false);
     };
     fetchActivity();
@@ -72,8 +76,16 @@ export default function ActivityDetailPage() {
   const handleFavoriteToggle = async () => {
     if (!activityId) return;
     const result = await toggleFavorite(activityId);
-    setIsFav(result.data);
-    toast.success(result.data ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
+    if (result.error) {
+      toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden");
+      return;
+    }
+    const isFavorite = result.data?.isFavorite ?? false;
+    const count = result.data?.favoritesCount ?? favoriteCount;
+    setIsFav(isFavorite);
+    setFavoriteCount(count);
+    setActivity((prev) => (prev ? { ...prev, favoritesCount: count } : prev));
+    toast.success(isFavorite ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
   };
 
   if (loading) {
@@ -265,6 +277,9 @@ export default function ActivityDetailPage() {
             >
               <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
               {isFav ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
+              <span className="text-xs text-muted-foreground ml-auto">
+                {favoriteCount} Favoriten
+              </span>
             </Button>
           </motion.div>
 

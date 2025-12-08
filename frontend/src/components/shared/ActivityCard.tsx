@@ -169,14 +169,18 @@ export function ActivityCard({
               )} />
               <span className="text-xs">{activity.mentalChallenge}/5</span>
             </div>
-            <div className="flex items-center gap-1" title="Spaßfaktor">
-              <Sparkles className={cn(
-                "h-4 w-4",
-                activity.funFactor >= 4 ? "text-success" : "text-muted-foreground"
-              )} />
-              <span className="text-xs">{activity.funFactor}/5</span>
-            </div>
+          <div className="flex items-center gap-1" title="Spaßfaktor">
+            <Sparkles className={cn(
+              "h-4 w-4",
+              activity.funFactor >= 4 ? "text-success" : "text-muted-foreground"
+            )} />
+            <span className="text-xs">{activity.funFactor}/5</span>
           </div>
+          <div className="flex items-center gap-1 ml-auto text-xs text-muted-foreground" title="Favoriten">
+            <Heart className={cn("h-4 w-4", (activity.favoritesCount ?? 0) > 0 && "text-destructive")} />
+            <span>{activity.favoritesCount ?? 0}</span>
+          </div>
+        </div>
         )}
 
         {/* Tags */}

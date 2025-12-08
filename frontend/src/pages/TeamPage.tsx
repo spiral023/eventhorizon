@@ -12,6 +12,7 @@ import type { TeamPreferenceSummary } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const vibeIcons = {
   action: Zap,
@@ -42,7 +43,7 @@ export default function TeamPage() {
       ]);
       setRecommendations(recsResult.data);
       setActivities(activitiesResult.data);
-      setFavoriteIds(favoritesResult.data);
+      setFavoriteIds(favoritesResult.data || []);
       setLoading(false);
     };
     fetchData();
@@ -50,11 +51,20 @@ export default function TeamPage() {
 
   const handleFavoriteToggle = async (activityId: string) => {
     const result = await toggleFavorite(activityId);
-    if (result.data) {
-      setFavoriteIds((prev) => [...prev, activityId]);
-    } else {
-      setFavoriteIds((prev) => prev.filter((id) => id !== activityId));
+    if (result.error) {
+      toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
+      return;
     }
+    const isFav = result.data?.isFavorite;
+    const count = result.data?.favoritesCount;
+    setFavoriteIds((prev) =>
+      isFav ? [...prev, activityId] : prev.filter((id) => id !== activityId)
+    );
+    setActivities((prev) =>
+      prev.map((a) =>
+        a.id === activityId ? { ...a, favoritesCount: count ?? a.favoritesCount } : a
+      )
+    );
   };
 
   const recommendedActivities = activities.filter((a) =>
