@@ -47,6 +47,7 @@ Events follow a strict 4-phase lifecycle managed by `frontend/src/utils/phaseSta
 4. **info** → Final event details are displayed
 
 Phase transitions are unidirectional and managed by admins/owners only. The state machine enforces:
+
 - Valid transitions via `canTransition(from, to)`
 - Role-based permissions via `canManageEvent(role)`
 - Deadline-based auto-advancement logic via `shouldAutoAdvance()`
@@ -54,6 +55,7 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 ### State Management
 
 **Zustand Store** (`frontend/src/stores/authStore.ts`):
+
 - User authentication state and room roles
 - Persisted to localStorage (only `isAuthenticated` and `roomRoles`)
 - Mock authentication system (currently always succeeds)
@@ -66,6 +68,7 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 ### Data Layer
 
 **API Client** (`frontend/src/services/apiClient.ts`):
+
 - Dual-mode: mock mode (in-memory data) or real backend mode
 - Controlled via `VITE_USE_MOCKS` environment variable
 - All API functions return `Promise<ApiResult<T>>` where `ApiResult = { data: T, error?: ApiError }`
@@ -75,6 +78,7 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 - No persistence in mock mode - data resets on page reload
 
 **Domain Types** (`frontend/src/types/domain.ts`):
+
 - All types derived from Zod schemas using `z.infer<typeof Schema>`
 - Core entities: `Room`, `Event`, `Activity`, `User`
 - `EventTimeWindow`: discriminated union (season/month/weekRange/freeText)
@@ -82,6 +86,7 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 - Label/color mappings for categories, regions, seasons, phases, risk levels
 
 **Validation** (`frontend/src/schemas/index.ts`):
+
 - Zod schemas for all form inputs and domain entities
 - German error messages
 - Used with react-hook-form via `@hookform/resolvers/zod`
@@ -89,11 +94,13 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 ### Routing & Auth
 
 **Structure** (`frontend/src/App.tsx`):
+
 - Entry point: `frontend/src/main.tsx` → `App` component
 - Dark mode enforced globally via `useDarkMode()` hook
 - All routes wrapped in `PageTransition` for Framer Motion animations
 
 **Routes**:
+
 - `/login` - Public login page
 - `/` - Home page (protected)
 - `/rooms` - Room list (protected)
@@ -108,6 +115,7 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 - `/settings` - Settings (protected)
 
 **Auth Guards**:
+
 - `RequireAuth` component redirects unauthenticated users to `/login`
 - `RequireRole` component restricts UI based on room role
 - `ProtectedRoute` wrapper combines `RequireAuth` + `AppLayout`
@@ -115,16 +123,19 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 ### UI Components
 
 **Layout** (`frontend/src/components/layout/`):
+
 - `AppLayout`: Header + fixed Sidebar (64 units wide) + main content area
 - Dark mode theme with gradient background
 - Sidebar includes static nav and dynamic room/event tree
 
 **Feature Components**:
+
 - `frontend/src/components/events/`: Event cards, voting UI, date scheduling, phase headers
 - `frontend/src/components/activities/`: Activity cards, filter panels
 - `frontend/src/components/shared/`: Reusable dialogs (CreateRoom, EditProfile, ShareRoom)
 
 **UI Library** (`frontend/src/components/ui/`):
+
 - shadcn/ui components (Radix primitives + Tailwind)
 - Copy-paste approach (not npm package)
 - Custom theme via `frontend/tailwind.config.ts`
@@ -137,6 +148,7 @@ Phase transitions are unidirectional and managed by admins/owners only. The stat
 ## Activity Data
 
 The app contains 30 mock activities in `apiClient.ts` for team building in Upper Austria:
+
 - Categories: action, food, relax, party, culture, outdoor, creative
 - Rich metadata: price, duration, group size, intensity scales (1-5), risk level, seasonal availability
 - Austrian regions: OOE, TIR, SBG, STMK, KTN, VBG, NOE, WIE, BGL
@@ -144,31 +156,37 @@ The app contains 30 mock activities in `apiClient.ts` for team building in Upper
 ## Key Conventions
 
 **Language**:
+
 - UI strings: German
 - Code/comments: English
 - User-facing errors/validation: German
 
 **Imports**:
+
 - Use `@/` alias for all src imports
 - Group imports: React → third-party → internal (types, components, utils)
 
 **Component Patterns**:
+
 - Functional components with TypeScript
 - Props interfaces named `{Component}Props`
 - Use `children: React.ReactNode` for composition
 
 **Styling**:
+
 - Tailwind utility classes
 - Custom colors defined in theme (primary, destructive, warning, success)
 - Dark mode always enabled
 - Animations: `animate-fade-in`, `animate-slide-up`, etc.
 
 **Forms**:
+
 - react-hook-form with Zod resolver
 - shadcn/ui Form components
 - Always validate with Zod schemas from `frontend/src/schemas/`
 
 **Date Handling**:
+
 - Use `date-fns` for date operations
 - ISO strings for API/storage
 - Display format: German locale
@@ -216,6 +234,7 @@ eventhorizon/
 ## Critical Files Reference
 
 **Entry & Config**:
+
 - `frontend/src/main.tsx` - React root + service worker
 - `frontend/src/App.tsx` - Routing + providers + dark mode
 - `frontend/vite.config.ts` - Build config + API proxy
@@ -223,15 +242,20 @@ eventhorizon/
 - `frontend/tsconfig.json` - TypeScript config + path aliases
 
 **State & Data**:
+
 - `frontend/src/stores/authStore.ts` - Auth state + room roles
 - `frontend/src/services/apiClient.ts` - API client (mock + real)
 - `frontend/src/types/domain.ts` - Business types + UI helpers
 - `frontend/src/schemas/index.ts` - Zod validation
 
 **Business Logic**:
+
 - `frontend/src/utils/phaseStateMachine.ts` - Event lifecycle FSM
 
 **Layout & Auth**:
+
 - `frontend/src/components/layout/AppLayout.tsx` - Main layout
 - `frontend/src/components/auth/RequireAuth.tsx` - Auth guard
 - `frontend/src/components/auth/RequireRole.tsx` - RBAC guard
+
+**Info**: When needed login with username philipp.asanger@gmail.com and password athlon2006

@@ -71,21 +71,29 @@ function RoomsNavSection() {
   const [openRoomIds, setOpenRoomIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchRoomsAndEvents = async () => {
-      const roomsResult = await getRooms();
-      const roomsData = roomsResult.data;
-
-      const roomsWithEventsData = await Promise.all(
-        roomsData.map(async (room) => {
-          const eventsResult = await getEventsByRoom(room.id);
-          const activeEvents = eventsResult.data.filter(
-            (e) => e.phase !== "info"
-          );
-          return { room, activeEvents };
-        })
-      );
-
-      setRoomsWithEvents(roomsWithEventsData);
+          const fetchRoomsAndEvents = async () => {
+            const roomsResult = await getRooms();
+            const roomsData = roomsResult.data;
+            console.log("Rooms data:", roomsData);
+    
+            if (!roomsData) {
+              console.error("Rooms data is null or undefined.");
+              setRoomsWithEvents([]);
+              return;
+            }
+    
+            const roomsWithEventsData = await Promise.all(
+              roomsData.map(async (room) => {
+            const eventsResult = await getEventsByRoom(room.id);
+            const allEvents = eventsResult.data || []; // Ensure it's an array for filter
+            const activeEvents = allEvents.filter(
+              (e) => e.phase !== "info"
+            );
+            console.log(`Events for room ${room.id}:`, eventsResult.data);
+                return { room, activeEvents };
+              })
+            );
+          setRoomsWithEvents(roomsWithEventsData);
 
       // Auto-expand room if currently viewing it
       const currentRoomMatch = location.pathname.match(/\/rooms\/([^/]+)/);

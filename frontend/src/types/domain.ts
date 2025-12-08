@@ -119,7 +119,10 @@ export const MonthLabels: Record<number, string> = {
 // UTILITY FUNCTIONS
 // ============================================
 
-export function formatTimeWindow(tw: EventTimeWindow): string {
+export function formatTimeWindow(tw: EventTimeWindow | undefined | null): string {
+  if (!tw) {
+    return "Zeitraum nicht festgelegt";
+  }
   switch (tw.type) {
     case "season":
       return SeasonLabels[tw.value];

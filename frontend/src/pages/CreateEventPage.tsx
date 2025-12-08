@@ -38,9 +38,12 @@ export default function CreateEventPage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [selectedActivityIds, setSelectedActivityIds] = useState<string[]>([]);
   const [timeWindowType, setTimeWindowType] = useState<TimeWindowType>("month");
-  const [monthValue, setMonthValue] = useState<string>(String(new Date().getMonth() + 2));
+  
+  // Calculate default month (2 months ahead, 1-based, wrapped)
+  const defaultMonth = ((new Date().getMonth() + 2) % 12) + 1;
+  
+  const [monthValue, setMonthValue] = useState<string>(String(defaultMonth));
   const [seasonValue, setSeasonValue] = useState<string>("summer");
   const [freeTextValue, setFreeTextValue] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -56,7 +59,7 @@ export default function CreateEventPage() {
       locationRegion: "OOE",
       proposedActivityIds: [],
       votingDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      timeWindow: { type: "month", value: new Date().getMonth() + 2 },
+      timeWindow: { type: "month", value: defaultMonth },
     },
   });
 
@@ -66,29 +69,18 @@ export default function CreateEventPage() {
         getActivities(),
         getFavoriteActivityIds(),
       ]);
+
       setActivities(activitiesResult.data);
       setFavoriteIds(favoritesResult.data);
-      // Pre-select favorites
-      setSelectedActivityIds(favoritesResult.data);
+      
+      // Pre-select all activities to satisfy validation
+      const allIds = activitiesResult.data.map(a => a.id);
+      form.setValue("proposedActivityIds", allIds, { shouldValidate: true });
+      
       setLoading(false);
     };
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    // keep form errors in sync when selection changes
-    if (selectedActivityIds.length > 0) {
-      form.clearErrors("proposedActivityIds");
-    }
-  }, [selectedActivityIds, form]);
-
-  const toggleActivity = (activityId: string) => {
-    setSelectedActivityIds((prev) =>
-      prev.includes(activityId)
-        ? prev.filter((id) => id !== activityId)
-        : [...prev, activityId]
-    );
-  };
+  }, [form]);
 
   const buildTimeWindow = (): EventTimeWindow => {
     const values = form.getValues();
@@ -96,7 +88,7 @@ export default function CreateEventPage() {
       case "season":
         return { type: "season", value: seasonValue };
       case "month":
-        return { type: "month", value: parseInt(monthValue) || new Date().getMonth() + 2 };
+        return { type: "month", value: parseInt(monthValue) || defaultMonth };
       case "weekRange":
         return { 
           type: "weekRange", 
@@ -106,21 +98,20 @@ export default function CreateEventPage() {
       case "freeText":
         return { type: "freeText", value: freeTextValue || "" };
       default:
-        return { type: "month", value: new Date().getMonth() + 2 };
+        return { type: "month", value: defaultMonth };
     }
   };
 
   const onSubmit = async (data: CreateEventInput) => {
     if (!roomId) return;
-    if (selectedActivityIds.length === 0) {
-      form.setError("proposedActivityIds", { type: "manual", message: "Mindestens eine Aktivität auswählen" });
-      return;
-    }
+
+    // Alle Aktivitäten sind immer ausgewählt
+    const allActivityIds = activities.map(a => a.id);
 
     setSubmitting(true);
     try {
       const timeWindow = buildTimeWindow();
-      const result = await createEvent(roomId, { ...data, proposedActivityIds: selectedActivityIds, timeWindow });
+      const result = await createEvent(roomId, { ...data, proposedActivityIds: allActivityIds, timeWindow });
       
       toast({
         title: "Event erstellt!",
@@ -175,9 +166,8 @@ export default function CreateEventPage() {
         </p>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Basic Info */}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">          {/* Basic Info */}
           <Card className="bg-card/60 border-border/50 rounded-2xl">
             <CardHeader>
               <CardTitle className="text-lg">Grundinformationen</CardTitle>
@@ -272,10 +262,11 @@ export default function CreateEventPage() {
 
               {/* Time Window Value */}
               <div>
-                {timeWindowType === "month" && (
-                  <Select 
-                    defaultValue={String(new Date().getMonth() + 2)}
-                    onValueChange={(v) => form.setValue("timeWindow", { type: "month", value: parseInt(v) } as any)}
+                <div className={timeWindowType === "month" ? "block" : "hidden"}>
+                  <Select
+                    key="month-select"
+                    value={monthValue}
+                    onValueChange={setMonthValue}
                   >
                     <SelectTrigger className="rounded-xl">
                       <SelectValue placeholder="Monat wählen" />
@@ -286,11 +277,12 @@ export default function CreateEventPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                )}
-                {timeWindowType === "season" && (
-                  <Select 
-                    defaultValue="summer"
-                    onValueChange={(v) => form.setValue("timeWindow", { type: "season", value: v } as any)}
+                </div>
+                <div className={timeWindowType === "season" ? "block" : "hidden"}>
+                  <Select
+                    key="season-select"
+                    value={seasonValue}
+                    onValueChange={setSeasonValue}
                   >
                     <SelectTrigger className="rounded-xl">
                       <SelectValue placeholder="Saison wählen" />
@@ -301,14 +293,15 @@ export default function CreateEventPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                )}
-                {timeWindowType === "freeText" && (
-                  <Input 
+                </div>
+                <div className={timeWindowType === "freeText" ? "block" : "hidden"}>
+                  <Input
                     placeholder="z.B. 'Nach der Konferenz' oder 'Anfang Q3'"
                     className="rounded-xl"
-                    onChange={(e) => form.setValue("timeWindow", { type: "freeText", value: e.target.value } as any)}
+                    value={freeTextValue}
+                    onChange={(e) => setFreeTextValue(e.target.value)}
                   />
-                )}
+                </div>
               </div>
 
               {/* Voting Deadline */}
@@ -337,7 +330,7 @@ export default function CreateEventPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Region *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="rounded-xl">
                           <SelectValue placeholder="Region wählen" />
@@ -431,60 +424,51 @@ export default function CreateEventPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Wähle mindestens eine Aktivität für die Abstimmung. Favoriten sind vorausgewählt.
+                Alle {activities.length} Aktivitäten werden zur Abstimmung vorgeschlagen.
               </p>
-              
-              {form.formState.errors.proposedActivityIds && (
-                <p className="text-sm text-destructive mb-4">
-                  {form.formState.errors.proposedActivityIds.message}
-                </p>
-              )}
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                 {sortedActivities.map((activity) => {
-                  const isSelected = selectedActivityIds.includes(activity.id);
                   const isFavorite = favoriteIds.includes(activity.id);
-                  
+
                   return (
                     <div
                       key={activity.id}
-                      className={cn(
-                        "flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
-                        isSelected 
-                          ? "border-primary bg-primary/10" 
-                          : "border-border bg-secondary/30 hover:bg-secondary/50"
-                      )}
-                      onClick={() => toggleActivity(activity.id)}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5"
                     >
-                      <Checkbox 
-                        checked={isSelected}
-                        className="pointer-events-none"
-                      />
-                      <img 
-                        src={activity.imageUrl} 
-                        alt={activity.title}
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium truncate">{activity.title}</p>
-                          {isFavorite && (
-                            <span className="text-xs text-destructive">♥</span>
-                          )}
+                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                      <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-[2fr_auto_auto_auto] gap-2 items-center">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium truncate">{activity.title}</p>
+                            {isFavorite && (
+                              <span className="text-xs text-destructive">♥</span>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground">{activity.estPricePerPerson}€ · {activity.duration}</p>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Euro className="h-3 w-3" />
+                          {activity.estPricePerPerson ? `${activity.estPricePerPerson}€` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {activity.typicalDurationHours ? `${activity.typicalDurationHours}h` : activity.duration || 'N/A'}
+                        </div>
+                        {activity.website && (
+                          <a
+                            href={activity.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Website →
+                          </a>
+                        )}
                       </div>
-                      {isSelected && (
-                        <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                      )}
                     </div>
                   );
                 })}
               </div>
-
-              <p className="text-sm text-muted-foreground mt-4">
-                {selectedActivityIds.length} Aktivität{selectedActivityIds.length !== 1 ? "en" : ""} ausgewählt
-              </p>
             </CardContent>
           </Card>
 

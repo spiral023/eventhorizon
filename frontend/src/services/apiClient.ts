@@ -31,31 +31,50 @@ const setStoredToken = (token: string | null) => {
 };
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiResult<T>> {
+  const token = getStoredToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options?.headers,
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   try {
-    const token = getStoredToken();
     const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options?.headers,
-      },
+      headers: headers,
       ...options,
     });
-
+    
+    // Attempt to parse JSON only if content type is application/json
+    let data;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      // If not JSON, treat raw text as data or null if empty
+      const rawText = await response.text();
+      data = rawText || null;
+      if (data === "null") data = null; // Handle explicit "null" string response
+    }
+    
     if (!response.ok) {
       let errorMessage = `HTTP Error ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorMessage;
-      } catch { /* ignore */ }
-      
+      if (data && typeof data === 'object' && 'detail' in data) {
+        errorMessage = (data as any).detail;
+      } else if (typeof data === 'string' && data.length > 0) {
+        errorMessage = data;
+      }
+
       return { 
         data: null as any, 
         error: { code: String(response.status), message: errorMessage } 
       };
     }
-
-    const data = await response.json();
+    
+    // Return data, ensuring it's not the string "null"
+    if (data === "null") data = null;
     return { data };
   } catch (e) {
     return { 
@@ -280,9 +299,14 @@ function mapActivityFromApi(apiActivity: any): Activity {
   return {
     ...apiActivity,
     // Map snake_case to camelCase
+    id: apiActivity.id,
+    createdAt: apiActivity.created_at,
+
     locationRegion: apiActivity.location_region,
     locationCity: apiActivity.location_city,
     locationAddress: apiActivity.address || apiActivity.location_address, // support both aliases
+    coordinates: apiActivity.coordinates,
+
     estPricePerPerson: apiActivity.est_price_pp || apiActivity.est_price_per_person,
     priceComment: apiActivity.price_comment,
     shortDescription: apiActivity.short_description,
@@ -291,33 +315,32 @@ function mapActivityFromApi(apiActivity: any): Activity {
     galleryUrls: apiActivity.gallery_urls,
     season: apiActivity.season,
     riskLevel: apiActivity.risk_level,
+
     typicalDurationHours: apiActivity.typical_duration_hours,
     recommendedGroupSizeMin: apiActivity.recommended_group_size_min,
     recommendedGroupSizeMax: apiActivity.recommended_group_size_max,
     groupSizeMin: apiActivity.recommended_group_size_min, // Fallback/Alias
     groupSizeMax: apiActivity.recommended_group_size_max, // Fallback/Alias
-    
+    minParticipants: apiActivity.recommended_group_size_min, // Fallback
+
     physicalIntensity: apiActivity.physical_intensity,
     mentalChallenge: apiActivity.mental_challenge,
     socialInteractionLevel: apiActivity.social_interaction_level,
     competitionLevel: apiActivity.competition_level,
-    
-    accessibilityFlags: apiActivity.accessibility_flags,
+
+    accessibilityFlags: apiActivity.accessibility_flags || [],
     weatherDependent: apiActivity.weather_dependent,
-    
+
     externalRating: apiActivity.external_rating,
     primaryGoal: apiActivity.primary_goal,
-    
+
     travelTimeMinutes: apiActivity.travel_time_from_office_minutes,
     travelTimeMinutesWalking: apiActivity.travel_time_from_office_minutes_walking,
-    
+
     provider: apiActivity.provider,
     website: apiActivity.website,
     contactPhone: apiActivity.phone || apiActivity.contact_phone,
     contactEmail: apiActivity.email || apiActivity.contact_email,
-    
-    // Ensure ID is present
-    id: apiActivity.id,
   } as Activity;
 }
 
@@ -388,13 +411,118 @@ export async function createRoom(input: { name: string; description?: string }):
 
 // --- Events ---
 
+function mapEventFromApi(apiEvent: any): Event {
+  if (!apiEvent) return apiEvent;
+
+  // Transform activity_votes from backend format to frontend format
+  // Backend: Array of { event_id, activity_id, user_id, vote, voted_at }
+  // Frontend: Array of { activityId, votes: [{userId, userName, vote, votedAt}] }
+  let activityVotes: any[] = [];
+  const rawVotes = apiEvent.activity_votes || apiEvent.activityVotes || [];
+
+  // Check if already in frontend format (has "votes" property)
+  if (rawVotes.length > 0 && rawVotes[0].votes !== undefined) {
+    // Already in frontend format
+    activityVotes = rawVotes.map((av: any) => ({
+      ...av,
+      activityId: av.activity_id || av.activityId,
+      votes: (av.votes || []).map((v: any) => ({
+        ...v,
+        userId: v.user_id || v.userId,
+        userName: v.user_name || v.userName,
+        votedAt: v.voted_at || v.votedAt,
+      })),
+    }));
+  } else {
+    // Backend format - group votes by activity_id
+    const votesByActivity = new Map<string, any[]>();
+
+    // Get all proposed activities
+    const proposedIds = apiEvent.proposed_activity_ids || apiEvent.proposedActivityIds || [];
+
+    // Initialize with empty votes for all proposed activities
+    proposedIds.forEach((activityId: string) => {
+      votesByActivity.set(activityId, []);
+    });
+
+    // Group votes by activity
+    rawVotes.forEach((vote: any) => {
+      const activityId = vote.activity_id || vote.activityId;
+      if (!votesByActivity.has(activityId)) {
+        votesByActivity.set(activityId, []);
+      }
+      votesByActivity.get(activityId)!.push({
+        userId: vote.user_id || vote.userId,
+        userName: vote.user_name || vote.userName,
+        vote: vote.vote,
+        votedAt: vote.voted_at || vote.votedAt,
+      });
+    });
+
+    // Convert map to array
+    activityVotes = Array.from(votesByActivity.entries()).map(([activityId, votes]) => ({
+      activityId,
+      votes,
+    }));
+  }
+
+  return {
+    ...apiEvent,
+    // Map snake_case to camelCase
+    roomId: apiEvent.room_id || apiEvent.roomId,
+    timeWindow: apiEvent.time_window || apiEvent.timeWindow,
+    votingDeadline: apiEvent.voting_deadline || apiEvent.votingDeadline,
+    budgetType: apiEvent.budget_type || apiEvent.budgetType,
+    budgetAmount: apiEvent.budget_amount || apiEvent.budgetAmount,
+    participantCountEstimate: apiEvent.participant_count_estimate || apiEvent.participantCountEstimate,
+    locationRegion: apiEvent.location_region || apiEvent.locationRegion,
+
+    proposedActivityIds: apiEvent.proposed_activity_ids || apiEvent.proposedActivityIds,
+    activityVotes,
+    chosenActivityId: apiEvent.chosen_activity_id || apiEvent.chosenActivityId,
+    
+    dateOptions: (apiEvent.date_options || apiEvent.dateOptions || []).map((do_: any) => ({
+      ...do_,
+      startTime: do_.start_time || do_.startTime,
+      endTime: do_.end_time || do_.endTime,
+      responses: (do_.responses || []).map((r: any) => ({
+        ...r,
+        userId: r.user_id || r.userId,
+        userName: r.user_name || r.userName,
+      })),
+    })),
+    finalDateOptionId: apiEvent.final_date_option_id || apiEvent.finalDateOptionId,
+    
+    participants: (apiEvent.participants || []).map((p: any) => ({
+      ...p,
+      userId: p.user_id || p.userId,
+      userName: p.user_name || p.userName,
+      avatarUrl: p.avatar_url || p.avatarUrl,
+      isOrganizer: p.is_organizer !== undefined ? p.is_organizer : p.isOrganizer,
+      hasVoted: p.has_voted !== undefined ? p.has_voted : p.hasVoted,
+      dateResponse: p.date_response || p.dateResponse,
+    })),
+    
+    createdAt: apiEvent.created_at || apiEvent.createdAt,
+    createdByUserId: apiEvent.created_by_user_id || apiEvent.createdByUserId,
+    updatedAt: apiEvent.updated_at || apiEvent.updatedAt,
+    
+    // Ensure ID is present
+    id: apiEvent.id,
+  } as Event;
+}
+
 export async function getEventsByRoom(roomId: string): Promise<ApiResult<Event[]>> {
   if (USE_MOCKS) {
     await delay(300);
     const roomEvents = events.filter((e) => e.roomId === roomId);
     return { data: roomEvents };
   }
-  return request<Event[]>(`/rooms/${roomId}/events`);
+  const result = await request<any[]>(`/rooms/${roomId}/events`);
+  if (result.data) {
+    return { data: result.data.map(mapEventFromApi) };
+  }
+  return { data: [], error: result.error };
 }
 
 export async function getEventById(eventId: string): Promise<ApiResult<Event | null>> {
@@ -403,7 +531,11 @@ export async function getEventById(eventId: string): Promise<ApiResult<Event | n
     const event = events.find((e) => e.id === eventId) || null;
     return { data: event };
   }
-  return request<Event>(`/events/${eventId}`);
+  const result = await request<any>(`/events/${eventId}`);
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 export async function createEvent(roomId: string, input: CreateEventInput & { timeWindow: EventTimeWindow }): Promise<ApiResult<Event>> {
@@ -433,10 +565,29 @@ export async function createEvent(roomId: string, input: CreateEventInput & { ti
     events.push(newEvent);
     return { data: newEvent };
   }
-  return request<Event>(`/rooms/${roomId}/events`, {
+
+  // Convert camelCase to snake_case for backend API
+  const apiPayload = {
+    name: input.name,
+    description: input.description,
+    time_window: input.timeWindow,
+    voting_deadline: input.votingDeadline,
+    budget_type: input.budgetType,
+    budget_amount: input.budgetAmount,
+    participant_count_estimate: input.participantCountEstimate,
+    location_region: input.locationRegion,
+    proposed_activity_ids: input.proposedActivityIds,
+  };
+
+  console.log(`Making API call to create event for room ${roomId}`, apiPayload);
+  const result = await request<any>(`/rooms/${roomId}/events`, {
     method: 'POST',
-    body: JSON.stringify(input),
+    body: JSON.stringify(apiPayload),
   });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
 }
 
 export async function updateEventPhase(eventId: string, newPhase: EventPhase): Promise<ApiResult<Event | null>> {
@@ -450,10 +601,14 @@ export async function updateEventPhase(eventId: string, newPhase: EventPhase): P
     }
     return { data: null };
   }
-  return request<Event>(`/events/${eventId}/phase`, {
+  const result = await request<any>(`/events/${eventId}/phase`, {
     method: 'PATCH',
     body: JSON.stringify({ phase: newPhase }),
   });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 export async function voteOnActivity(eventId: string, activityId: string, vote: VoteType): Promise<ApiResult<Event | null>> {
@@ -477,10 +632,14 @@ export async function voteOnActivity(eventId: string, activityId: string, vote: 
     }
     return { data: null };
   }
-  return request<Event>(`/events/${eventId}/votes`, {
+  const result = await request<any>(`/events/${eventId}/votes`, {
     method: 'POST',
     body: JSON.stringify({ activity_id: activityId, vote }),
   });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 export async function respondToDateOption(eventId: string, dateOptionId: string, response: DateResponseType, contribution?: number): Promise<ApiResult<Event | null>> {
@@ -502,10 +661,14 @@ export async function respondToDateOption(eventId: string, dateOptionId: string,
     }
     return { data: null };
   }
-  return request<Event>(`/events/${eventId}/date-options/${dateOptionId}/response`, {
+  const result = await request<any>(`/events/${eventId}/date-options/${dateOptionId}/response`, {
     method: 'POST',
     body: JSON.stringify({ response, contribution }),
   });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 export async function selectWinningActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
@@ -519,10 +682,14 @@ export async function selectWinningActivity(eventId: string, activityId: string)
     }
     return { data: null };
   }
-  return request<Event>(`/events/${eventId}/select-activity`, {
+  const result = await request<any>(`/events/${eventId}/select-activity`, {
     method: 'POST',
     body: JSON.stringify({ activity_id: activityId }),
   });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 export async function finalizeDateOption(eventId: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
@@ -536,10 +703,14 @@ export async function finalizeDateOption(eventId: string, dateOptionId: string):
     }
     return { data: null };
   }
-  return request<Event>(`/events/${eventId}/finalize-date`, {
+  const result = await request<any>(`/events/${eventId}/finalize-date`, {
     method: 'POST',
     body: JSON.stringify({ date_option_id: dateOptionId }),
   });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
 }
 
 // --- Favorites & Auth (Mock Only for now) ---
