@@ -37,11 +37,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.312061,
-      14.2810701
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Lasertron: Actionreiches Lasertag Battle",
@@ -115,11 +111,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2972578,
-      14.2894709
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "NoWayOut: Premium Escape Room Erlebnis",
@@ -195,11 +187,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2434541,
-      14.2358488
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "JUMP DOME Linz: Trampolin-Action pur",
@@ -237,11 +225,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2501706,
-      14.2467145
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Linzer Bier: Brauereiführung & Verkostung",
@@ -281,11 +265,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3120734,
-      14.2988529
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Ruff Indoor Golf: Die Team-Challenge Linz",
@@ -361,11 +341,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2546544,
-      14.2793947
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Deep Space 8K: Zukunftstrip im AEC Linz",
@@ -403,11 +379,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3096282,
-      14.2844998
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Segway Tour: Linz schwebend entdecken",
@@ -444,11 +416,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3060622,
-      14.2869766
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Mural Harbor: Graffiti Walk & Spray Class",
@@ -525,11 +493,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2785365,
-      14.3193157
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Stefan's Stubm: Kulinarik & Gemütlichkeit",
@@ -567,11 +531,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3008538,
-      14.3106989
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Il Teatro: Italienischer Abend fürs Team",
@@ -609,11 +569,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.292135,
-      14.3051051
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Das Josef: Der Linzer Gastro-Klassiker",
@@ -651,11 +607,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2994467,
-      14.2914546
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "PAULs am Dom: Stylisches Dinner & Drinks",
@@ -693,11 +645,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2995467,
-      14.2872487
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Weinstadl Urfahr: Uriges Dinner & Wein",
@@ -736,11 +684,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3334154,
-      14.300065
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Eisstockschießen & Bratl: Winter-Teamevent",
@@ -778,11 +722,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3115442,
-      14.2953021
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Hollywood Megaplex: Privates Kino-Event",
@@ -820,11 +760,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2434541,
-      14.2358488
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Cocktail-Kurs im Lennox: Mix it up Team!",
@@ -862,11 +798,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3046029,
-      14.2896724
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "ÄNGUS Downtown: Bestes Steak-Dinner Linz",
@@ -903,11 +835,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3061532,
-      14.2897106
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Glorious Bastards: Pizza, Grill & Vibes",
@@ -946,11 +874,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3029556,
-      14.2850119
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Bratwurstglöckerl: Linzer Wirtshauskultur",
@@ -988,11 +912,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2668903,
-      14.3061821
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Stadtliebe Linz: Urbanes Wirtshaus-Event",
@@ -1030,11 +950,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3023997,
-      14.2904616
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Wia z'haus Lehner: Schmankerl & Ausblick",
@@ -1071,11 +987,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3270185,
-      14.2773665
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Zur Eisernen Hand: Tradition & Genuss",
@@ -1112,11 +1024,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3028777,
-      14.2992758
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Rotax MAX Dome: High-Speed E-Kart Action",
@@ -1154,11 +1062,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.3128207,
-      14.301592
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Booosters Kartbahn: Rennfeeling für Teams",
@@ -1196,11 +1100,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 15,
-    "coordinates": [
-      48.2501706,
-      14.2467145
-    ]
+    "recommended_group_size_max": 15
   },
   {
     "title": "Mission Games: Die Live Game-Show Linz",

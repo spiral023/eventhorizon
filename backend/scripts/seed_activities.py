@@ -2,6 +2,7 @@
 Seed-Script für Activities
 Importiert Activities aus backend/data/activities.json in die Datenbank
 """
+import argparse
 import asyncio
 import sys
 import json
@@ -116,7 +117,7 @@ def map_activity_data(json_activity):
     return activity_data
 
 
-async def seed_activities():
+async def seed_activities(force: bool = False):
     """Import activities from JSON file into database"""
 
     # Load JSON file
@@ -153,15 +154,22 @@ async def seed_activities():
 
             if existing:
                 print(f"⚠️  {len(existing)} Activities bereits in der Datenbank vorhanden.")
-                response = input("Alle löschen und neu importieren? (j/n): ")
-                if response.lower() == 'j':
-                    for activity in existing:
-                        await session.delete(activity)
-                    await session.commit()
-                    print("✓ Alte Activities gelöscht\n")
+                if force:
+                    print("Automatischer Neuimport (force aktiviert) ...")
                 else:
-                    print("Abgebrochen.")
-                    return
+                    try:
+                        response = input("Alle löschen und neu importieren? (j/n): ")
+                    except EOFError:
+                        print("Keine Eingabe möglich (non-interactive). Mit --force neu importieren.")
+                        return
+                    if response.lower() != 'j':
+                        print("Abgebrochen.")
+                        return
+
+                for activity in existing:
+                    await session.delete(activity)
+                await session.commit()
+                print("✓ Alte Activities gelöscht\n")
 
             # Add activities
             count = 0
@@ -196,5 +204,9 @@ async def seed_activities():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Seed activities from activities.json")
+    parser.add_argument("--force", action="store_true", help="bestehende Activities ohne Rückfrage löschen und neu importieren")
+    args = parser.parse_args()
+
     print("🌱 Seeding Activities aus activities.json...\n")
-    asyncio.run(seed_activities())
+    asyncio.run(seed_activities(force=args.force))

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { Icon, LatLngBounds } from "leaflet";
 import { motion } from "framer-motion";
 import { MapPin, Euro, Clock, ExternalLink } from "lucide-react";
@@ -26,7 +26,7 @@ Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// Mock coordinates for regions (Austria)
+// Region defaults (Austria)
 const regionCoordinates: Record<string, [number, number]> = {
   OOE: [48.3064, 14.2858], // Linz
   TIR: [47.2692, 11.4041], // Innsbruck
@@ -39,27 +39,66 @@ const regionCoordinates: Record<string, [number, number]> = {
   BGL: [47.8452, 16.5287], // Eisenstadt
 };
 
-// Add slight randomness to prevent overlapping markers
-function getActivityCoordinates(activity: Activity): [number, number] {
-  if (activity.coordinates) {
-    return activity.coordinates;
+const AUSTRIA_CENTER: [number, number] = [47.5, 13.5];
+
+function getRegionCenter(region: Activity["locationRegion"]): [number, number] | null {
+  return regionCoordinates[region] || null;
+}
+
+function buildAddressQuery(activity: Activity): string | null {
+  const parts = [
+    activity.locationAddress,
+    activity.locationCity,
+    RegionLabels[activity.locationRegion],
+    "Austria",
+  ].filter(Boolean);
+
+  if (!parts.length) return null;
+  return parts.join(", ");
+}
+
+async function geocodeAddress(address: string): Promise<[number, number] | null> {
+  if (!address) return null;
+
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&addressdetails=0&limit=1&countrycodes=at`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "Accept-Language": "de",
+        "User-Agent": "eventhorizon-map/1.0 (contact: frontend)",
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (Array.isArray(data) && data.length > 0) {
+      const { lat, lon } = data[0];
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+
+      if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
+        return [latitude, longitude];
+      }
+    }
+  } catch (error) {
+    console.warn("Geocoding failed for address", address, error);
   }
-  const base = regionCoordinates[activity.locationRegion] || [48.2, 14.5];
-  const offset = () => (Math.random() - 0.5) * 0.3;
-  return [base[0] + offset(), base[1] + offset()];
+
+  return null;
 }
 
 // Component to fit bounds
-function FitBounds({ activities }: { activities: Activity[] }) {
+function FitBounds({ positions }: { positions: [number, number][] }) {
   const map = useMap();
   
   useEffect(() => {
-    if (activities.length > 0) {
-      const coords = activities.map(getActivityCoordinates);
-      const bounds = new LatLngBounds(coords);
+    if (positions.length > 0) {
+      const bounds = new LatLngBounds(positions);
       map.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [activities, map]);
+  }, [positions, map]);
   
   return null;
 }
@@ -91,6 +130,7 @@ export default function MapPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
+  const [geocodeCache, setGeocodeCache] = useState<Record<string, [number, number]>>({});
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -100,6 +140,65 @@ export default function MapPage() {
     };
     fetchActivities();
   }, []);
+
+  useEffect(() => {
+    const missing = activities.filter((activity) =>
+      !activity.coordinates &&
+      !geocodeCache[activity.id] &&
+      (activity.locationAddress || activity.locationCity)
+    );
+
+    if (!missing.length) return;
+
+    let cancelled = false;
+
+    const geocodeMissing = async () => {
+      const updates: Record<string, [number, number]> = {};
+
+      for (const activity of missing) {
+        const query = buildAddressQuery(activity);
+        if (!query) continue;
+
+        const coords = await geocodeAddress(query);
+        if (cancelled) return;
+
+        if (coords) {
+          updates[activity.id] = coords;
+        }
+
+        // Be polite towards the geocoding service
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+
+      if (!cancelled && Object.keys(updates).length > 0) {
+        setGeocodeCache((prev) => ({ ...prev, ...updates }));
+      }
+    };
+
+    geocodeMissing();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activities, geocodeCache]);
+
+  const activityMarkers = useMemo(
+    () =>
+      activities.reduce((markers, activity) => {
+        const position =
+          activity.coordinates ||
+          geocodeCache[activity.id] ||
+          getRegionCenter(activity.locationRegion);
+
+        if (position) {
+          markers.push({ activity, position });
+        }
+        return markers;
+      }, [] as { activity: Activity; position: [number, number] }[]),
+    [activities, geocodeCache]
+  );
+
+  const mapCenter = activityMarkers[0]?.position || AUSTRIA_CENTER;
 
   if (loading) {
     return (
@@ -131,7 +230,7 @@ export default function MapPage() {
             <CardContent className="p-0">
               <div className="h-[600px] relative">
                 <MapContainer
-                  center={[47.5, 13.5]}
+                  center={mapCenter}
                   zoom={7}
                   className="h-full w-full rounded-2xl"
                   style={{ background: "hsl(var(--secondary))" }}
@@ -140,16 +239,11 @@ export default function MapPage() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  {/* Temporarily removed custom components for debugging */}
-                  {activities.map((activity) => (
-                    <Marker
-                       key={activity.id}
-                       position={getActivityCoordinates(activity)}
-                       eventHandlers={{
-                         click: () => setSelectedActivity(activity),
-                       }}
-                    />
-                  ))}
+                  <FitBounds positions={activityMarkers.map((m) => m.position)} />
+                  <MapMarkers
+                    activityMarkers={activityMarkers}
+                    onSelect={setSelectedActivity}
+                  />
                 </MapContainer>
               </div>
             </CardContent>
