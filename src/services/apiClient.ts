@@ -1,5 +1,23 @@
-import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType } from "@/types/domain";
+import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
+
+// ============================================
+// AI TYPES
+// ============================================
+
+export interface TeamPreferenceSummary {
+  categoryDistribution: { category: EventCategory; percentage: number }[];
+  preferredGoals: PrimaryGoal[];
+  recommendedActivityIds: string[];
+  teamVibe: "action" | "relax" | "mixed";
+  insights: string[];
+}
+
+export interface AiRecommendation {
+  activityId: string;
+  score: number;
+  reason: string;
+}
 
 // ============================================
 // API TYPES
@@ -556,8 +574,83 @@ export async function finalizeDateOption(eventId: string, dateOptionId: string):
   return { data: null };
 }
 
-// Current User
-export async function getCurrentUser(): Promise<ApiResult<User>> {
+// ============================================
+// AUTH FUNCTIONS
+// ============================================
+
+let isLoggedIn = true;
+
+export async function getCurrentUser(): Promise<ApiResult<User | null>> {
   await delay(100);
+  return { data: isLoggedIn ? currentUser : null };
+}
+
+export async function mockLogin(email: string, password: string): Promise<ApiResult<User>> {
+  await delay(500);
+  isLoggedIn = true;
   return { data: currentUser };
+}
+
+export async function mockLogout(): Promise<ApiResult<void>> {
+  await delay(200);
+  isLoggedIn = false;
+  return { data: undefined };
+}
+
+export function isAuthenticated(): boolean {
+  return isLoggedIn;
+}
+
+// ============================================
+// AI / RECOMMENDATION FUNCTIONS
+// ============================================
+
+export async function getTeamRecommendations(roomId: string): Promise<ApiResult<TeamPreferenceSummary>> {
+  await delay(600);
+  const summary: TeamPreferenceSummary = {
+    categoryDistribution: [
+      { category: "action", percentage: 35 },
+      { category: "food", percentage: 25 },
+      { category: "outdoor", percentage: 20 },
+      { category: "relax", percentage: 15 },
+      { category: "creative", percentage: 5 },
+    ],
+    preferredGoals: ["teambuilding", "fun"],
+    recommendedActivityIds: ["act-1", "act-3", "act-6"],
+    teamVibe: "action",
+    insights: [
+      "Euer Team bevorzugt aktive Erlebnisse mit Wettbewerbscharakter.",
+      "Kulinarische Events kommen als gemeinsamer Abschluss gut an.",
+      "Outdoor-Aktivitäten sind im Sommer besonders beliebt.",
+    ],
+  };
+  return { data: summary };
+}
+
+export async function getActivitySuggestionsForEvent(eventId: string): Promise<ApiResult<AiRecommendation[]>> {
+  await delay(500);
+  const recommendations: AiRecommendation[] = [
+    { activityId: "act-1", score: 0.95, reason: "Passt perfekt zum aktiven Teamprofil und Budget" },
+    { activityId: "act-3", score: 0.88, reason: "Fördert Teamwork und ist für alle Fitnesslevel geeignet" },
+    { activityId: "act-6", score: 0.82, reason: "Beliebt im Sommer, hoher Spaßfaktor" },
+  ];
+  return { data: recommendations };
+}
+
+// ============================================
+// EMAIL TRIGGER FUNCTIONS
+// ============================================
+
+export async function sendEventInvites(eventId: string): Promise<ApiResult<{ sent: number }>> {
+  await delay(800);
+  const event = events.find((e) => e.id === eventId);
+  const count = event?.participants.length || 0;
+  return { data: { sent: count } };
+}
+
+export async function sendVotingReminder(eventId: string): Promise<ApiResult<{ sent: number }>> {
+  await delay(600);
+  const event = events.find((e) => e.id === eventId);
+  const notVoted = event?.participants.filter((p) => !p.hasVoted).length || 0;
+  return { data: { sent: notVoted } };
 }

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventPhaseHeader } from "@/components/events/EventPhaseHeader";
 import { VotingCard } from "@/components/events/VotingCard";
 import { DateOptionCard } from "@/components/events/DateOptionCard";
+import { EmailActions } from "@/components/events/EmailActions";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { 
   getEventById, 
