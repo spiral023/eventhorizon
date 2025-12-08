@@ -3,8 +3,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { AppLayout } from "@/components/layout/AppLayout";
+
+// Pages
+import HomePage from "@/pages/HomePage";
+import RoomsPage from "@/pages/RoomsPage";
+import ActivitiesPage from "@/pages/ActivitiesPage";
+import ProfilePage from "@/pages/ProfilePage";
+import MapPage from "@/pages/MapPage";
+import SettingsPage from "@/pages/SettingsPage";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +23,56 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Main App Routes with Layout */}
+          <Route
+            path="/"
+            element={
+              <AppLayout>
+                <HomePage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/rooms"
+            element={
+              <AppLayout>
+                <RoomsPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/activities"
+            element={
+              <AppLayout>
+                <ActivitiesPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <AppLayout>
+                <ProfilePage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/map"
+            element={
+              <AppLayout>
+                <MapPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <AppLayout>
+                <SettingsPage />
+              </AppLayout>
+            }
+          />
+          {/* 404 - without layout */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
