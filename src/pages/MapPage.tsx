@@ -41,6 +41,9 @@ const regionCoordinates: Record<string, [number, number]> = {
 
 // Add slight randomness to prevent overlapping markers
 function getActivityCoordinates(activity: Activity): [number, number] {
+  if (activity.coordinates) {
+    return activity.coordinates;
+  }
   const base = regionCoordinates[activity.locationRegion] || [48.2, 14.5];
   const offset = () => (Math.random() - 0.5) * 0.3;
   return [base[0] + offset(), base[1] + offset()];
@@ -98,13 +101,6 @@ export default function MapPage() {
     fetchActivities();
   }, []);
 
-  const activityMarkers = useMemo(() => {
-    return activities.map((activity) => ({
-      activity,
-      position: getActivityCoordinates(activity),
-    }));
-  }, [activities]);
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -144,11 +140,16 @@ export default function MapPage() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  <FitBounds activities={activities} />
-                  <MapMarkers 
-                    activityMarkers={activityMarkers} 
-                    onSelect={setSelectedActivity} 
-                  />
+                  {/* Temporarily removed custom components for debugging */}
+                  {activities.map((activity) => (
+                    <Marker
+                       key={activity.id}
+                       position={getActivityCoordinates(activity)}
+                       eventHandlers={{
+                         click: () => setSelectedActivity(activity),
+                       }}
+                    />
+                  ))}
                 </MapContainer>
               </div>
             </CardContent>

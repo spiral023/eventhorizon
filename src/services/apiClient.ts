@@ -1,9 +1,9 @@
 import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
 
-// ============================================
+// ============================================ 
 // AI TYPES
-// ============================================
+// ============================================ 
 
 export interface TeamPreferenceSummary {
   categoryDistribution: { category: EventCategory; percentage: number }[];
@@ -19,9 +19,9 @@ export interface AiRecommendation {
   reason: string;
 }
 
-// ============================================
+// ============================================ 
 // API TYPES
-// ============================================
+// ============================================ 
 
 export interface ApiError {
   code: string;
@@ -41,9 +41,9 @@ export interface Paginated<T> {
   pageSize: number;
 }
 
-// ============================================
+// ============================================ 
 // IN-MEMORY STORE
-// ============================================
+// ============================================ 
 
 let favoriteActivityIds: string[] = ["act-1", "act-4"];
 let events: Event[] = [];
@@ -58,9 +58,9 @@ const currentUser: User = {
   favoriteActivityIds: favoriteActivityIds,
 };
 
-// ============================================
+// ============================================ 
 // MOCK DATA
-// ============================================
+// ============================================ 
 
 const mockRooms: Room[] = [
   {
@@ -107,7 +107,7 @@ const mockRooms: Room[] = [
 ];
 
 const mockActivities: Activity[] = [
-  // ============ OOE Activities ============
+  // ============ OOE Activities ============ 
   {
     id: "act-1",
     title: "Masters of Escape: Team-Rätselspaß in Linz",
@@ -142,6 +142,7 @@ const mockActivities: Activity[] = [
     website: "https://www.mastersofescape.at",
     contactPhone: "0732272999",
     contactEmail: "office@mastersofescape.at",
+    coordinates: [48.3129, 14.2830],
   },
   {
     id: "act-2",
@@ -174,6 +175,7 @@ const mockActivities: Activity[] = [
     website: "https://lasertron-linz.at/",
     contactPhone: "0732946227",
     contactEmail: "info@lasertron-linz.at",
+    coordinates: [48.2974, 14.3005],
   },
   {
     id: "act-3",
@@ -206,6 +208,7 @@ const mockActivities: Activity[] = [
     website: "https://www.exittheroom.at/escape-room-linz",
     contactPhone: "06606844996",
     contactEmail: "linz@exittheroom.at",
+    coordinates: [48.2995, 14.2925],
   },
   {
     id: "act-4",
@@ -238,6 +241,7 @@ const mockActivities: Activity[] = [
     website: "https://linz.nowayout-escape.at/de/",
     contactPhone: "0732946227",
     contactEmail: "linz@nowayout-escape.at",
+    coordinates: [48.2974, 14.3005],
   },
   {
     id: "act-5",
@@ -270,6 +274,7 @@ const mockActivities: Activity[] = [
     website: "https://oceanparkpluscity.at/",
     contactPhone: "0722962222",
     contactEmail: "linz@oceanpark.at",
+    coordinates: [48.2435, 14.2385],
   },
   {
     id: "act-6",
@@ -302,6 +307,7 @@ const mockActivities: Activity[] = [
     website: "https://jumpdome.at/linz/",
     contactPhone: "0732600600",
     contactEmail: "linz@jumpdome.at",
+    coordinates: [48.2605, 14.2498],
   },
   {
     id: "act-7",
@@ -335,6 +341,7 @@ const mockActivities: Activity[] = [
     website: "https://www.linzerbier.at/fuehrungen/",
     contactPhone: "0732797800",
     contactEmail: "office@linzerbier.at",
+    coordinates: [48.3090, 14.3045],
   },
   {
     id: "act-8",
@@ -367,6 +374,7 @@ const mockActivities: Activity[] = [
     website: "https://ruffgolf.eu/at/",
     contactPhone: "06764600234",
     contactEmail: "linz@ruffgolf.at",
+    coordinates: [48.2605, 14.2498],
   },
   {
     id: "act-9",
@@ -400,6 +408,7 @@ const mockActivities: Activity[] = [
     website: "https://linz.another-world.com/",
     contactPhone: "06641530932",
     contactEmail: "linz@another-world.com",
+    coordinates: [48.2625, 14.2750],
   },
   {
     id: "act-10",
@@ -432,6 +441,7 @@ const mockActivities: Activity[] = [
     website: "https://ars.electronica.art/center/de/deepspace/",
     contactPhone: "073272720",
     contactEmail: "center@ars.electronica.art",
+    coordinates: [48.3110, 14.2845],
   },
   {
     id: "act-11",
@@ -464,6 +474,7 @@ const mockActivities: Activity[] = [
     website: "https://linzerschweben.at/",
     contactPhone: "069910404044",
     contactEmail: "info@linzerschweben.at",
+    coordinates: [48.3059, 14.2865],
   },
   {
     id: "act-12",
@@ -496,6 +507,7 @@ const mockActivities: Activity[] = [
     website: "https://muralharbor.at/tickets/",
     contactPhone: "06646564619",
     contactEmail: "info@muralharbor.at",
+    coordinates: [48.3180, 14.3200],
   },
   {
     id: "act-13",
@@ -528,6 +540,7 @@ const mockActivities: Activity[] = [
     website: "https://www.voestalpine.com/stahlwelt/",
     contactPhone: "050304158900",
     contactEmail: "anmeldung.stahlwelt@voestalpine.com",
+    coordinates: [48.2790, 14.3400],
   },
   {
     id: "act-14",
@@ -560,6 +573,7 @@ const mockActivities: Activity[] = [
     website: "https://www.stubm.at/",
     contactPhone: "0732770555",
     contactEmail: "office@stefans-stubm.at",
+    coordinates: [48.3045, 14.3050],
   },
   {
     id: "act-15",
@@ -592,8 +606,9 @@ const mockActivities: Activity[] = [
     website: "https://www.ilteatro.at/",
     contactPhone: "0732662580",
     contactEmail: "office@ilteatro.at",
+    coordinates: [48.2970, 14.2950],
   },
-  // ============ Additional OOE Activities ============
+  // ============ Additional OOE Activities ============ 
   {
     id: "act-16",
     title: "Das Josef: Der Linzer Gastro-Klassiker",
@@ -625,6 +640,7 @@ const mockActivities: Activity[] = [
     website: "https://josef.eu/",
     contactPhone: "0732773165",
     contactEmail: "gastronomie@josef.eu",
+    coordinates: [48.3035, 14.2915],
   },
   {
     id: "act-17",
@@ -657,6 +673,7 @@ const mockActivities: Activity[] = [
     website: "https://www.pauls-linz.at/",
     contactPhone: "0732783338",
     contactEmail: "office@pauls-linz.at",
+    coordinates: [48.3048, 14.2885],
   },
   {
     id: "act-18",
@@ -690,6 +707,7 @@ const mockActivities: Activity[] = [
     website: "https://weinstadl-urfahr.eatbu.com/?lang=de",
     contactPhone: "0732730620",
     contactEmail: "office@weinstadl-urfahr.at",
+    coordinates: [48.3150, 14.2810],
   },
   {
     id: "act-19",
@@ -722,6 +740,7 @@ const mockActivities: Activity[] = [
     website: "https://www.linzag.at/portal/de/privatkunden/freizeit/eissport/eisstockschiessen",
     contactPhone: "073234006630",
     contactEmail: "sport@linzag.at",
+    coordinates: [48.3145, 14.2940],
   },
   {
     id: "act-20",
@@ -754,6 +773,7 @@ const mockActivities: Activity[] = [
     website: "https://www.megaplex.at/inhalt/kino-zum-mieten",
     contactPhone: "0722963500",
     contactEmail: "pasching@megaplex.at",
+    coordinates: [48.2435, 14.2385],
   },
   {
     id: "act-21",
@@ -786,6 +806,7 @@ const mockActivities: Activity[] = [
     website: "https://www.lennox.at/events/cocktailkurse/",
     contactPhone: "06644104100",
     contactEmail: "bar@lennox.at",
+    coordinates: [48.3040, 14.2910],
   },
   {
     id: "act-22",
@@ -818,6 +839,7 @@ const mockActivities: Activity[] = [
     website: "https://aengus.at/",
     contactPhone: "0732771515",
     contactEmail: "restaurant@aengus.at",
+    coordinates: [48.3065, 14.2880],
   },
   {
     id: "act-23",
@@ -850,6 +872,7 @@ const mockActivities: Activity[] = [
     website: "https://glorious-bastards.at/",
     contactPhone: "0732773322",
     contactEmail: "linz@glorious-bastards.at",
+    coordinates: [48.3030, 14.2885],
   },
   {
     id: "act-24",
@@ -882,6 +905,7 @@ const mockActivities: Activity[] = [
     website: "https://www.bratwurstgloeckerl.at/",
     contactPhone: "0732779388",
     contactEmail: "office@bratwurstgloeckerl.at",
+    coordinates: [48.2830, 14.2860],
   },
   {
     id: "act-25",
@@ -914,6 +938,7 @@ const mockActivities: Activity[] = [
     website: "https://www.stadtliebe.at/",
     contactPhone: "0732770605",
     contactEmail: "office@stadtliebe.at",
+    coordinates: [48.3015, 14.2905],
   },
   {
     id: "act-26",
@@ -946,6 +971,7 @@ const mockActivities: Activity[] = [
     website: "https://www.wiazhaus-lehner.at/",
     contactPhone: "0732730510",
     contactEmail: "gasthaus@wiazhaus-lehner.at",
+    coordinates: [48.3305, 14.2930],
   },
   {
     id: "act-27",
@@ -978,6 +1004,7 @@ const mockActivities: Activity[] = [
     website: "https://www.gasthaus-eisernehand.at/",
     contactPhone: "0732773335",
     contactEmail: "gasthaus@eisernehand.at",
+    coordinates: [48.3025, 14.2995],
   },
   {
     id: "act-28",
@@ -1010,6 +1037,7 @@ const mockActivities: Activity[] = [
     website: "https://www.rotaxmaxdome.com/linz/",
     contactPhone: "0732799899",
     contactEmail: "linz@rotaxmaxdome.com",
+    coordinates: [48.3120, 14.3090],
   },
   {
     id: "act-29",
@@ -1042,6 +1070,7 @@ const mockActivities: Activity[] = [
     website: "https://booosters.at/",
     contactPhone: "0722921700",
     contactEmail: "office@booosters.at",
+    coordinates: [48.2605, 14.2498],
   },
   {
     id: "act-30",
@@ -1074,6 +1103,7 @@ const mockActivities: Activity[] = [
     website: "https://missiongames.at/",
     contactPhone: "06606363063",
     contactEmail: "office@missiongames.at",
+    coordinates: [48.3135, 14.2825],
   },
 ];
 
@@ -1159,9 +1189,9 @@ events = [
   },
 ];
 
-// ============================================
+// ============================================ 
 // API FUNCTIONS
-// ============================================
+// ============================================ 
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -1363,9 +1393,9 @@ export async function finalizeDateOption(eventId: string, dateOptionId: string):
   return { data: null };
 }
 
-// ============================================
+// ============================================ 
 // AUTH FUNCTIONS
-// ============================================
+// ============================================ 
 
 let isLoggedIn = true;
 
@@ -1390,9 +1420,9 @@ export function isAuthenticated(): boolean {
   return isLoggedIn;
 }
 
-// ============================================
+// ============================================ 
 // AI / RECOMMENDATION FUNCTIONS
-// ============================================
+// ============================================ 
 
 export async function getTeamRecommendations(roomId: string): Promise<ApiResult<TeamPreferenceSummary>> {
   await delay(600);
@@ -1426,9 +1456,9 @@ export async function getActivitySuggestionsForEvent(eventId: string): Promise<A
   return { data: recommendations };
 }
 
-// ============================================
+// ============================================ 
 // EMAIL TRIGGER FUNCTIONS
-// ============================================
+// ============================================ 
 
 export async function sendEventInvites(eventId: string): Promise<ApiResult<{ sent: number }>> {
   await delay(800);

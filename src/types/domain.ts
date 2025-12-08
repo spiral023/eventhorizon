@@ -129,6 +129,7 @@ export interface Activity {
   // Primary goal
   primaryGoal?: PrimaryGoal;
   // Metadata
+  coordinates?: [number, number];
   rating?: number;
   externalRating?: number;
   reviewCount?: number;
