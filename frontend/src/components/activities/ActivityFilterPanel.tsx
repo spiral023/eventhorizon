@@ -64,7 +64,7 @@ const PrimaryGoalLabels: Record<PrimaryGoal, string> = {
 };
 
 export function ActivityFilterPanel({ 
-  filters, 
+  filters = defaultFilters, 
   onChange, 
   onReset,
   className 
@@ -80,52 +80,57 @@ export function ActivityFilterPanel({
   };
 
   const toggleCategory = (cat: EventCategory) => {
-    const newCategories = filters.categories.includes(cat)
-      ? filters.categories.filter((c) => c !== cat)
-      : [...filters.categories, cat];
+    const current = filters.categories || [];
+    const newCategories = current.includes(cat)
+      ? current.filter((c) => c !== cat)
+      : [...current, cat];
     onChange({ ...filters, categories: newCategories });
   };
 
   const toggleRegion = (region: Region) => {
-    const newRegions = filters.regions.includes(region)
-      ? filters.regions.filter((r) => r !== region)
-      : [...filters.regions, region];
+    const current = filters.regions || [];
+    const newRegions = current.includes(region)
+      ? current.filter((r) => r !== region)
+      : [...current, region];
     onChange({ ...filters, regions: newRegions });
   };
 
   const toggleSeason = (season: Season) => {
-    const newSeasons = filters.seasons.includes(season)
-      ? filters.seasons.filter((s) => s !== season)
-      : [...filters.seasons, season];
+    const current = filters.seasons || [];
+    const newSeasons = current.includes(season)
+      ? current.filter((s) => s !== season)
+      : [...current, season];
     onChange({ ...filters, seasons: newSeasons });
   };
 
   const toggleRiskLevel = (level: RiskLevel) => {
-    const newLevels = filters.riskLevels.includes(level)
-      ? filters.riskLevels.filter((l) => l !== level)
-      : [...filters.riskLevels, level];
+    const current = filters.riskLevels || [];
+    const newLevels = current.includes(level)
+      ? current.filter((l) => l !== level)
+      : [...current, level];
     onChange({ ...filters, riskLevels: newLevels });
   };
 
   const togglePrimaryGoal = (goal: PrimaryGoal) => {
-    const newGoals = filters.primaryGoals.includes(goal)
-      ? filters.primaryGoals.filter((g) => g !== goal)
-      : [...filters.primaryGoals, goal];
+    const current = filters.primaryGoals || [];
+    const newGoals = current.includes(goal)
+      ? current.filter((g) => g !== goal)
+      : [...current, goal];
     onChange({ ...filters, primaryGoals: newGoals });
   };
 
   const activeFilterCount = 
-    filters.categories.length +
-    filters.regions.length +
-    filters.seasons.length +
-    filters.riskLevels.length +
-    filters.primaryGoals.length +
-    (filters.priceRange[0] > 0 || filters.priceRange[1] < 200 ? 1 : 0) +
-    (filters.groupSizeRange[0] > 1 || filters.groupSizeRange[1] < 100 ? 1 : 0) +
-    (filters.durationRange[0] > 0 || filters.durationRange[1] < 480 ? 1 : 0) +
-    (filters.physicalIntensity[0] > 1 || filters.physicalIntensity[1] < 5 ? 1 : 0) +
-    (filters.mentalChallenge[0] > 1 || filters.mentalChallenge[1] < 5 ? 1 : 0) +
-    (filters.teamworkLevel[0] > 1 || filters.teamworkLevel[1] < 5 ? 1 : 0) +
+    (filters.categories?.length || 0) +
+    (filters.regions?.length || 0) +
+    (filters.seasons?.length || 0) +
+    (filters.riskLevels?.length || 0) +
+    (filters.primaryGoals?.length || 0) +
+    ((filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 200) ? 1 : 0) +
+    ((filters.groupSizeRange?.[0] > 1 || filters.groupSizeRange?.[1] < 100) ? 1 : 0) +
+    ((filters.durationRange?.[0] > 0 || filters.durationRange?.[1] < 480) ? 1 : 0) +
+    ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
+    ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
+    ((filters.teamworkLevel?.[0] > 1 || filters.teamworkLevel?.[1] < 5) ? 1 : 0) +
     (filters.indoorOnly ? 1 : 0) +
     (filters.outdoorOnly ? 1 : 0) +
     (filters.weatherIndependent ? 1 : 0) +
@@ -181,7 +186,7 @@ export function ActivityFilterPanel({
             {(Object.keys(CategoryLabels) as EventCategory[]).map((cat) => (
               <Badge
                 key={cat}
-                variant={filters.categories.includes(cat) ? "default" : "secondary"}
+                variant={filters.categories?.includes(cat) ? "default" : "secondary"}
                 className="cursor-pointer rounded-lg"
                 onClick={() => toggleCategory(cat)}
               >
@@ -212,7 +217,7 @@ export function ActivityFilterPanel({
             {(Object.keys(PrimaryGoalLabels) as PrimaryGoal[]).map((goal) => (
               <Badge
                 key={goal}
-                variant={filters.primaryGoals.includes(goal) ? "default" : "secondary"}
+                variant={filters.primaryGoals?.includes(goal) ? "default" : "secondary"}
                 className="cursor-pointer rounded-lg"
                 onClick={() => togglePrimaryGoal(goal)}
               >
@@ -240,7 +245,7 @@ export function ActivityFilterPanel({
             {(Object.keys(RegionLabels) as Region[]).map((region) => (
               <Badge
                 key={region}
-                variant={filters.regions.includes(region) ? "default" : "secondary"}
+                variant={filters.regions?.includes(region) ? "default" : "secondary"}
                 className="cursor-pointer rounded-lg"
                 onClick={() => toggleRegion(region)}
               >
@@ -268,7 +273,7 @@ export function ActivityFilterPanel({
             {(Object.keys(SeasonLabels) as Season[]).map((season) => (
               <Badge
                 key={season}
-                variant={filters.seasons.includes(season) ? "default" : "secondary"}
+                variant={filters.seasons?.includes(season) ? "default" : "secondary"}
                 className="cursor-pointer rounded-lg"
                 onClick={() => toggleSeason(season)}
               >
@@ -296,7 +301,7 @@ export function ActivityFilterPanel({
             {(Object.keys(RiskLevelLabels) as RiskLevel[]).map((level) => (
               <Badge
                 key={level}
-                variant={filters.riskLevels.includes(level) ? "default" : "secondary"}
+                variant={filters.riskLevels?.includes(level) ? "default" : "secondary"}
                 className="cursor-pointer rounded-lg"
                 onClick={() => toggleRiskLevel(level)}
               >

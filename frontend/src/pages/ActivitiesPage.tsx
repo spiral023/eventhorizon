@@ -5,7 +5,7 @@ import { ActivityCard } from "@/components/shared/ActivityCard";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { PageError } from "@/components/shared/PageError";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ActivityFilterPanel } from "@/components/activities/ActivityFilterPanel";
+import { ActivityFilterPanel, defaultFilters, type ActivityFilters } from "@/components/activities/ActivityFilterPanel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal } from "lucide-react";
@@ -21,6 +21,7 @@ export default function ActivitiesPage() {
   
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
 
   useEffect(() => {
     loadData();
@@ -48,13 +49,70 @@ export default function ActivitiesPage() {
   };
 
   const filteredActivities = activities.filter((activity) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      activity.title.toLowerCase().includes(query) ||
-      activity.locationRegion.toLowerCase().includes(query) ||
-      activity.tags.some((tag) => tag.toLowerCase().includes(query))
-    );
+    // Search Query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (
+        activity.title.toLowerCase().includes(query) ||
+        activity.locationRegion.toLowerCase().includes(query) ||
+        activity.tags.some((tag) => tag.toLowerCase().includes(query))
+      );
+      if (!matchesSearch) return false;
+    }
+
+    // Category Filter
+    if (filters.categories.length > 0 && !filters.categories.includes(activity.category)) {
+      return false;
+    }
+
+    // Region Filter
+    if (filters.regions.length > 0 && !filters.regions.includes(activity.locationRegion)) {
+      return false;
+    }
+
+    // Season Filter
+    if (filters.seasons.length > 0 && !filters.seasons.includes(activity.season)) {
+      return false;
+    }
+
+    // Risk Level Filter
+    if (filters.riskLevels.length > 0 && !filters.riskLevels.includes(activity.riskLevel)) {
+      return false;
+    }
+
+    // Primary Goal Filter
+    if (filters.primaryGoals.length > 0 && (!activity.primaryGoal || !filters.primaryGoals.includes(activity.primaryGoal))) {
+      return false;
+    }
+
+    // Price Range
+    if (activity.estPricePerPerson !== undefined) {
+      if (activity.estPricePerPerson < filters.priceRange[0]) return false;
+      if (filters.priceRange[1] < 200 && activity.estPricePerPerson > filters.priceRange[1]) return false;
+    }
+
+    // Group Size
+    if (activity.groupSizeMin !== undefined && activity.groupSizeMax !== undefined) {
+       // Check if ranges overlap
+       if (activity.groupSizeMax < filters.groupSizeRange[0]) return false;
+       if (filters.groupSizeRange[1] < 100 && activity.groupSizeMin > filters.groupSizeRange[1]) return false;
+    }
+
+    // Favorites Only
+    if (filters.favoritesOnly && !favoriteIds.includes(activity.id)) {
+      return false;
+    }
+
+    // Indoor/Outdoor
+    if (filters.indoorOnly && activity.tags.includes("outdoor")) return false; // Simple heuristic, better if explicit field
+    if (filters.outdoorOnly && activity.tags.includes("indoor")) return false;
+
+    // Weather Independent
+    if (filters.weatherIndependent && activity.weatherDependent) {
+      return false;
+    }
+
+    return true;
   });
 
   if (isLoading) {
@@ -110,7 +168,9 @@ export default function ActivitiesPage() {
 
       {showFilters && (
         <ActivityFilterPanel
-          onFilterChange={() => {}}
+          filters={filters}
+          onChange={setFilters}
+          onReset={() => setFilters(defaultFilters)}
           className="animate-in fade-in slide-in-from-top-4"
         />
       )}
@@ -121,9 +181,14 @@ export default function ActivitiesPage() {
           title="Keine Aktivitäten gefunden"
           description="Versuche es mit einem anderen Suchbegriff oder ändere die Filter."
           action={
-            <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Suche zurücksetzen
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setSearchQuery("")}>
+                Suche zurücksetzen
+              </Button>
+              <Button variant="outline" onClick={() => setFilters(defaultFilters)}>
+                Filter zurücksetzen
+              </Button>
+            </div>
           }
         />
       ) : (
