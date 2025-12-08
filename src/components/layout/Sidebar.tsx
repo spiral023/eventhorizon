@@ -136,6 +136,18 @@ function RoomsNavSection() {
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-4 space-y-0.5 mt-1">
+        <NavLink
+          to="/rooms"
+          end
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
+            "text-muted-foreground/70 hover:text-foreground hover:bg-secondary/60",
+            "transition-all duration-200 italic"
+          )}
+          activeClassName="bg-primary/10 text-primary not-italic"
+        >
+          Alle Räume anzeigen
+        </NavLink>
         {roomsWithEvents.map(({ room, activeEvents }) => (
           <div key={room.id}>
             {activeEvents.length > 0 ? (
@@ -206,18 +218,6 @@ function RoomsNavSection() {
             )}
           </div>
         ))}
-        <NavLink
-          to="/rooms"
-          end
-          className={cn(
-            "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
-            "text-muted-foreground/70 hover:text-foreground hover:bg-secondary/60",
-            "transition-all duration-200 italic"
-          )}
-          activeClassName="bg-primary/10 text-primary not-italic"
-        >
-          Alle Räume anzeigen
-        </NavLink>
       </CollapsibleContent>
     </Collapsible>
   );

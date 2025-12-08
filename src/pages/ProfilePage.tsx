@@ -1,19 +1,36 @@
-import { User, Mail, Building, Calendar, Heart, Settings } from "lucide-react";
+import { useState } from "react";
+import { User, Mail, Building, Calendar, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { EditProfileDialog } from "@/components/shared/EditProfileDialog";
+
+interface UserProfile {
+  name: string;
+  email: string;
+  department: string;
+  birthday: string;
+  avatarUrl: string;
+  hobbies: string[];
+}
 
 export default function ProfilePage() {
-  // Mock user data
-  const user = {
+  const [user, setUser] = useState<UserProfile>({
     name: "Max Mustermann",
     email: "max.mustermann@firma.at",
     department: "Marketing",
     birthday: "15. März",
     avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop",
     hobbies: ["Wandern", "Fotografie", "Kochen"],
+  });
+
+  const handleProfileUpdate = (updatedUser: Omit<UserProfile, "email" | "avatarUrl">) => {
+    setUser((prev) => ({
+      ...prev,
+      ...updatedUser,
+    }));
   };
 
   return (
@@ -22,10 +39,7 @@ export default function ProfilePage() {
         title="Mein Profil"
         description="Verwalte deine persönlichen Informationen und Präferenzen."
         action={
-          <Button variant="secondary" className="gap-2 rounded-xl">
-            <Settings className="h-4 w-4" />
-            Bearbeiten
-          </Button>
+          <EditProfileDialog user={user} onProfileUpdated={handleProfileUpdate} />
         }
       />
 

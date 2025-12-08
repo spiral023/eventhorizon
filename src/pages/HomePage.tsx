@@ -1,30 +1,43 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Sparkles, Users, Compass, TrendingUp } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoomCard } from "@/components/shared/RoomCard";
 import { ActivityCard } from "@/components/shared/ActivityCard";
-import { getRooms, getActivities } from "@/services/apiClient";
+import { getRooms, getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Room, Activity } from "@/types/domain";
 
 export default function HomePage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      const [roomsResult, activitiesResult] = await Promise.all([
+      const [roomsResult, activitiesResult, favoritesResult] = await Promise.all([
         getRooms(),
         getActivities(),
+        getFavoriteActivityIds(),
       ]);
       setRooms(roomsResult.data.slice(0, 2));
       setActivities(activitiesResult.data.slice(0, 4));
+      setFavoriteIds(favoritesResult.data);
       setLoading(false);
     };
     fetchData();
   }, []);
+
+  const handleFavoriteToggle = async (activityId: string) => {
+    const result = await toggleFavorite(activityId);
+    if (result.data) {
+      setFavoriteIds((prev) => [...prev, activityId]);
+    } else {
+      setFavoriteIds((prev) => prev.filter((id) => id !== activityId));
+    }
+  };
 
   return (
     <div className="space-y-10">
@@ -102,7 +115,7 @@ export default function HomePage() {
                 className="animate-fade-in-up"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <RoomCard room={room} />
+                <RoomCard room={room} onClick={() => navigate(`/rooms/${room.id}`)} />
               </div>
             ))}
           </div>
@@ -138,7 +151,12 @@ export default function HomePage() {
                 className="animate-fade-in-up"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <ActivityCard activity={activity} />
+                <ActivityCard 
+                  activity={activity} 
+                  isFavorite={favoriteIds.includes(activity.id)}
+                  onFavoriteToggle={handleFavoriteToggle}
+                  onClick={() => navigate(`/activities/${activity.id}`)}
+                />
               </div>
             ))}
           </div>

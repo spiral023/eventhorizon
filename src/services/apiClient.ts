@@ -120,7 +120,7 @@ const mockActivities: Activity[] = [
     priceComment: "Reine Spielgebühr ca. 25–30 € p.P. (je nach Teamgröße); bei mehreren Räumen gleichzeitig oft Rabatte auf Anfrage.",
     shortDescription: "Teamstärkende Rätsel, Spannung, Kooperation, unvergesslicher Spaß.",
     longDescription: "Adrenalin, Teamgeist und Rätselspaß: In dieser Escape Room Challenge wachst Ihr als Team zusammen, kommuniziert besser und feiert gemeinsam den Erfolg.",
-    imageUrl: "https://images.unsplash.com/photo-1533372343425-4a7a1e2f56db?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "low",
     typicalDurationHours: 3.5,
@@ -219,7 +219,7 @@ const mockActivities: Activity[] = [
     priceComment: "Premium-Räume liegen bei ca. 30–35 € p.P.; spezielle Firmen-Challenge-Modi für große Gruppen buchbar.",
     shortDescription: "Filmreife Escape-Abenteuer mit starken Storys und viel Adrenalin.",
     longDescription: "Aufwendig gestaltete Themenräume sorgen für Gänsehaut, Spannung und Teamwork – von magischen bis schaurigen Szenarien arbeitet ihr euch gemeinsam durch Rätsel, Effekte und Überraschungen.",
-    imageUrl: "https://images.unsplash.com/photo-1509248961725-aec71c1d85ab?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1462899006636-339e08d1844e?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "low",
     typicalDurationHours: 3.5,
@@ -1055,7 +1055,7 @@ const mockActivities: Activity[] = [
     priceComment: "Preisstaffelung: Ab 13 Personen ca. 34 € p.P., kleinere Gruppen zahlen etwas mehr (bis 39 €).",
     shortDescription: "Indoor-Actionspiel mit vielen Missionräumen, in denen Geschick und Teamwork zählen.",
     longDescription: "Auf mehreren hundert Quadratmetern warten unterschiedlichste Räume mit Aufgaben zu Reaktion, Geschicklichkeit, Logik und Teamplay – ihr sammelt Punkte, probiert Missionen aus und feuert euch gegenseitig an.",
-    imageUrl: "https://images.unsplash.com/photo-1493711662062-fa541f7f3d24?w=800&h=600&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&h=600&fit=crop",
     season: "all_year",
     riskLevel: "low",
     typicalDurationHours: 3.5,
@@ -1175,6 +1175,21 @@ export async function getRoomById(id: string): Promise<ApiResult<Room | null>> {
   await delay(200);
   const room = mockRooms.find((r) => r.id === id) || null;
   return { data: room };
+}
+
+export async function createRoom(input: { name: string; description?: string }): Promise<ApiResult<Room>> {
+  await delay(400);
+  const newRoom: Room = {
+    id: `room-${Date.now()}`,
+    name: input.name,
+    description: input.description,
+    memberCount: 1,
+    createdAt: new Date().toISOString(),
+    createdByUserId: "user-current",
+    avatarUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100&h=100&fit=crop",
+  };
+  mockRooms.push(newRoom);
+  return { data: newRoom };
 }
 
 // Activities
