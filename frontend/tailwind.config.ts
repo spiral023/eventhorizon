@@ -86,12 +86,13 @@ export default {
           to: { height: "0" },
         },
         "fade-in": {
-          from: { opacity: "0", transform: "translateY(10px)" },
+          from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "fade-in-up": {
-          from: { opacity: "0", transform: "translateY(20px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          "0%": { opacity: "0", transform: "translateY(18px) scale(0.98)" },
+          "60%": { opacity: "1" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
         },
         "scale-in": {
           from: { opacity: "0", transform: "scale(0.95)" },
@@ -101,6 +102,10 @@ export default {
           from: { opacity: "0", transform: "translateX(-20px)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
+        "soft-float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
         shimmer: {
           from: { backgroundPosition: "200% 0" },
           to: { backgroundPosition: "-200% 0" },
@@ -109,16 +114,22 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "0.9" },
+          "50%": { opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
-        "fade-in-up": "fade-in-up 0.4s ease-out",
+        "fade-in": "fade-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "fade-in-up": "fade-in-up 0.46s cubic-bezier(0.16, 1, 0.3, 1) both",
         "scale-in": "scale-in 0.2s ease-out",
         "slide-in-left": "slide-in-left 0.3s ease-out",
+        "soft-float": "soft-float 6s ease-in-out infinite",
         shimmer: "shimmer 2s linear infinite",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "pulse-soft": "pulse-soft 2.4s ease-in-out infinite",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

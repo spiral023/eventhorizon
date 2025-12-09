@@ -42,10 +42,10 @@ export function ActivityCard({
   return (
     <Card
       className={cn(
-        "group cursor-pointer overflow-hidden",
+        "group cursor-pointer overflow-hidden will-change-[transform,opacity]",
         "bg-card/60 hover:bg-card/80 border-border/50 hover:border-primary/30",
-        "transition-all duration-300 hover:shadow-xl hover:shadow-primary/5",
-        "rounded-2xl hover:-translate-y-1"
+        "transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1",
+        "rounded-2xl motion-reduce:transform-none motion-reduce:hover:shadow-none"
       )}
       onClick={onClick}
     >
@@ -54,7 +54,7 @@ export function ActivityCard({
         <img
           src={activity.imageUrl}
           alt={activity.title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 will-change-transform motion-reduce:transform-none"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         

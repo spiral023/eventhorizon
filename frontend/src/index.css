@@ -151,4 +151,12 @@
   .card-glow:hover::before {
     @apply opacity-100;
   }
+
+  /* Prevent double-flash when navigating between already loaded routes */
+  .page-stable [class*="animate-fade-in"],
+  .page-stable [class*="animate-fade-in-up"] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

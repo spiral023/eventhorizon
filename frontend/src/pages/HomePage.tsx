@@ -62,8 +62,8 @@ export default function HomePage() {
   return (
     <div className="space-y-10">
       {/* Welcome Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-8 border border-primary/20">
-        <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-8 border border-primary/20 motion-safe:animate-fade-in will-change-[transform,opacity]">
+        <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl motion-safe:animate-soft-float" aria-hidden />
         <div className="relative">
           <div className="flex items-center gap-2 text-primary mb-2">
             <Sparkles className="h-5 w-5" />
@@ -88,7 +88,7 @@ export default function HomePage() {
         ].map((stat, index) => (
           <Card 
             key={stat.label} 
-            className="rounded-2xl bg-card/60 border-border/50 animate-fade-in-up"
+            className="rounded-2xl bg-card/60 border-border/50 motion-safe:animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:translate-y-0 will-change-[transform,opacity]"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <CardContent className="p-5">
@@ -124,7 +124,7 @@ export default function HomePage() {
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[1, 2].map((i) => (
-              <div key={i} className="h-32 rounded-2xl bg-secondary/30 animate-pulse" />
+              <div key={i} className="h-32 rounded-2xl bg-secondary/30 animate-pulse-soft" />
             ))}
           </div>
         ) : (
@@ -132,7 +132,7 @@ export default function HomePage() {
             {rooms.map((room, index) => (
               <div
                 key={room.id}
-                className="animate-fade-in-up"
+                className="motion-safe:animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:translate-y-0 will-change-[transform,opacity]"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <RoomCard room={room} onClick={() => navigate(`/rooms/${room.id}`)} />
@@ -160,7 +160,7 @@ export default function HomePage() {
         {loading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-80 rounded-2xl bg-secondary/30 animate-pulse" />
+              <div key={i} className="h-80 rounded-2xl bg-secondary/30 animate-pulse-soft" />
             ))}
           </div>
         ) : (
@@ -168,7 +168,7 @@ export default function HomePage() {
             {activities.map((activity, index) => (
               <div
                 key={activity.id}
-                className="animate-fade-in-up"
+                className="motion-safe:animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:translate-y-0 will-change-[transform,opacity]"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <ActivityCard 
