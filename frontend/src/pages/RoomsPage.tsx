@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Plus, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RoomCard } from "@/components/shared/RoomCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
+import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
 import { getRooms } from "@/services/apiClient";
 import type { Room } from "@/types/domain";
 
@@ -32,7 +33,12 @@ export default function RoomsPage() {
       <PageHeader
         title="Deine Räume"
         description="Verwalte deine Teams und Firmenräume. Jeder Raum ist ein eigener Bereich für gemeinsame Event-Planung."
-        action={<CreateRoomDialog onRoomCreated={handleRoomCreated} />}
+        action={
+          <div className="flex gap-2">
+            <JoinRoomDialog />
+            <CreateRoomDialog onRoomCreated={handleRoomCreated} />
+          </div>
+        }
       />
 
       {loading ? (

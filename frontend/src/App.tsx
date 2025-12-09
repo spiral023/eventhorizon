@@ -12,6 +12,7 @@ import { AnimatePresence } from "framer-motion";
 // Pages
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
+import JoinRoomPage from "@/pages/JoinRoomPage";
 import RoomsPage from "@/pages/RoomsPage";
 import RoomDetailPage from "@/pages/RoomDetailPage";
 import CreateEventPage from "@/pages/CreateEventPage";
@@ -46,6 +47,7 @@ function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+      <Route path="/join/:inviteCode" element={<PageTransition><JoinRoomPage /></PageTransition>} />
 
       {/* Protected routes share one persistent layout */}
       <Route element={<ProtectedAppLayout />}>

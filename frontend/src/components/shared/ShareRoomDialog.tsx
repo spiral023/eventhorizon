@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
-import { Copy, Link2, QrCode, Check, Mail } from "lucide-react";
+import { useState } from "react";
+import { Copy, Link2, Check, Mail } from "lucide-react";
+import QRCode from "react-qr-code";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -141,12 +142,20 @@ export function ShareRoomDialog({ room, trigger }: ShareRoomDialogProps) {
 
           <TabsContent value="qr" className="space-y-4 pt-4">
             <div className="flex flex-col items-center gap-4">
-              <div className="bg-white p-4 rounded-2xl">
-                {/* Simple QR Code representation using CSS grid */}
-                <QRCodeDisplay value={shareUrl} />
+              <div className="bg-white p-6 rounded-2xl">
+                <QRCode
+                  value={shareUrl}
+                  size={200}
+                  level="M"
+                  fgColor="#000000"
+                  bgColor="#ffffff"
+                />
               </div>
               <p className="text-sm text-muted-foreground text-center">
                 Scanne den QR-Code mit der Kamera, um dem Raum beizutreten.
+              </p>
+              <p className="text-xs text-muted-foreground text-center font-mono">
+                {shareUrl}
               </p>
               <Button
                 variant="secondary"
@@ -161,62 +170,5 @@ export function ShareRoomDialog({ room, trigger }: ShareRoomDialogProps) {
         </Tabs>
       </DialogContent>
     </Dialog>
-  );
-}
-
-// Simple QR Code visual representation
-function QRCodeDisplay({ value }: { value: string }) {
-  // Generate a deterministic pattern based on the URL
-  const hash = value.split("").reduce((acc, char, i) => acc + char.charCodeAt(0) * (i + 1), 0);
-  const size = 21;
-  
-  const cells = useMemo(() => {
-    const result: boolean[][] = [];
-    for (let i = 0; i < size; i++) {
-      result[i] = [];
-      for (let j = 0; j < size; j++) {
-        // Corner squares (finder patterns)
-        const isTopLeft = i < 7 && j < 7;
-        const isTopRight = i < 7 && j >= size - 7;
-        const isBottomLeft = i >= size - 7 && j < 7;
-        
-        if (isTopLeft || isTopRight || isBottomLeft) {
-          // Finder pattern
-          const localI = isTopLeft ? i : isBottomLeft ? i - (size - 7) : i;
-          const localJ = isTopLeft ? j : isTopRight ? j - (size - 7) : j;
-          
-          if (localI === 0 || localI === 6 || localJ === 0 || localJ === 6) {
-            result[i][j] = true;
-          } else if (localI >= 2 && localI <= 4 && localJ >= 2 && localJ <= 4) {
-            result[i][j] = true;
-          } else {
-            result[i][j] = false;
-          }
-        } else {
-          // Data pattern (pseudo-random based on hash)
-          result[i][j] = ((hash * (i + 1) * (j + 1)) % 7) < 3;
-        }
-      }
-    }
-    return result;
-  }, [hash]);
-
-  return (
-    <div 
-      className="grid gap-0" 
-      style={{ 
-        gridTemplateColumns: `repeat(${size}, 8px)`,
-        gridTemplateRows: `repeat(${size}, 8px)`,
-      }}
-    >
-      {cells.map((row, i) =>
-        row.map((cell, j) => (
-          <div
-            key={`${i}-${j}`}
-            className={cell ? "bg-foreground" : "bg-background"}
-          />
-        ))
-      )}
-    </div>
   );
 }

@@ -518,6 +518,30 @@ export async function deleteRoom(roomId: string): Promise<ApiResult<void>> {
   });
 }
 
+export async function joinRoom(inviteCode: string): Promise<ApiResult<Room>> {
+  if (USE_MOCKS) {
+    await delay(400);
+    const room = mockRooms.find((r) => r.inviteCode === inviteCode);
+    if (!room) {
+      return {
+        data: null as any,
+        error: { code: "NOT_FOUND", message: "Raum mit diesem Code nicht gefunden" }
+      };
+    }
+    // Increment member count when joining
+    room.memberCount += 1;
+    return { data: room };
+  }
+  const result = await request<any>('/rooms/join', {
+    method: 'POST',
+    body: JSON.stringify({ invite_code: inviteCode }),
+  });
+  if (result.data) {
+    return { data: mapRoomFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
+}
+
 // --- Events ---
 
 function mapEventFromApi(apiEvent: any): Event {
