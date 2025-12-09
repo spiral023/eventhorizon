@@ -9,6 +9,7 @@ import { ActivityFilterPanel, defaultFilters, type ActivityFilters } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { toast } from "sonner";
@@ -23,6 +24,23 @@ export default function ActivitiesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
+
+  const activeFilterCount = 
+    (filters.categories?.length || 0) +
+    (filters.regions?.length || 0) +
+    (filters.seasons?.length || 0) +
+    (filters.riskLevels?.length || 0) +
+    (filters.primaryGoals?.length || 0) +
+    ((filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 200) ? 1 : 0) +
+    ((filters.groupSizeRange?.[0] > 1 || filters.groupSizeRange?.[1] < 100) ? 1 : 0) +
+    ((filters.durationRange?.[0] > 0 || filters.durationRange?.[1] < 480) ? 1 : 0) +
+    ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
+    ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
+    ((filters.teamworkLevel?.[0] > 1 || filters.teamworkLevel?.[1] < 5) ? 1 : 0) +
+    (filters.indoorOnly ? 1 : 0) +
+    (filters.outdoorOnly ? 1 : 0) +
+    (filters.weatherIndependent ? 1 : 0) +
+    (filters.favoritesOnly ? 1 : 0);
 
   useEffect(() => {
     loadData();
@@ -159,24 +177,32 @@ export default function ActivitiesPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-          Filter
-        </Button>
+        <Sheet open={showFilters} onOpenChange={setShowFilters}>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filter
+              {activeFilterCount > 0 && (
+                <span className="ml-1 inline-flex items-center justify-center h-5 min-w-[1.5rem] rounded-full bg-primary/10 text-primary text-xs px-2">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Filter</SheetTitle>
+            </SheetHeader>
+            <div className="py-4">
+              <ActivityFilterPanel
+                filters={filters}
+                onChange={setFilters}
+                onReset={() => setFilters(defaultFilters)}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
-
-      {showFilters && (
-        <ActivityFilterPanel
-          filters={filters}
-          onChange={setFilters}
-          onReset={() => setFilters(defaultFilters)}
-          className="animate-in fade-in slide-in-from-top-4"
-        />
-      )}
 
       {filteredActivities.length === 0 ? (
         <EmptyState
