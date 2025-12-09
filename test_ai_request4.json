@@ -1,0 +1,4 @@
+{
+  "message": "Schreibe eine kurze Begrüßung für ein Team-Event",
+  "model": "google/gemini-flash-1.5"
+}

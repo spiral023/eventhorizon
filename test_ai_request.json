@@ -1,0 +1,4 @@
+{
+  "message": "Erzähl mir einen kurzen Witz über Teambuilding",
+  "model": "openai/gpt-4o"
+}
