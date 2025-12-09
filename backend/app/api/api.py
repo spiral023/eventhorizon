@@ -9,6 +9,7 @@ from datetime import datetime
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
+from app.core.utils import generate_room_invite_code
 from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
@@ -160,10 +161,30 @@ async def create_room(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Generate a unique invite code with retry logic
+    max_retries = 10
+    invite_code = None
+    for _ in range(max_retries):
+        candidate_code = generate_room_invite_code()
+        # Check if code already exists
+        existing = await db.execute(
+            select(Room).where(Room.invite_code == candidate_code)
+        )
+        if not existing.scalar_one_or_none():
+            invite_code = candidate_code
+            break
+
+    if not invite_code:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate unique invite code"
+        )
+
     # Attach the authenticated user as the creator of the room
     room = Room(
         **room_in.model_dump(),
         id=uuid4(),
+        invite_code=invite_code,
         created_at=datetime.utcnow(),
         created_by_user_id=current_user.id
     )

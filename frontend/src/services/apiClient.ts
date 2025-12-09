@@ -86,6 +86,13 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiR
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Generate random invite code in format XXX-XXX-XXX (excluding O, 0, I, 1)
+const generateInviteCode = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excludes O, 0, I, 1
+  const generatePart = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `${generatePart()}-${generatePart()}-${generatePart()}`;
+};
+
 // ============================================ 
 // MOCK DATA (Moved to top to avoid ReferenceError)
 // ============================================ 
@@ -95,6 +102,7 @@ const mockRooms: Room[] = [
     id: "room-1",
     name: "Marketing-Team",
     description: "Alle Marketing-Events und Teambuildings",
+    inviteCode: "A2B-3C4-D5E",
     memberCount: 12,
     createdAt: "2024-01-15T10:00:00Z",
     createdByUserId: "user-1",
@@ -109,6 +117,7 @@ const mockRooms: Room[] = [
     id: "room-2",
     name: "Dev-Team",
     description: "Entwickler-Team Events",
+    inviteCode: "F6G-7H8-J9K",
     memberCount: 8,
     createdAt: "2024-02-01T10:00:00Z",
     createdByUserId: "user-2",
@@ -121,6 +130,7 @@ const mockRooms: Room[] = [
     id: "room-3",
     name: "Sales-Team",
     description: "Vertriebsteam Aktivitäten",
+    inviteCode: "L2M-3N4-P5Q",
     memberCount: 15,
     createdAt: "2024-03-01T10:00:00Z",
     createdByUserId: "user-3",
@@ -133,6 +143,7 @@ const mockRooms: Room[] = [
     id: "room-4",
     name: "Mein persönlicher Raum",
     description: "Hier kann ich alles ausprobieren",
+    inviteCode: "R6S-7T8-U9V",
     memberCount: 1,
     createdAt: "2024-04-01T10:00:00Z",
     createdByUserId: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", // Current user is owner
@@ -257,6 +268,7 @@ function mapRoomFromApi(apiRoom: any): Room {
     id: apiRoom.id,
     name: apiRoom.name,
     description: apiRoom.description,
+    inviteCode: apiRoom.invite_code || apiRoom.inviteCode,
     memberCount: apiRoom.member_count ?? apiRoom.memberCount ?? 0,
     createdAt: apiRoom.created_at ?? apiRoom.createdAt,
     createdByUserId: apiRoom.created_by_user_id ?? apiRoom.createdByUserId,
@@ -467,6 +479,7 @@ export async function createRoom(input: { name: string; description?: string }):
       id: `room-${Date.now()}`,
       name: input.name,
       description: input.description,
+      inviteCode: generateInviteCode(),
       memberCount: 1,
       createdAt: new Date().toISOString(),
       createdByUserId: "user-current",

@@ -100,15 +100,16 @@ class User(Base):
 
 class Room(Base):
     __tablename__ = "room"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     description = Column(Text)
     avatar_url = Column(String)
-    
+    invite_code = Column(String, unique=True, nullable=False, index=True)
+
     created_by_user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     creator = relationship("User", back_populates="created_rooms")
     members = relationship("RoomMember", back_populates="room", cascade="all, delete-orphan")

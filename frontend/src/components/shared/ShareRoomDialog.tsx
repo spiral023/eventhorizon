@@ -20,19 +20,12 @@ interface ShareRoomDialogProps {
   trigger?: React.ReactNode;
 }
 
-// Generate a room code based on room id
-function generateRoomCode(roomId: string): string {
-  const hash = roomId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const code = hash.toString(36).toUpperCase().padStart(4, "0").slice(0, 4);
-  return `IN-VIA-${code}`;
-}
-
 export function ShareRoomDialog({ room, trigger }: ShareRoomDialogProps) {
   const [open, setOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const roomCode = useMemo(() => generateRoomCode(room.id), [room.id]);
+  const roomCode = room.inviteCode;
   const shareUrl = `${window.location.origin}/join/${roomCode}`;
 
   const handleCopyCode = async () => {

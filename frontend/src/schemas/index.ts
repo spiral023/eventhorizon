@@ -52,6 +52,7 @@ export const RoomSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
+  inviteCode: z.string(),
   memberCount: z.number(),
   createdAt: z.string(),
   createdByUserId: z.string(),

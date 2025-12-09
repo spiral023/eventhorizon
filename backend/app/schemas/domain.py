@@ -44,6 +44,7 @@ class RoomCreate(RoomBase):
 
 class Room(RoomBase):
     id: UUID
+    invite_code: str
     created_by_user_id: Optional[UUID] = None # Optional for now if no auth
     created_at: datetime
     member_count: Optional[int] = 0
