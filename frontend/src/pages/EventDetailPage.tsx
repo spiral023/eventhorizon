@@ -15,6 +15,7 @@ import {
   getEventById, 
   getActivities, 
   voteOnActivity, 
+  removeProposedActivity,
   respondToDateOption,
   updateEventPhase,
   selectWinningActivity,
@@ -41,6 +42,7 @@ export default function EventDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = currentUser?.id ?? "";
+  const isCreator = event?.createdByUserId && currentUserId === event.createdByUserId;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,6 +95,16 @@ export default function EventDetailPage() {
     if (!eventId) return;
     setActionLoading(true);
     const result = await selectWinningActivity(eventId, activityId);
+    if (result.data) {
+      setEvent(result.data);
+    }
+    setActionLoading(false);
+  };
+
+  const handleRemoveProposal = async (activityId: string) => {
+    if (!eventId) return;
+    setActionLoading(true);
+    const result = await removeProposedActivity(eventId, activityId);
     if (result.data) {
       setEvent(result.data);
     }
@@ -250,7 +262,20 @@ export default function EventDetailPage() {
                     <h4 className="font-medium">{activity.title}</h4>
                     <p className="text-sm text-muted-foreground">{activity.shortDescription}</p>
                   </div>
-                  <Badge>{CategoryLabels[activity.category]}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge>{CategoryLabels[activity.category]}</Badge>
+                    {isCreator && event.phase === "proposal" && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleRemoveProposal(activity.id)}
+                        disabled={actionLoading}
+                      >
+                        Entfernen
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
               {canAdvance && (

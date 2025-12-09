@@ -731,6 +731,30 @@ export async function updateEventPhase(eventId: string, newPhase: EventPhase): P
   return { data: null, error: result.error };
 }
 
+export async function removeProposedActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
+  if (USE_MOCKS) {
+    await delay(150);
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+
+    if (event.createdByUserId !== currentUser.id) {
+      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann VorschlÇÏge entfernen" } };
+    }
+
+    event.proposedActivityIds = event.proposedActivityIds.filter((id) => id !== activityId);
+    event.activityVotes = event.activityVotes.filter((v) => v.activityId !== activityId);
+    return { data: event };
+  }
+
+  const result = await request<any>(`/events/${eventId}/proposed-activities/${activityId}`, {
+    method: 'DELETE',
+  });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
+
 export async function voteOnActivity(eventId: string, activityId: string, vote: VoteType): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);

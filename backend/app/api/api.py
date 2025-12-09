@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
+from sqlalchemy import func, delete
 from sqlalchemy.orm import selectinload
 from typing import List
 from uuid import UUID, uuid4
@@ -255,6 +255,51 @@ async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Event not found")
     event = enhance_event_with_user_names_helper(event)
     return event
+
+@router.delete("/events/{event_id}/proposed-activities/{activity_id}", response_model=EventSchema)
+async def remove_proposed_activity(
+    event_id: UUID,
+    activity_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    event_result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.votes))
+        .where(Event.id == event_id)
+    )
+    event = event_result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event creator can modify proposals")
+
+    if event.phase != "proposal":
+        raise HTTPException(status_code=400, detail="Cannot remove proposals after voting has started")
+
+    current_ids = event.proposed_activity_ids or []
+    if activity_id not in current_ids:
+        return event
+
+    event.proposed_activity_ids = [aid for aid in current_ids if aid != activity_id]
+
+    # Remove any existing votes for that activity just in case
+    await db.execute(
+        delete(Vote).where(Vote.event_id == event_id, Vote.activity_id == activity_id)
+    )
+
+    await db.commit()
+    await db.refresh(event)
+
+    # Hydrate votes + user names for response
+    result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .where(Event.id == event_id)
+    )
+    event = result.scalar_one_or_none()
+    return enhance_event_with_user_names_helper(event)
 
 @router.delete("/events/{event_id}")
 async def delete_event(
