@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
+from sqlalchemy.orm import selectinload
 from typing import List
 from uuid import UUID, uuid4
 from datetime import datetime
@@ -205,8 +206,13 @@ async def delete_room(
 
 @router.get("/rooms/{room_id}/events", response_model=List[EventSchema])
 async def get_room_events(room_id: UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Event).where(Event.room_id == room_id))
-    return result.scalars().all()
+    result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .where(Event.room_id == room_id)
+    )
+    events = result.scalars().all()
+    return [enhance_event_with_user_names_helper(e) for e in events]
 
 def enhance_event_with_user_names_helper(event):
     """Add user_name to votes from user relationship"""
@@ -239,7 +245,11 @@ async def create_event(
 # --- Events ---
 @router.get("/events/{event_id}", response_model=EventSchema)
 async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Event).where(Event.id == event_id))
+    result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .where(Event.id == event_id)
+    )
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -279,51 +289,32 @@ async def update_event_phase(event_id: UUID, phase_in: PhaseUpdate, db: AsyncSes
     return event
 
 @router.post("/events/{event_id}/votes", response_model=EventSchema)
-async def vote_on_activity(event_id: UUID, vote_in: VoteCreate, db: AsyncSession = Depends(get_db)):
-    from app.models.domain import User, Vote as VoteModel
+async def vote_on_activity(
+    event_id: UUID,
+    vote_in: VoteCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from app.models.domain import Vote as VoteModel
 
-    # Get or create a mock user for now (in production, this would come from auth token)
-    user_result = await db.execute(
-        select(User).where(User.email == "max.mustermann@firma.at")
-    )
-    user = user_result.scalar_one_or_none()
-
-    if not user:
-        # Create mock user if doesn't exist
-        from app.models.domain import User as UserModel
-        user = UserModel(
-            id=uuid4(),
-            email="max.mustermann@firma.at",
-            username="max",
-            name="Max Mustermann",
-            hashed_password="mock_password",  # In production, this would be properly hashed
-            is_active=True,
-            created_at=datetime.utcnow()
-        )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-
-    # Check if vote already exists
+    # Check if vote already exists for this user/activity/event
     existing_vote_result = await db.execute(
         select(VoteModel).where(
             VoteModel.event_id == event_id,
             VoteModel.activity_id == vote_in.activity_id,
-            VoteModel.user_id == user.id
+            VoteModel.user_id == current_user.id
         )
     )
     existing_vote = existing_vote_result.scalar_one_or_none()
 
     if existing_vote:
-        # Update existing vote
         existing_vote.vote = vote_in.vote
         existing_vote.voted_at = datetime.utcnow()
     else:
-        # Create new vote
         new_vote = VoteModel(
             event_id=event_id,
             activity_id=vote_in.activity_id,
-            user_id=user.id,
+            user_id=current_user.id,
             vote=vote_in.vote,
             voted_at=datetime.utcnow()
         )
@@ -331,13 +322,16 @@ async def vote_on_activity(event_id: UUID, vote_in: VoteCreate, db: AsyncSession
 
     await db.commit()
 
-    # Return the updated event
-    result = await db.execute(select(Event).where(Event.id == event_id))
+    # Return the updated event with votes and user names hydrated
+    result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .where(Event.id == event_id)
+    )
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # Add user names to votes
     event = enhance_event_with_user_names_helper(event)
 
     return event 

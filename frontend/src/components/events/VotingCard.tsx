@@ -27,6 +27,8 @@ export function VotingCard({
   const totalVotes = forVotes + againstVotes + abstainVotes;
   
   const userVote = votes?.votes.find((v) => v.userId === currentUserId)?.vote;
+  const userIsFor = userVote === "for";
+  const userIsAgainst = userVote === "against";
 
   const score = forVotes - againstVotes;
 
@@ -117,20 +119,22 @@ export function VotingCard({
                 {/* Score */}
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-success font-medium">{forVotes}</span>
-                    <ThumbsUp className="h-3.5 w-3.5 text-success" />
+                    <span className={cn("font-medium", userIsFor ? "text-success" : "text-muted-foreground")}>{forVotes}</span>
+                    <ThumbsUp className={cn("h-3.5 w-3.5", userIsFor ? "text-success" : "text-muted-foreground")}/>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-destructive font-medium">{againstVotes}</span>
-                    <ThumbsDown className="h-3.5 w-3.5 text-destructive" />
+                    <span className={cn("font-medium", userIsAgainst ? "text-destructive" : "text-muted-foreground")}>{againstVotes}</span>
+                    <ThumbsDown className={cn("h-3.5 w-3.5", userIsAgainst ? "text-destructive" : "text-muted-foreground")}/>
                   </div>
                   <div className="px-2 py-1 rounded-lg bg-secondary">
-                    <span className={cn(
-                      "font-semibold",
-                      score > 0 && "text-success",
-                      score < 0 && "text-destructive",
-                      score === 0 && "text-muted-foreground"
-                    )}>
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        userIsFor && "text-success",
+                        userIsAgainst && "text-destructive",
+                        !userVote && "text-muted-foreground"
+                      )}
+                    >
                       {score > 0 ? `+${score}` : score}
                     </span>
                   </div>

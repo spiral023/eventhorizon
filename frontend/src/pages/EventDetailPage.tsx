@@ -28,6 +28,7 @@ import {
   formatBudget,
   CategoryLabels
 } from "@/types/domain";
+import { useAuthStore } from "@/stores/authStore";
 import { canTransition, getNextPhases } from "@/utils/phaseStateMachine";
 import { cn } from "@/lib/utils";
 
@@ -38,8 +39,8 @@ export default function EventDetailPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-
-  const currentUserId = "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1"; // Backend Mock User ID
+  const currentUser = useAuthStore((state) => state.user);
+  const currentUserId = currentUser?.id ?? "";
 
   useEffect(() => {
     const fetchData = async () => {
