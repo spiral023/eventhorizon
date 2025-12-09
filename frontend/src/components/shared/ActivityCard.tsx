@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScaleBar } from "@/components/shared/ScaleBar";
 import type { Activity } from "@/types/domain";
-import { CategoryLabels, RegionLabels, CategoryColors, RiskLevelLabels, RiskLevelColors } from "@/types/domain";
+import { CategoryLabels, RegionLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
 interface ActivityCardProps {
@@ -59,23 +59,13 @@ export function ActivityCard({
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         
         {/* Category Badge */}
-        <Badge 
+        <Badge
           className={cn(
             "absolute top-3 left-3 rounded-lg font-medium",
             CategoryColors[activity.category]
           )}
         >
           {CategoryLabels[activity.category]}
-        </Badge>
-
-        {/* Risk Level */}
-        <Badge 
-          className={cn(
-            "absolute top-3 left-20 rounded-lg font-medium",
-            RiskLevelColors[activity.riskLevel]
-          )}
-        >
-          {RiskLevelLabels[activity.riskLevel]}
         </Badge>
 
         {/* Favorite Button */}

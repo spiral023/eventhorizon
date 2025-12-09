@@ -30,13 +30,11 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { ScaleBar } from "@/components/shared/ScaleBar";
 import { getActivityById, isFavorite, toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
-import { 
-  CategoryLabels, 
-  CategoryColors, 
-  RegionLabels, 
-  SeasonLabels,
-  RiskLevelLabels,
-  RiskLevelColors
+import {
+  CategoryLabels,
+  CategoryColors,
+  RegionLabels,
+  SeasonLabels
 } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -142,9 +140,6 @@ export default function ActivityDetailPage() {
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <Badge className={cn(CategoryColors[activity.category])}>
               {CategoryLabels[activity.category]}
-            </Badge>
-            <Badge variant="secondary" className={cn(RiskLevelColors[activity.riskLevel])}>
-              Risiko: {RiskLevelLabels[activity.riskLevel]}
             </Badge>
             <Badge variant="outline" className="bg-black/35 text-white border-white/30 shadow-sm backdrop-blur-sm">
               {SeasonLabels[activity.season]}
