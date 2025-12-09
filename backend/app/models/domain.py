@@ -79,17 +79,29 @@ user_favorites = Table(
 
 class User(Base):
     __tablename__ = "user"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=False)
     avatar_url = Column(String)
+    phone = Column(String)
     department = Column(String)
+    position = Column(String)
+    location = Column(String)
     birthday = Column(DateTime)
+    bio = Column(Text)
+    hobbies = Column(ARRAY(String))
+    # Preferences
+    activity_preferences = Column(JSON)  # {physical, mental, social, creative}
+    dietary_restrictions = Column(ARRAY(String))
+    allergies = Column(ARRAY(String))
+    preferred_group_size = Column(String)  # small, medium, large, any
+    travel_willingness = Column(String)  # local, regional, national
+    budget_preference = Column(String)  # low, medium, high, any
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
-    
+
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships

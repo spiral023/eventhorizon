@@ -13,14 +13,38 @@ class UserBase(BaseSchema):
     username: str
     name: str
     avatar_url: Optional[str] = None
+    phone: Optional[str] = None
     department: Optional[str] = None
+    position: Optional[str] = None
+    location: Optional[str] = None
+    birthday: Optional[datetime] = None
+    bio: Optional[str] = None
+    hobbies: Optional[List[str]] = None
+    activity_preferences: Optional[Any] = None
+    dietary_restrictions: Optional[List[str]] = None
+    allergies: Optional[List[str]] = None
+    preferred_group_size: Optional[str] = None
+    travel_willingness: Optional[str] = None
+    budget_preference: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
 
 class UserUpdate(BaseSchema):
     name: Optional[str] = None
+    phone: Optional[str] = None
     department: Optional[str] = None
+    position: Optional[str] = None
+    location: Optional[str] = None
+    birthday: Optional[datetime] = None
+    bio: Optional[str] = None
+    hobbies: Optional[List[str]] = None
+    activity_preferences: Optional[Any] = None
+    dietary_restrictions: Optional[List[str]] = None
+    allergies: Optional[List[str]] = None
+    preferred_group_size: Optional[str] = None
+    travel_willingness: Optional[str] = None
+    budget_preference: Optional[str] = None
     avatar_url: Optional[str] = None
 
 class User(UserBase):

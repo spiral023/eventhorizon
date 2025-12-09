@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { User, Mail, Building, Calendar, Heart, Phone, MapPin, Utensils, AlertTriangle, Star, Activity, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Building, Calendar, Heart, Phone, MapPin, Star, Activity, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EditProfileDialog } from "@/components/shared/EditProfileDialog";
 import { Progress } from "@/components/ui/progress";
+import { PageLoading } from "@/components/shared/PageLoading";
+import { PageError } from "@/components/shared/PageError";
+import { getCurrentUser } from "@/services/apiClient";
 
 export interface UserProfile {
   name: string;
@@ -15,7 +18,7 @@ export interface UserProfile {
   department: string;
   position?: string;
   location?: string;
-  birthday: string;
+  birthday?: string;
   avatarUrl: string;
   hobbies: string[];
   // Neue Felder
@@ -30,49 +33,67 @@ export interface UserProfile {
   preferredGroupSize: "small" | "medium" | "large" | "any";
   travelWillingness: "local" | "regional" | "national";
   budgetPreference: "low" | "medium" | "high" | "any";
-  emergencyContact?: {
-    name: string;
-    phone: string;
-    relation: string;
-  };
   bio?: string;
 }
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<UserProfile>({
-    name: "Max Mustermann",
-    email: "max.mustermann@firma.at",
-    phone: "+43 664 123 4567",
-    department: "Marketing",
-    position: "Team Lead",
-    location: "Linz",
-    birthday: "15. März",
-    avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop",
-    hobbies: ["Wandern", "Fotografie", "Kochen"],
-    dietaryRestrictions: ["Vegetarisch"],
-    allergies: [],
-    activityPreferences: {
-      physical: 3,
-      mental: 4,
-      social: 5,
-      creative: 2,
-    },
-    preferredGroupSize: "medium",
-    travelWillingness: "regional",
-    budgetPreference: "medium",
-    emergencyContact: {
-      name: "Anna Mustermann",
-      phone: "+43 664 987 6543",
-      relation: "Partnerin",
-    },
-    bio: "Begeisterter Teamplayer mit Leidenschaft für kreative Lösungen und Outdoor-Aktivitäten.",
-  });
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const loadUser = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await getCurrentUser();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      if (result.data) {
+        // Map API user to UserProfile with default values
+        setUser({
+          name: result.data.name,
+          email: result.data.email,
+          phone: result.data.phone,
+          department: result.data.department || "",
+          position: result.data.position,
+          location: result.data.location,
+          birthday: result.data.birthday,
+          avatarUrl: result.data.avatarUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop",
+          bio: result.data.bio,
+          hobbies: result.data.hobbies || [],
+          dietaryRestrictions: result.data.dietaryRestrictions || [],
+          allergies: result.data.allergies || [],
+          activityPreferences: result.data.activityPreferences || {
+            physical: 3,
+            mental: 4,
+            social: 5,
+            creative: 2,
+          },
+          preferredGroupSize: result.data.preferredGroupSize || "medium",
+          travelWillingness: result.data.travelWillingness || "regional",
+          budgetPreference: result.data.budgetPreference || "medium",
+        });
+      }
+    } catch (err) {
+      setError("Profil konnte nicht geladen werden.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleProfileUpdate = (updatedUser: Partial<UserProfile>) => {
-    setUser((prev) => ({
-      ...prev,
-      ...updatedUser,
-    }));
+    setUser((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        ...updatedUser,
+      };
+    });
   };
 
   const groupSizeLabels = {
@@ -96,8 +117,9 @@ export default function ProfilePage() {
   };
 
   const profileCompleteness = () => {
+    if (!user) return 0;
     let filled = 0;
-    const total = 12;
+    const total = 10;
     if (user.name) filled++;
     if (user.email) filled++;
     if (user.phone) filled++;
@@ -107,11 +129,33 @@ export default function ProfilePage() {
     if (user.birthday) filled++;
     if (user.hobbies.length > 0) filled++;
     if (user.bio) filled++;
-    if (user.dietaryRestrictions.length > 0 || user.allergies.length > 0) filled++;
-    if (user.emergencyContact?.name) filled++;
     if (user.activityPreferences) filled++;
     return Math.round((filled / total) * 100);
   };
+
+  if (isLoading) {
+    return (
+      <div>
+        <PageHeader
+          title="Mein Profil"
+          description="Verwalte deine persönlichen Informationen und Präferenzen."
+        />
+        <PageLoading />
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div>
+        <PageHeader
+          title="Mein Profil"
+          description="Verwalte deine persönlichen Informationen und Präferenzen."
+        />
+        <PageError message={error || "Profil nicht gefunden"} onRetry={loadUser} />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -171,10 +215,12 @@ export default function ProfilePage() {
                   <Building className="h-4 w-4 flex-shrink-0" />
                   <span>{user.department}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4 flex-shrink-0" />
-                  <span>Geburtstag: {user.birthday}</span>
-                </div>
+                {user.birthday && (
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4 flex-shrink-0" />
+                    <span>Geburtstag: {new Date(user.birthday).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -261,71 +307,6 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Dietary & Allergies */}
-          <Card className="rounded-2xl bg-card/60 border-border/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Utensils className="h-5 w-5 text-primary" />
-                Ernährung & Allergien
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium mb-2">Ernährungsweise</p>
-                <div className="flex flex-wrap gap-2">
-                  {user.dietaryRestrictions.length > 0 ? (
-                    user.dietaryRestrictions.map((item) => (
-                      <Badge key={item} variant="secondary" className="rounded-lg">
-                        {item}
-                      </Badge>
-                    ))
-                  ) : (
-                    <span className="text-sm text-muted-foreground">Keine Einschränkungen</span>
-                  )}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium mb-2">Allergien & Unverträglichkeiten</p>
-                <div className="flex flex-wrap gap-2">
-                  {user.allergies.length > 0 ? (
-                    user.allergies.map((item) => (
-                      <Badge key={item} variant="destructive" className="rounded-lg">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        {item}
-                      </Badge>
-                    ))
-                  ) : (
-                    <span className="text-sm text-muted-foreground">Keine bekannt</span>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Emergency Contact */}
-          {user.emergencyContact && (
-            <Card className="rounded-2xl bg-card/60 border-border/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <AlertTriangle className="h-5 w-5 text-warning" />
-                  Notfallkontakt
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback>{user.emergencyContact.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{user.emergencyContact.name}</p>
-                    <p className="text-sm text-muted-foreground">{user.emergencyContact.relation}</p>
-                    <p className="text-sm text-muted-foreground">{user.emergencyContact.phone}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Quick Actions */}
           <Card className="rounded-2xl bg-card/60 border-border/50">

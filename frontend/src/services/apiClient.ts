@@ -254,8 +254,19 @@ function mapUserFromApi(apiUser: any): User {
     username: apiUser.username || apiUser.email,
     name: apiUser.name,
     avatarUrl: apiUser.avatar_url,
+    phone: apiUser.phone,
     department: apiUser.department,
+    position: apiUser.position,
+    location: apiUser.location,
     birthday: apiUser.birthday,
+    bio: apiUser.bio,
+    hobbies: apiUser.hobbies || [],
+    activityPreferences: apiUser.activity_preferences,
+    dietaryRestrictions: apiUser.dietary_restrictions || [],
+    allergies: apiUser.allergies || [],
+    preferredGroupSize: apiUser.preferred_group_size,
+    travelWillingness: apiUser.travel_willingness,
+    budgetPreference: apiUser.budget_preference,
     createdAt: apiUser.created_at,
     isActive: apiUser.is_active,
     favoriteActivityIds: apiUser.favorite_activity_ids,
@@ -361,7 +372,64 @@ export async function getCurrentUser(): Promise<ApiResult<User | null>> {
     await delay(100);
     return { data: isLoggedIn ? currentUser : null };
   }
-  const result = await request<any>('/auth/me');
+  const result = await request<any>('/users/me');
+  if (result.data) {
+    return { data: mapUserFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
+
+export async function updateUser(updates: {
+  name?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  location?: string;
+  birthday?: string;
+  bio?: string;
+  hobbies?: string[];
+  activityPreferences?: any;
+  dietaryRestrictions?: string[];
+  allergies?: string[];
+  preferredGroupSize?: string;
+  travelWillingness?: string;
+  budgetPreference?: string;
+  avatarUrl?: string;
+}): Promise<ApiResult<User | null>> {
+  if (USE_MOCKS) {
+    await delay(200);
+    if (!isLoggedIn) {
+      return { data: null, error: { code: "UNAUTHORIZED", message: "Nicht angemeldet" } };
+    }
+
+    // Update mock user
+    Object.assign(currentUser, updates);
+    return { data: currentUser };
+  }
+
+  // Convert camelCase to snake_case for API
+  const apiUpdates: any = {};
+  if (updates.name !== undefined) apiUpdates.name = updates.name;
+  if (updates.phone !== undefined) apiUpdates.phone = updates.phone;
+  if (updates.department !== undefined) apiUpdates.department = updates.department;
+  if (updates.position !== undefined) apiUpdates.position = updates.position;
+  if (updates.location !== undefined) apiUpdates.location = updates.location;
+  if (updates.birthday !== undefined) apiUpdates.birthday = updates.birthday;
+  if (updates.bio !== undefined) apiUpdates.bio = updates.bio;
+  if (updates.hobbies !== undefined) apiUpdates.hobbies = updates.hobbies;
+  if (updates.activityPreferences !== undefined) apiUpdates.activity_preferences = updates.activityPreferences;
+  if (updates.dietaryRestrictions !== undefined) apiUpdates.dietary_restrictions = updates.dietaryRestrictions;
+  if (updates.allergies !== undefined) apiUpdates.allergies = updates.allergies;
+  if (updates.preferredGroupSize !== undefined) apiUpdates.preferred_group_size = updates.preferredGroupSize;
+  if (updates.travelWillingness !== undefined) apiUpdates.travel_willingness = updates.travelWillingness;
+  if (updates.budgetPreference !== undefined) apiUpdates.budget_preference = updates.budgetPreference;
+  if (updates.avatarUrl !== undefined) apiUpdates.avatar_url = updates.avatarUrl;
+
+  const result = await request<any>('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify(apiUpdates),
+  });
+
   if (result.data) {
     return { data: mapUserFromApi(result.data) };
   }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings } from "lucide-react";
+import { Settings, CalendarIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,8 +23,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { format, parse, isValid } from "date-fns";
+import { de } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { updateUser } from "@/services/apiClient";
 import type { UserProfile } from "@/pages/ProfilePage";
 
 interface EditProfileDialogProps {
@@ -41,9 +51,15 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [department, setDepartment] = useState(user.department);
   const [position, setPosition] = useState(user.position || "");
   const [location, setLocation] = useState(user.location || "");
-  const [birthday, setBirthday] = useState(user.birthday);
+  const [birthday, setBirthday] = useState<Date | undefined>(
+    user.birthday ? new Date(user.birthday) : undefined
+  );
+  const [birthdayInput, setBirthdayInput] = useState<string>(
+    user.birthday ? format(new Date(user.birthday), "dd.MM.yyyy") : ""
+  );
   const [bio, setBio] = useState(user.bio || "");
-  const [hobbiesInput, setHobbiesInput] = useState(user.hobbies.join(", "));
+  const [hobbies, setHobbies] = useState<string[]>(user.hobbies);
+  const [newHobby, setNewHobby] = useState("");
   
   // Preferences
   const [physical, setPhysical] = useState([user.activityPreferences.physical]);
@@ -56,6 +72,41 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
 
   const [loading, setLoading] = useState(false);
 
+  const handleBirthdayInputChange = (value: string) => {
+    setBirthdayInput(value);
+
+    // Try to parse the date in format dd.MM.yyyy
+    const parsedDate = parse(value, "dd.MM.yyyy", new Date());
+
+    if (isValid(parsedDate) && parsedDate <= new Date() && parsedDate >= new Date("1900-01-01")) {
+      setBirthday(parsedDate);
+    }
+  };
+
+  const handleBirthdayCalendarChange = (date: Date | undefined) => {
+    setBirthday(date);
+    setBirthdayInput(date ? format(date, "dd.MM.yyyy") : "");
+  };
+
+  const addHobby = () => {
+    const trimmed = newHobby.trim();
+    if (trimmed && !hobbies.includes(trimmed)) {
+      setHobbies([...hobbies, trimmed]);
+      setNewHobby("");
+    }
+  };
+
+  const removeHobby = (hobbyToRemove: string) => {
+    setHobbies(hobbies.filter((h) => h !== hobbyToRemove));
+  };
+
+  const handleHobbyKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addHobby();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -65,17 +116,42 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
 
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
+      // Call API to update user
+      const result = await updateUser({
+        name: name.trim(),
+        phone: phone.trim() || undefined,
+        department: department.trim(),
+        position: position.trim() || undefined,
+        location: location.trim() || undefined,
+        birthday: birthday ? birthday.toISOString().split('T')[0] : undefined,
+        bio: bio.trim() || undefined,
+        hobbies: hobbies,
+        activityPreferences: {
+          physical: physical[0],
+          mental: mental[0],
+          social: social[0],
+          creative: creative[0],
+        },
+        preferredGroupSize: preferredGroupSize,
+        travelWillingness: travelWillingness,
+        budgetPreference: budgetPreference,
+      });
+
+      if (result.error) {
+        toast.error(result.error.message || "Fehler beim Aktualisieren des Profils");
+        return;
+      }
+
+      // Update local state with additional fields that aren't stored in DB yet
       const updatedUser: Partial<UserProfile> = {
         name: name.trim(),
         phone: phone.trim() || undefined,
         department: department.trim(),
         position: position.trim() || undefined,
         location: location.trim() || undefined,
-        birthday: birthday.trim(),
+        birthday: birthday ? birthday.toISOString().split('T')[0] : undefined,
         bio: bio.trim() || undefined,
-        hobbies: hobbiesInput.split(",").map((h) => h.trim()).filter(Boolean),
+        hobbies: hobbies,
         activityPreferences: {
           physical: physical[0],
           mental: mental[0],
@@ -86,7 +162,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         travelWillingness,
         budgetPreference,
       };
-      
+
       toast.success("Profil erfolgreich aktualisiert!");
       onProfileUpdated?.(updatedUser);
       setOpen(false);
@@ -180,14 +256,43 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="profile-birthday">Geburtstag</Label>
-                    <Input
-                      id="profile-birthday"
-                      placeholder="z.B. 15. März"
-                      value={birthday}
-                      onChange={(e) => setBirthday(e.target.value)}
-                      className="rounded-xl"
-                    />
+                    <Label htmlFor="profile-birthday">Geburtstag (optional)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="profile-birthday"
+                        placeholder="TT.MM.JJJJ"
+                        value={birthdayInput}
+                        onChange={(e) => handleBirthdayInputChange(e.target.value)}
+                        className="rounded-xl"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="rounded-xl flex-shrink-0"
+                          >
+                            <CalendarIcon className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                          <Calendar
+                            mode="single"
+                            selected={birthday}
+                            onSelect={handleBirthdayCalendarChange}
+                            initialFocus
+                            locale={de}
+                            captionLayout="dropdown-buttons"
+                            fromYear={1900}
+                            toYear={new Date().getFullYear()}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
                 </div>
 
@@ -204,14 +309,45 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="profile-hobbies">Hobbys (kommagetrennt)</Label>
-                  <Input
-                    id="profile-hobbies"
-                    placeholder="z.B. Wandern, Fotografie, Kochen"
-                    value={hobbiesInput}
-                    onChange={(e) => setHobbiesInput(e.target.value)}
-                    className="rounded-xl"
-                  />
+                  <Label htmlFor="profile-hobbies">Hobbys</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="profile-hobbies"
+                      placeholder="z.B. Wandern"
+                      value={newHobby}
+                      onChange={(e) => setNewHobby(e.target.value)}
+                      onKeyDown={handleHobbyKeyDown}
+                      className="rounded-xl"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addHobby}
+                      className="rounded-xl flex-shrink-0"
+                    >
+                      Hinzufügen
+                    </Button>
+                  </div>
+                  {hobbies.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {hobbies.map((hobby) => (
+                        <Badge
+                          key={hobby}
+                          variant="secondary"
+                          className="rounded-lg px-3 py-1 flex items-center gap-1"
+                        >
+                          {hobby}
+                          <button
+                            type="button"
+                            onClick={() => removeHobby(hobby)}
+                            className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
@@ -22,6 +23,9 @@ async def update_profile(
 ) -> UserSchema:
     data = updates.model_dump(exclude_unset=True)
     for field, value in data.items():
+        # Convert timezone-aware datetime to naive datetime for birthday
+        if field == "birthday" and value is not None and isinstance(value, datetime):
+            value = value.replace(tzinfo=None)
         setattr(current_user, field, value)
     db.add(current_user)
     await db.commit()
