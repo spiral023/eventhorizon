@@ -22,6 +22,18 @@ export function ActivityCard({
   onClick,
   showDetails = false
 }: ActivityCardProps) {
+  const formatDuration = () => {
+    if (activity.duration) return activity.duration;
+    if (typeof activity.typicalDurationHours === "number") {
+      const hours = activity.typicalDurationHours;
+      const formatted = hours % 1 === 0
+        ? hours.toString()
+        : hours.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      return `${formatted}h`;
+    }
+    return "-";
+  };
+
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onFavoriteToggle?.(activity.id);
@@ -113,7 +125,7 @@ export function ActivityCard({
           </div>
           <div className="flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
-            <span>{activity.duration}</span>
+            <span>{formatDuration()}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Users className="h-3.5 w-3.5" />
@@ -154,7 +166,7 @@ export function ActivityCard({
         {/* Quick Stats Icons */}
         {!showDetails && (
           <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-1" title="Körperliche Intensität">
+            <div className="flex items-center gap-1" title="Koerperliche Intensitaet">
               <Zap className={cn(
                 "h-4 w-4",
                 activity.physicalIntensity >= 4 ? "text-destructive" : 
@@ -169,18 +181,31 @@ export function ActivityCard({
               )} />
               <span className="text-xs">{activity.mentalChallenge}/5</span>
             </div>
-          <div className="flex items-center gap-1" title="Spaßfaktor">
-            <Sparkles className={cn(
-              "h-4 w-4",
-              activity.funFactor >= 4 ? "text-success" : "text-muted-foreground"
-            )} />
-            <span className="text-xs">{activity.funFactor}/5</span>
+            <div className="flex items-center gap-1" title="Soziale Interaktion">
+              <Users className={cn(
+                "h-4 w-4",
+                activity.socialInteractionLevel >= 4 ? "text-primary" : "text-muted-foreground"
+              )} />
+              <span className="text-xs">{activity.socialInteractionLevel ?? "-"}/5</span>
+            </div>
+            <div className="flex items-center gap-1" title="Spassfaktor">
+              <Sparkles className={cn(
+                "h-4 w-4",
+                activity.funFactor >= 4 ? "text-success" : "text-muted-foreground"
+              )} />
+              <span className="text-xs">{activity.funFactor}/5</span>
+            </div>
+            <div className="flex items-center gap-3 ml-auto text-xs text-muted-foreground">
+              <div className="flex items-center gap-1" title="Favoriten">
+                <Heart className={cn("h-4 w-4", (activity.favoritesCount ?? 0) > 0 && "text-destructive")} />
+                <span>{activity.favoritesCount ?? 0}</span>
+              </div>
+              <div className="flex items-center gap-1" title="Externes Rating">
+                <Star className="h-4 w-4 text-warning fill-warning" />
+                <span>{activity.externalRating !== undefined ? activity.externalRating.toFixed(1) : "–"}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-1 ml-auto text-xs text-muted-foreground" title="Favoriten">
-            <Heart className={cn("h-4 w-4", (activity.favoritesCount ?? 0) > 0 && "text-destructive")} />
-            <span>{activity.favoritesCount ?? 0}</span>
-          </div>
-        </div>
         )}
 
         {/* Tags */}

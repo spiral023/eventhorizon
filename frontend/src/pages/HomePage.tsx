@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Sparkles, Users, Compass, TrendingUp } from "lucide-react";
+import { ArrowRight, Sparkles, Users, TrendingUp, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 export default function HomePage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [roomCount, setRoomCount] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function HomePage() {
         getFavoriteActivityIds(),
       ]);
       setRooms(roomsResult.data.slice(0, 2));
+      setRoomCount(roomsResult.data.length);
       setActivities(sortTopByFavorites(activitiesResult.data, 4));
       setFavoriteIds(favoritesResult.data || []);
       setLoading(false);
@@ -79,8 +81,8 @@ export default function HomePage() {
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Aktive Räume", value: "4", icon: Users, color: "text-primary" },
-          { label: "Aktivitäten favorisiert", value: "12", icon: Compass, color: "text-warning" },
+          { label: "Aktive Räume", value: roomCount.toString(), icon: Users, color: "text-primary" },
+          { label: "Aktivitäten favorisiert", value: favoriteIds.length.toString(), icon: Heart, color: "text-destructive" },
           { label: "Events diesen Monat", value: "3", icon: TrendingUp, color: "text-success" },
           { label: "Offene Votings", value: "3", icon: Sparkles, color: "text-purple-400" },
         ].map((stat, index) => (
@@ -120,13 +122,13 @@ export default function HomePage() {
         </div>
         
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[1, 2].map((i) => (
               <div key={i} className="h-32 rounded-2xl bg-secondary/30 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {rooms.map((room, index) => (
               <div
                 key={room.id}
