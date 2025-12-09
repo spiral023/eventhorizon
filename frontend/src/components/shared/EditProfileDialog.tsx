@@ -32,29 +32,6 @@ interface EditProfileDialogProps {
   onProfileUpdated?: (user: Partial<UserProfile>) => void;
 }
 
-const dietaryOptions = [
-  "Vegetarisch",
-  "Vegan",
-  "Pescetarisch",
-  "Glutenfrei",
-  "Laktosefrei",
-  "Halal",
-  "Koscher",
-  "Low-Carb",
-];
-
-const allergyOptions = [
-  "Nüsse",
-  "Erdnüsse",
-  "Milch",
-  "Eier",
-  "Weizen",
-  "Soja",
-  "Fisch",
-  "Schalentiere",
-  "Sesam",
-];
-
 export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogProps) {
   const [open, setOpen] = useState(false);
   
@@ -76,29 +53,8 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [preferredGroupSize, setPreferredGroupSize] = useState(user.preferredGroupSize);
   const [travelWillingness, setTravelWillingness] = useState(user.travelWillingness);
   const [budgetPreference, setBudgetPreference] = useState(user.budgetPreference);
-  
-  // Dietary
-  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(user.dietaryRestrictions);
-  const [allergies, setAllergies] = useState<string[]>(user.allergies);
-  
-  // Emergency Contact
-  const [emergencyName, setEmergencyName] = useState(user.emergencyContact?.name || "");
-  const [emergencyPhone, setEmergencyPhone] = useState(user.emergencyContact?.phone || "");
-  const [emergencyRelation, setEmergencyRelation] = useState(user.emergencyContact?.relation || "");
 
   const [loading, setLoading] = useState(false);
-
-  const toggleDietary = (item: string) => {
-    setDietaryRestrictions((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
-    );
-  };
-
-  const toggleAllergy = (item: string) => {
-    setAllergies((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,15 +85,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         preferredGroupSize,
         travelWillingness,
         budgetPreference,
-        dietaryRestrictions,
-        allergies,
-        emergencyContact: emergencyName.trim()
-          ? {
-              name: emergencyName.trim(),
-              phone: emergencyPhone.trim(),
-              relation: emergencyRelation.trim(),
-            }
-          : undefined,
       };
       
       toast.success("Profil erfolgreich aktualisiert!");
@@ -168,11 +115,9 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="basic">Basis</TabsTrigger>
               <TabsTrigger value="preferences">Präferenzen</TabsTrigger>
-              <TabsTrigger value="dietary">Ernährung</TabsTrigger>
-              <TabsTrigger value="emergency">Notfall</TabsTrigger>
             </TabsList>
 
             <ScrollArea className="h-[400px] pr-4">
@@ -354,85 +299,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-              </TabsContent>
-
-              {/* Dietary */}
-              <TabsContent value="dietary" className="space-y-6 mt-0">
-                <div className="space-y-3">
-                  <Label>Ernährungsweise</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {dietaryOptions.map((item) => (
-                      <Badge
-                        key={item}
-                        variant={dietaryRestrictions.includes(item) ? "default" : "outline"}
-                        className="cursor-pointer rounded-lg"
-                        onClick={() => toggleDietary(item)}
-                      >
-                        {item}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Allergien & Unverträglichkeiten</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {allergyOptions.map((item) => (
-                      <Badge
-                        key={item}
-                        variant={allergies.includes(item) ? "destructive" : "outline"}
-                        className="cursor-pointer rounded-lg"
-                        onClick={() => toggleAllergy(item)}
-                      >
-                        {item}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Wähle alle zutreffenden Allergien aus. Diese Infos helfen bei der Event-Planung.
-                  </p>
-                </div>
-              </TabsContent>
-
-              {/* Emergency Contact */}
-              <TabsContent value="emergency" className="space-y-4 mt-0">
-                <p className="text-sm text-muted-foreground">
-                  Für Notfälle bei Aktivitäten. Diese Daten werden vertraulich behandelt.
-                </p>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="emergency-name">Name des Kontakts</Label>
-                  <Input
-                    id="emergency-name"
-                    placeholder="z.B. Anna Mustermann"
-                    value={emergencyName}
-                    onChange={(e) => setEmergencyName(e.target.value)}
-                    className="rounded-xl"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="emergency-phone">Telefonnummer</Label>
-                  <Input
-                    id="emergency-phone"
-                    type="tel"
-                    placeholder="+43 664 987 6543"
-                    value={emergencyPhone}
-                    onChange={(e) => setEmergencyPhone(e.target.value)}
-                    className="rounded-xl"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="emergency-relation">Beziehung</Label>
-                  <Input
-                    id="emergency-relation"
-                    placeholder="z.B. Partner/in, Elternteil, Freund/in"
-                    value={emergencyRelation}
-                    onChange={(e) => setEmergencyRelation(e.target.value)}
-                    className="rounded-xl"
-                  />
                 </div>
               </TabsContent>
             </ScrollArea>

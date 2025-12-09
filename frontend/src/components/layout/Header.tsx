@@ -44,7 +44,7 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-[85vw] max-w-sm overflow-y-auto">
               <SheetHeader className="px-4 pt-4 pb-2 text-left">
-                <SheetTitle>Menビ</SheetTitle>
+                <SheetTitle>Menü</SheetTitle>
               </SheetHeader>
               <SidebarContent onNavigate={() => setMobileMenuOpen(false)} />
             </SheetContent>

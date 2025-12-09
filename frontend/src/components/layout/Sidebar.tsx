@@ -28,8 +28,8 @@ interface NavItem {
 }
 
 const staticNavItems: NavItem[] = [
-  { label: "よbersicht", to: "/", icon: Home },
-  { label: "Aktivitビten", to: "/activities", icon: Compass },
+  { label: "Übersicht", to: "/", icon: Home },
+  { label: "Aktivitäten", to: "/activities", icon: Compass },
   { label: "Team-Analyse", to: "/team", icon: Sparkles },
   { label: "Karte", to: "/map", icon: Map },
 ];
@@ -130,7 +130,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
           )}
         >
           <Users className="h-5 w-5" />
-          <span className="flex-1 text-left">Rビume</span>
+          <span className="flex-1 text-left">Räume</span>
           {isRoomsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
       </CollapsibleTrigger>
@@ -146,7 +146,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
           activeClassName="bg-primary/10 text-primary not-italic"
           onClick={onNavigate}
         >
-          Alle Rビume anzeigen
+          Alle Räume anzeigen
         </NavLink>
         {roomsWithEvents.map(({ room, activeEvents }) => (
           <div key={room.id}>

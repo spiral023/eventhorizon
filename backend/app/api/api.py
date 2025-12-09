@@ -10,7 +10,7 @@ from datetime import datetime
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.core.utils import generate_room_invite_code
-from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites
+from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate
@@ -151,9 +151,51 @@ async def toggle_favorite_activity(
 
 # --- Rooms ---
 @router.get("/rooms", response_model=List[RoomSchema])
-async def get_rooms(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Room).offset(skip).limit(limit))
-    return result.scalars().all()
+async def get_rooms(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get rooms where the current user is either:
+    1. The creator (created_by_user_id = current_user.id)
+    2. A member (exists in room_members table)
+    """
+    from app.models.domain import RoomMember
+    from sqlalchemy import or_, and_
+
+    # Query for rooms where user is creator OR member
+    result = await db.execute(
+        select(Room)
+        .outerjoin(RoomMember, Room.id == RoomMember.room_id)
+        .where(
+            or_(
+                Room.created_by_user_id == current_user.id,  # User created the room
+                and_(
+                    RoomMember.user_id == current_user.id,   # User is a member
+                    RoomMember.room_id == Room.id
+                )
+            )
+        )
+        .distinct()  # Avoid duplicates if user is both creator and member
+        .offset(skip)
+        .limit(limit)
+    )
+    rooms = result.scalars().all()
+
+    # Calculate member count for each room (creator + members)
+    for room in rooms:
+        member_count_result = await db.execute(
+            select(func.count())
+            .select_from(RoomMember)
+            .where(RoomMember.room_id == room.id)
+        )
+        member_count = member_count_result.scalar_one()
+        # Add 1 for the creator if they're not already a member
+        room.member_count = member_count + 1  # Creator is always counted
+
+    return rooms
 
 @router.post("/rooms", response_model=RoomSchema)
 async def create_room(
@@ -195,10 +237,22 @@ async def create_room(
 
 @router.get("/rooms/{room_id}", response_model=RoomSchema)
 async def get_room(room_id: UUID, db: AsyncSession = Depends(get_db)):
+    from app.models.domain import RoomMember
+
     result = await db.execute(select(Room).where(Room.id == room_id))
     room = result.scalar_one_or_none()
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
+
+    # Calculate member count (creator + members)
+    member_count_result = await db.execute(
+        select(func.count())
+        .select_from(RoomMember)
+        .where(RoomMember.room_id == room.id)
+    )
+    member_count = member_count_result.scalar_one()
+    room.member_count = member_count + 1  # Creator is always counted
+
     return room
 
 @router.delete("/rooms/{room_id}")
@@ -224,6 +278,111 @@ async def delete_room(
     await db.commit()
 
     return {"message": "Room deleted successfully"}
+
+@router.post("/rooms/join", response_model=RoomSchema)
+async def join_room(
+    invite_code_data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Join a room using an invite code.
+    Creates a RoomMember entry if not already a member.
+    """
+    from app.models.domain import RoomMember
+
+    invite_code = invite_code_data.get("invite_code")
+    if not invite_code:
+        raise HTTPException(status_code=400, detail="invite_code is required")
+
+    # Find room by invite code
+    result = await db.execute(
+        select(Room).where(Room.invite_code == invite_code)
+    )
+    room = result.scalar_one_or_none()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found with this invite code")
+
+    # Check if user is already a member
+    existing_member = await db.execute(
+        select(RoomMember).where(
+            RoomMember.room_id == room.id,
+            RoomMember.user_id == current_user.id
+        )
+    )
+    if existing_member.scalar_one_or_none():
+        # Already a member, just return the room
+        return room
+
+    # Check if user is the creator (creators are implicitly members)
+    if room.created_by_user_id == current_user.id:
+        # Creator doesn't need to join explicitly, just return the room
+        return room
+
+    # Add user as a member
+    new_member = RoomMember(
+        room_id=room.id,
+        user_id=current_user.id,
+        role=RoomRole.member,
+        joined_at=datetime.utcnow()
+    )
+    db.add(new_member)
+    await db.commit()
+    await db.refresh(room)
+
+    return room
+
+@router.get("/rooms/{room_id}/members")
+async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
+    """
+    Get all members of a room including the creator.
+    Returns a list with: id, name, email, avatar_url, role, joined_at
+    """
+    from app.models.domain import RoomMember
+
+    # Get the room and its creator
+    room_result = await db.execute(select(Room).where(Room.id == room_id))
+    room = room_result.scalar_one_or_none()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    # Get the creator
+    creator_result = await db.execute(select(User).where(User.id == room.created_by_user_id))
+    creator = creator_result.scalar_one_or_none()
+
+    members_list = []
+
+    # Add creator first
+    if creator:
+        members_list.append({
+            "id": str(creator.id),
+            "name": creator.name,
+            "email": creator.email,
+            "username": creator.username,
+            "avatar_url": creator.avatar_url,
+            "role": "owner",  # Creator is always owner
+            "joined_at": room.created_at.isoformat() if room.created_at else None
+        })
+
+    # Get all other members
+    members_result = await db.execute(
+        select(RoomMember, User)
+        .join(User, RoomMember.user_id == User.id)
+        .where(RoomMember.room_id == room_id)
+    )
+
+    for room_member, user in members_result:
+        members_list.append({
+            "id": str(user.id),
+            "name": user.name,
+            "email": user.email,
+            "username": user.username,
+            "avatar_url": user.avatar_url,
+            "role": room_member.role.value if hasattr(room_member.role, 'value') else room_member.role,
+            "joined_at": room_member.joined_at.isoformat() if room_member.joined_at else None
+        })
+
+    return members_list
 
 @router.get("/rooms/{room_id}/events", response_model=List[EventSchema])
 async def get_room_events(room_id: UUID, db: AsyncSession = Depends(get_db)):

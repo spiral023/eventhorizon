@@ -19,7 +19,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ShareRoomDialog } from "@/components/shared/ShareRoomDialog";
 import { EditRoomDialog } from "@/components/shared/EditRoomDialog";
-import { getRoomById, getEventsByRoom, deleteEvent } from "@/services/apiClient";
+import { getRoomById, getEventsByRoom, deleteEvent, getRoomMembers, type RoomMember } from "@/services/apiClient";
 import type { Room, Event } from "@/types/domain";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -29,6 +29,7 @@ export default function RoomDetailPage() {
   const navigate = useNavigate();
   const [room, setRoom] = useState<Room | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
+  const [members, setMembers] = useState<RoomMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogEvent, setDeleteDialogEvent] = useState<Event | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -37,12 +38,14 @@ export default function RoomDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!roomId) return;
-      const [roomResult, eventsResult] = await Promise.all([
+      const [roomResult, eventsResult, membersResult] = await Promise.all([
         getRoomById(roomId),
         getEventsByRoom(roomId),
+        getRoomMembers(roomId),
       ]);
       setRoom(roomResult.data);
       setEvents(eventsResult.data);
+      setMembers(membersResult.data || []);
       setLoading(false);
     };
     fetchData();
@@ -258,28 +261,41 @@ export default function RoomDetailPage() {
         </TabsContent>
 
         <TabsContent value="members">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {room.members?.map((member, index) => (
-              <div
-                key={member.userId}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-card/60 border border-border/50 animate-fade-in-up"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={member.avatarUrl} />
-                  <AvatarFallback>{member.userName.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{member.userName}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+          {members.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="Keine Mitglieder"
+              description="Lade Mitglieder ein, um gemeinsam Events zu planen."
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {members.map((member, index) => (
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-card/60 border border-border/50 animate-fade-in-up hover:bg-card/80 transition-colors"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={member.avatarUrl} />
+                    <AvatarFallback className="text-lg font-semibold">
+                      {member.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{member.name}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      @{member.username}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+                        {member.role}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )) || (
-              <p className="text-muted-foreground col-span-full text-center py-8">
-                Mitgliederliste nicht verfügbar
-              </p>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

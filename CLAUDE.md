@@ -35,6 +35,156 @@ npm run preview
 
 **Note**: All commands should be run from the `frontend/` directory.
 
+## Docker Development Environment
+
+### Running Containers
+
+The backend and database run in Docker containers. Frontend runs locally via Vite dev server.
+
+**Active Containers:**
+- `eventhorizon-backend-1` - FastAPI backend (Python/uvicorn) on port 8000
+- `eventhorizon-db-1` - PostgreSQL 15 database on port 5432
+
+**Default URLs:**
+- Frontend: `http://localhost:5173` (Vite dev server)
+- Backend API: `http://localhost:8000/api/v1`
+- Backend Health: `http://localhost:8000/api/v1/health`
+
+### Common Docker Commands
+
+```bash
+# View running containers
+docker ps
+
+# View all containers (including stopped)
+docker ps -a
+
+# Start containers (from docker-compose.yml)
+docker compose up -d
+
+# Stop containers
+docker compose down
+
+# Restart backend (after code changes)
+docker restart eventhorizon-backend-1
+
+# Restart database
+docker restart eventhorizon-db-1
+
+# View backend logs
+docker logs eventhorizon-backend-1 --tail 50 -f
+
+# View database logs
+docker logs eventhorizon-db-1 --tail 50 -f
+
+# Check backend health
+curl http://localhost:8000/api/v1/health
+```
+
+### Backend Code Changes
+
+**IMPORTANT**: After changing Python code in `backend/app/`, you MUST restart the backend container:
+
+```bash
+docker restart eventhorizon-backend-1
+
+# Wait a few seconds, then verify it's running
+sleep 5 && curl http://localhost:8000/api/v1/health
+```
+
+The backend runs with uvicorn but does NOT have auto-reload enabled in the Docker container. Always restart after code changes.
+
+### Database Access
+
+**Database Credentials:**
+- Host: `localhost`
+- Port: `5432`
+- Database: `eventhorizon`
+- User: Check docker-compose.yml or .env
+- Password: Check docker-compose.yml or .env
+
+**Accessing PostgreSQL CLI:**
+
+```bash
+# Find the correct user from the container environment
+docker exec -it eventhorizon-db-1 env | grep POSTGRES
+
+# Connect to psql (adjust username based on above)
+docker exec -it eventhorizon-db-1 psql -U <username> -d eventhorizon
+
+# Example queries once connected:
+# List tables
+\dt
+
+# Describe a table
+\d room
+
+# Query data
+SELECT id, name, invite_code FROM room;
+
+# Exit psql
+\q
+```
+
+**Common Database Operations:**
+
+```bash
+# Backup database
+docker exec eventhorizon-db-1 pg_dump -U <username> eventhorizon > backup.sql
+
+# Restore database
+docker exec -i eventhorizon-db-1 psql -U <username> eventhorizon < backup.sql
+
+# View database size
+docker exec eventhorizon-db-1 psql -U <username> -d eventhorizon -c "SELECT pg_size_pretty(pg_database_size('eventhorizon'));"
+```
+
+### Troubleshooting
+
+**Backend not responding:**
+1. Check container status: `docker ps | grep backend`
+2. View logs: `docker logs eventhorizon-backend-1 --tail 100`
+3. Restart: `docker restart eventhorizon-backend-1`
+
+**Database connection issues:**
+1. Check container status: `docker ps | grep db`
+2. Verify port: `docker port eventhorizon-db-1`
+3. Check logs: `docker logs eventhorizon-db-1 --tail 50`
+
+**Container won't start:**
+1. Check for port conflicts: `docker ps -a`
+2. Remove old containers: `docker compose down`
+3. Rebuild: `docker compose up -d --build`
+
+**API returns 502/503:**
+- Backend container is likely crashed or restarting
+- Check logs: `docker logs eventhorizon-backend-1`
+- May need to fix Python errors before restart works
+
+### Environment Variables
+
+Frontend uses `frontend/.env`:
+```
+VITE_USE_MOCKS=false  # Set to 'true' to use mock data instead of backend
+```
+
+Backend configuration is in `backend/.env` or `docker-compose.yml`.
+
+### Database Migrations
+
+If using Alembic for migrations:
+
+```bash
+# Run migrations inside the container
+docker exec eventhorizon-backend-1 alembic upgrade head
+
+# Create new migration
+docker exec eventhorizon-backend-1 alembic revision --autogenerate -m "Description"
+
+# View migration history
+docker exec eventhorizon-backend-1 alembic history
+```
+
 ## Core Architecture
 
 ### Event Phase State Machine

@@ -542,6 +542,67 @@ export async function joinRoom(inviteCode: string): Promise<ApiResult<Room>> {
   return { data: null as any, error: result.error };
 }
 
+export interface RoomMember {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  avatarUrl?: string;
+  role: string;
+  joinedAt: string;
+}
+
+export async function getRoomMembers(roomId: string): Promise<ApiResult<RoomMember[]>> {
+  if (USE_MOCKS) {
+    await delay(200);
+    // Mock members data
+    const mockMembers: RoomMember[] = [
+      {
+        id: "user-current",
+        name: "Max Mustermann",
+        email: "max.mustermann@firma.at",
+        username: "max",
+        avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+        role: "owner",
+        joinedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: "user-2",
+        name: "Anna Schmidt",
+        email: "anna.schmidt@firma.at",
+        username: "anna",
+        avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+        role: "admin",
+        joinedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: "user-3",
+        name: "Peter Müller",
+        email: "peter.mueller@firma.at",
+        username: "peter",
+        avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        role: "member",
+        joinedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+    return { data: mockMembers };
+  }
+  const result = await request<any[]>(`/rooms/${roomId}/members`);
+  if (result.data) {
+    const members = result.data.map((m: any) => ({
+      id: m.id,
+      name: m.name,
+      email: m.email,
+      username: m.username,
+      avatarUrl: m.avatar_url,
+      role: m.role,
+      joinedAt: m.joined_at,
+    }));
+    return { data: members };
+  }
+  return { data: [], error: result.error };
+}
+
 // --- Events ---
 
 function mapEventFromApi(apiEvent: any): Event {
