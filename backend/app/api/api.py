@@ -481,6 +481,74 @@ async def remove_proposed_activity(
     event = result.scalar_one_or_none()
     return enhance_event_with_user_names_helper(event)
 
+@router.patch("/events/{event_id}/activities/{activity_id}/exclude", response_model=EventSchema)
+async def exclude_activity(
+    event_id: UUID,
+    activity_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    event_result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .where(Event.id == event_id)
+    )
+    event = event_result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event creator can exclude activities")
+
+    if event.phase != "proposal":
+        raise HTTPException(status_code=400, detail="Cannot exclude activities after proposal phase")
+
+    # Initialize excluded_activity_ids if None
+    if event.excluded_activity_ids is None:
+        event.excluded_activity_ids = []
+
+    # Add to excluded list if not already there
+    if activity_id not in event.excluded_activity_ids:
+        event.excluded_activity_ids = list(event.excluded_activity_ids) + [activity_id]
+
+    event.updated_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(event)
+
+    return enhance_event_with_user_names_helper(event)
+
+@router.patch("/events/{event_id}/activities/{activity_id}/include", response_model=EventSchema)
+async def include_activity(
+    event_id: UUID,
+    activity_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    event_result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .where(Event.id == event_id)
+    )
+    event = event_result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event creator can include activities")
+
+    if event.phase != "proposal":
+        raise HTTPException(status_code=400, detail="Cannot include activities after proposal phase")
+
+    # Remove from excluded list if present
+    if event.excluded_activity_ids and activity_id in event.excluded_activity_ids:
+        event.excluded_activity_ids = [aid for aid in event.excluded_activity_ids if aid != activity_id]
+
+    event.updated_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(event)
+
+    return enhance_event_with_user_names_helper(event)
+
 @router.delete("/events/{event_id}")
 async def delete_event(
     event_id: UUID,

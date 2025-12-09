@@ -209,6 +209,7 @@ class Event(Base):
     
     # Voting Logic
     proposed_activity_ids = Column(ARRAY(UUID(as_uuid=True))) # Simple array for now, or join table if we want "who proposed what"
+    excluded_activity_ids = Column(ARRAY(UUID(as_uuid=True))) # Activities excluded by organizer in proposal phase
     chosen_activity_id = Column(UUID(as_uuid=True), ForeignKey("activity.id"), nullable=True)
     final_date_option_id = Column(UUID(as_uuid=True), nullable=True) # FK to DateOption needs to be defined carefully to avoid circular dep
     

@@ -113,7 +113,8 @@ class EventBase(BaseSchema):
     budget_amount: Optional[float] = None
     location_region: Optional[str] = None
     budget_type: Optional[str] = "per_person"
-    proposed_activity_ids: List[UUID] = []
+    proposed_activity_ids: Optional[List[UUID]] = Field(default_factory=list)
+    excluded_activity_ids: Optional[List[UUID]] = Field(default_factory=list)
 
 class EventCreate(EventBase):
     # room_id is passed in URL usually
