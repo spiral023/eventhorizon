@@ -79,13 +79,13 @@ export const PhaseDescriptions: Record<EventPhase, string> = {
 };
 
 export const CategoryColors: Record<EventCategory, string> = {
-  action: "bg-destructive/20 text-destructive",
-  food: "bg-warning/20 text-warning",
-  relax: "bg-success/20 text-success",
-  party: "bg-primary/20 text-primary",
-  culture: "bg-purple-500/20 text-purple-400",
-  outdoor: "bg-emerald-500/20 text-emerald-400",
-  creative: "bg-pink-500/20 text-pink-400",
+  action: "bg-destructive text-destructive-foreground shadow-sm shadow-destructive/30 ring-1 ring-white/15 backdrop-blur-sm",
+  food: "bg-warning text-warning-foreground shadow-sm shadow-warning/30 ring-1 ring-white/15 backdrop-blur-sm",
+  relax: "bg-success text-success-foreground shadow-sm shadow-success/30 ring-1 ring-white/15 backdrop-blur-sm",
+  party: "bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-1 ring-white/15 backdrop-blur-sm",
+  culture: "bg-purple-600 text-white shadow-sm shadow-purple-500/30 ring-1 ring-white/15 backdrop-blur-sm",
+  outdoor: "bg-emerald-600 text-white shadow-sm shadow-emerald-500/30 ring-1 ring-white/15 backdrop-blur-sm",
+  creative: "bg-pink-600 text-white shadow-sm shadow-pink-500/30 ring-1 ring-white/15 backdrop-blur-sm",
 };
 
 export const RiskLevelLabels: Record<RiskLevel, string> = {
@@ -95,9 +95,9 @@ export const RiskLevelLabels: Record<RiskLevel, string> = {
 };
 
 export const RiskLevelColors: Record<RiskLevel, string> = {
-  low: "bg-success/20 text-success",
-  medium: "bg-warning/20 text-warning",
-  high: "bg-destructive/20 text-destructive",
+  low: "bg-success text-success-foreground shadow-sm shadow-success/30 ring-1 ring-white/15 backdrop-blur-sm",
+  medium: "bg-warning text-warning-foreground shadow-sm shadow-warning/30 ring-1 ring-white/15 backdrop-blur-sm",
+  high: "bg-destructive text-destructive-foreground shadow-sm shadow-destructive/30 ring-1 ring-white/15 backdrop-blur-sm",
 };
 
 export const MonthLabels: Record<number, string> = {

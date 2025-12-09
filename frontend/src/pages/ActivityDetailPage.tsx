@@ -146,7 +146,7 @@ export default function ActivityDetailPage() {
             <Badge variant="secondary" className={cn(RiskLevelColors[activity.riskLevel])}>
               Risiko: {RiskLevelLabels[activity.riskLevel]}
             </Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className="bg-black/35 text-white border-white/30 shadow-sm backdrop-blur-sm">
               {SeasonLabels[activity.season]}
             </Badge>
           </div>
