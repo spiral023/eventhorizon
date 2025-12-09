@@ -66,6 +66,19 @@ export default function ActivitiesPage() {
   };
 
   const filteredActivities = activities.filter((activity) => {
+    const durationMinutes = (() => {
+      if (typeof activity.typicalDurationHours === "number") {
+        return activity.typicalDurationHours * 60;
+      }
+      if (typeof activity.duration === "string") {
+        const match = activity.duration.match(/(\d+(?:\.\d+)?)/);
+        if (match) {
+          return parseFloat(match[1]) * 60;
+        }
+      }
+      return undefined;
+    })();
+
     // Search Query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -116,6 +129,30 @@ export default function ActivitiesPage() {
        // Check if ranges overlap
        if (activity.groupSizeMax < filters.groupSizeRange[0]) return false;
        if (filters.groupSizeRange[1] < 100 && activity.groupSizeMin > filters.groupSizeRange[1]) return false;
+    }
+
+    // Duration
+    if (durationMinutes !== undefined) {
+      if (durationMinutes < filters.durationRange[0]) return false;
+      if (filters.durationRange[1] < 480 && durationMinutes > filters.durationRange[1]) return false;
+    }
+
+    // Physical intensity
+    if (activity.physicalIntensity !== undefined) {
+      if (activity.physicalIntensity < filters.physicalIntensity[0]) return false;
+      if (activity.physicalIntensity > filters.physicalIntensity[1]) return false;
+    }
+
+    // Mental challenge
+    if (activity.mentalChallenge !== undefined) {
+      if (activity.mentalChallenge < filters.mentalChallenge[0]) return false;
+      if (activity.mentalChallenge > filters.mentalChallenge[1]) return false;
+    }
+
+    // Teamwork level
+    if (activity.teamworkLevel !== undefined) {
+      if (activity.teamworkLevel < filters.teamworkLevel[0]) return false;
+      if (activity.teamworkLevel > filters.teamworkLevel[1]) return false;
     }
 
     // Favorites Only
