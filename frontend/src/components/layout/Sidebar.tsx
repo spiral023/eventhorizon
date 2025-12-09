@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "@/components/NavLink";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  Users, 
-  Compass, 
-  User, 
-  Map, 
-  Calendar, 
-  Settings, 
+import { NavLink } from "@/components/NavLink";
+import {
+  Home,
+  Users,
+  Compass,
+  User,
+  Map,
+  Calendar,
+  Settings,
   LogOut,
   Sparkles,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -28,8 +28,8 @@ interface NavItem {
 }
 
 const staticNavItems: NavItem[] = [
-  { label: "Übersicht", to: "/", icon: Home },
-  { label: "Aktivitäten", to: "/activities", icon: Compass },
+  { label: "よbersicht", to: "/", icon: Home },
+  { label: "Aktivitビten", to: "/activities", icon: Compass },
   { label: "Team-Analyse", to: "/team", icon: Sparkles },
   { label: "Karte", to: "/map", icon: Map },
 ];
@@ -39,9 +39,9 @@ const bottomNavItems: NavItem[] = [
   { label: "Einstellungen", to: "/settings", icon: Settings },
 ];
 
-function NavItemComponent({ item }: { item: NavItem }) {
+function NavItemComponent({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
   const Icon = item.icon;
-  
+
   return (
     <NavLink
       to={item.to}
@@ -52,6 +52,7 @@ function NavItemComponent({ item }: { item: NavItem }) {
         "transition-all duration-200"
       )}
       activeClassName="bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+      onClick={onNavigate}
     >
       <Icon className="h-5 w-5" />
       <span>{item.label}</span>
@@ -64,38 +65,32 @@ interface RoomWithEvents {
   activeEvents: Event[];
 }
 
-function RoomsNavSection() {
+function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const [roomsWithEvents, setRoomsWithEvents] = useState<RoomWithEvents[]>([]);
   const [isRoomsOpen, setIsRoomsOpen] = useState(true);
   const [openRoomIds, setOpenRoomIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-          const fetchRoomsAndEvents = async () => {
-            const roomsResult = await getRooms();
-            const roomsData = roomsResult.data;
-            console.log("Rooms data:", roomsData);
-    
-            if (!roomsData) {
-              console.error("Rooms data is null or undefined.");
-              setRoomsWithEvents([]);
-              return;
-            }
-    
-            const roomsWithEventsData = await Promise.all(
-              roomsData.map(async (room) => {
-            const eventsResult = await getEventsByRoom(room.id);
-            const allEvents = eventsResult.data || []; // Ensure it's an array for filter
-            const activeEvents = allEvents.filter(
-              (e) => e.phase !== "info"
-            );
-            console.log(`Events for room ${room.id}:`, eventsResult.data);
-                return { room, activeEvents };
-              })
-            );
-          setRoomsWithEvents(roomsWithEventsData);
+    const fetchRoomsAndEvents = async () => {
+      const roomsResult = await getRooms();
+      const roomsData = roomsResult.data;
 
-      // Auto-expand room if currently viewing it
+      if (!roomsData) {
+        setRoomsWithEvents([]);
+        return;
+      }
+
+      const roomsWithEventsData = await Promise.all(
+        roomsData.map(async (room) => {
+          const eventsResult = await getEventsByRoom(room.id);
+          const allEvents = eventsResult.data || [];
+          const activeEvents = allEvents.filter((e) => e.phase !== "info");
+          return { room, activeEvents };
+        })
+      );
+      setRoomsWithEvents(roomsWithEventsData);
+
       const currentRoomMatch = location.pathname.match(/\/rooms\/([^/]+)/);
       if (currentRoomMatch) {
         setOpenRoomIds((prev) => new Set([...prev, currentRoomMatch[1]]));
@@ -117,8 +112,8 @@ function RoomsNavSection() {
     });
   };
 
-  const isRoomActive = (roomId: string) => 
-    location.pathname === `/rooms/${roomId}` || 
+  const isRoomActive = (roomId: string) =>
+    location.pathname === `/rooms/${roomId}` ||
     location.pathname.startsWith(`/rooms/${roomId}/`);
 
   const isEventActive = (roomId: string, eventId: string) =>
@@ -135,12 +130,8 @@ function RoomsNavSection() {
           )}
         >
           <Users className="h-5 w-5" />
-          <span className="flex-1 text-left">Räume</span>
-          {isRoomsOpen ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
+          <span className="flex-1 text-left">Rビume</span>
+          {isRoomsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-4 space-y-0.5 mt-1">
@@ -153,16 +144,14 @@ function RoomsNavSection() {
             "transition-all duration-200 italic"
           )}
           activeClassName="bg-primary/10 text-primary not-italic"
+          onClick={onNavigate}
         >
-          Alle Räume anzeigen
+          Alle Rビume anzeigen
         </NavLink>
         {roomsWithEvents.map(({ room, activeEvents }) => (
           <div key={room.id}>
             {activeEvents.length > 0 ? (
-              <Collapsible
-                open={openRoomIds.has(room.id)}
-                onOpenChange={() => toggleRoom(room.id)}
-              >
+              <Collapsible open={openRoomIds.has(room.id)} onOpenChange={() => toggleRoom(room.id)}>
                 <div className="flex items-center">
                   <NavLink
                     to={`/rooms/${room.id}`}
@@ -172,6 +161,7 @@ function RoomsNavSection() {
                       "transition-all duration-200",
                       isRoomActive(room.id) && "bg-primary/10 text-primary"
                     )}
+                    onClick={onNavigate}
                   >
                     <span className="truncate">{room.name}</span>
                     <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
@@ -204,6 +194,7 @@ function RoomsNavSection() {
                         "transition-all duration-200",
                         isEventActive(room.id, event.id) && "bg-primary/10 text-primary"
                       )}
+                      onClick={onNavigate}
                     >
                       <Calendar className="h-3 w-3" />
                       <span className="truncate">{event.name}</span>
@@ -220,6 +211,7 @@ function RoomsNavSection() {
                   "transition-all duration-200",
                   isRoomActive(room.id) && "bg-primary/10 text-primary"
                 )}
+                onClick={onNavigate}
               >
                 <span className="truncate">{room.name}</span>
               </NavLink>
@@ -231,56 +223,55 @@ function RoomsNavSection() {
   );
 }
 
-export function Sidebar() {
+export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { logout } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
+    onNavigate?.();
     navigate("/login");
   };
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-border/50 bg-sidebar/50 backdrop-blur-sm overflow-y-auto">
-      <div className="flex h-full flex-col p-4">
-        {/* Main Navigation */}
-        <nav className="flex-1 space-y-1">
-          <div className="mb-4">
-            <span className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Navigation
-            </span>
-          </div>
-          <NavItemComponent item={staticNavItems[0]} />
-          
-          {/* Rooms with nested events */}
-          <RoomsNavSection />
-          
-          {/* Other nav items */}
-          {staticNavItems.slice(1).map((item) => (
-            <NavItemComponent key={item.to} item={item} />
-          ))}
-        </nav>
+    <div className="flex h-full flex-col p-4">
+      <nav className="flex-1 space-y-1">
+        <div className="mb-4">
+          <span className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+            Navigation
+          </span>
+        </div>
+        <NavItemComponent item={staticNavItems[0]} onNavigate={onNavigate} />
+        <RoomsNavSection onNavigate={onNavigate} />
+        {staticNavItems.slice(1).map((item) => (
+          <NavItemComponent key={item.to} item={item} onNavigate={onNavigate} />
+        ))}
+      </nav>
 
-        {/* Bottom Navigation */}
-        <nav className="space-y-1 border-t border-border/50 pt-4">
-          {bottomNavItems.map((item) => (
-            <NavItemComponent key={item.to} item={item} />
-          ))}
-          
-          {/* Logout Button */}
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-full justify-start gap-3 px-4 py-2.5 h-auto rounded-xl text-sm font-medium",
-              "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            )}
-            onClick={handleLogout}
-          >
-            <LogOut className="h-5 w-5" />
-            <span>Abmelden</span>
-          </Button>
-        </nav>
-      </div>
+      <nav className="space-y-1 border-t border-border/50 pt-4">
+        {bottomNavItems.map((item) => (
+          <NavItemComponent key={item.to} item={item} onNavigate={onNavigate} />
+        ))}
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full justify-start gap-3 px-4 py-2.5 h-auto rounded-xl text-sm font-medium",
+            "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          )}
+          onClick={handleLogout}
+        >
+          <LogOut className="h-5 w-5" />
+          <span>Abmelden</span>
+        </Button>
+      </nav>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-border/50 bg-sidebar/50 backdrop-blur-sm overflow-y-auto">
+      <SidebarContent />
     </aside>
   );
 }
