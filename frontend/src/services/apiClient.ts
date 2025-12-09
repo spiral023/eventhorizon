@@ -203,6 +203,7 @@ let events: Event[] = [
     participantCountEstimate: 12,
     locationRegion: "OOE",
     proposedActivityIds: ["act-1"],
+    excludedActivityIds: [],
     activityVotes: [],
     dateOptions: [],
     participants: [
@@ -573,7 +574,8 @@ function mapEventFromApi(apiEvent: any): Event {
     locationRegion: apiEvent.location_region || apiEvent.locationRegion,
 
     proposedActivityIds: apiEvent.proposed_activity_ids || apiEvent.proposedActivityIds,
-    activityVotes,
+    excludedActivityIds: apiEvent.excluded_activity_ids || apiEvent.excludedActivityIds || [],
+    activityVotes: activityVotes,
     chosenActivityId: apiEvent.chosen_activity_id || apiEvent.chosenActivityId,
     
     dateOptions: (apiEvent.date_options || apiEvent.dateOptions || []).map((do_: any) => ({
@@ -743,6 +745,8 @@ export async function removeProposedActivity(eventId: string, activityId: string
 
     event.proposedActivityIds = event.proposedActivityIds.filter((id) => id !== activityId);
     event.activityVotes = event.activityVotes.filter((v) => v.activityId !== activityId);
+    // Also remove from excluded if it was there
+    event.excludedActivityIds = event.excludedActivityIds?.filter((id) => id !== activityId) || [];
     return { data: event };
   }
 
@@ -754,6 +758,62 @@ export async function removeProposedActivity(eventId: string, activityId: string
   }
   return { data: null, error: result.error };
 }
+
+export async function excludeActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
+  if (USE_MOCKS) {
+    await delay(150);
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+
+    if (event.createdByUserId !== currentUser.id) {
+      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Aktivitäten ausschließen" } };
+    }
+
+    if (!event.excludedActivityIds) {
+      event.excludedActivityIds = [];
+    }
+    if (!event.excludedActivityIds.includes(activityId)) {
+      event.excludedActivityIds.push(activityId);
+    }
+    event.updatedAt = new Date().toISOString();
+    return { data: event };
+  }
+
+  const result = await request<any>(`/events/${eventId}/activities/${activityId}/exclude`, {
+    method: 'PATCH',
+  });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
+
+export async function includeActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
+  if (USE_MOCKS) {
+    await delay(150);
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+
+    if (event.createdByUserId !== currentUser.id) {
+      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Aktivitäten wieder aufnehmen" } };
+    }
+
+    if (event.excludedActivityIds) {
+      event.excludedActivityIds = event.excludedActivityIds.filter((id) => id !== activityId);
+    }
+    event.updatedAt = new Date().toISOString();
+    return { data: event };
+  }
+
+  const result = await request<any>(`/events/${eventId}/activities/${activityId}/include`, {
+    method: 'PATCH',
+  });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
+
 
 export async function voteOnActivity(eventId: string, activityId: string, vote: VoteType): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {

@@ -166,6 +166,7 @@ export const EventSchema = z.object({
   locationRegion: RegionSchema,
   // Voting
   proposedActivityIds: z.array(z.string()),
+  excludedActivityIds: z.array(z.string()).optional(),
   activityVotes: z.array(ActivityVoteSchema),
   chosenActivityId: z.string().optional(),
   // Scheduling

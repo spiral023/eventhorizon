@@ -19,7 +19,9 @@ import {
   respondToDateOption,
   updateEventPhase,
   selectWinningActivity,
-  finalizeDateOption
+  finalizeDateOption,
+  excludeActivity, // Add new import
+  includeActivity, // Add new import
 } from "@/services/apiClient";
 import type { Event, Activity, VoteType, DateResponseType, EventPhase, DateOption } from "@/types/domain";
 import { 
@@ -101,10 +103,16 @@ export default function EventDetailPage() {
     setActionLoading(false);
   };
 
-  const handleRemoveProposal = async (activityId: string) => {
+  // New function to handle exclusion/inclusion
+  const handleToggleExclusion = async (activityId: string, currentlyExcluded: boolean) => {
     if (!eventId) return;
     setActionLoading(true);
-    const result = await removeProposedActivity(eventId, activityId);
+    let result;
+    if (currentlyExcluded) {
+      result = await includeActivity(eventId, activityId);
+    } else {
+      result = await excludeActivity(eventId, activityId);
+    }
     if (result.data) {
       setEvent(result.data);
     }
@@ -146,192 +154,217 @@ export default function EventDetailPage() {
     );
   }
 
-  const proposedActivities = activities.filter((a) => 
-    event.proposedActivityIds.includes(a.id)
-  );
-
-  const chosenActivity = event.chosenActivityId 
-    ? activities.find((a) => a.id === event.chosenActivityId)
-    : null;
-
-  const finalDateOption = event.finalDateOptionId
-    ? event.dateOptions.find((d) => d.id === event.finalDateOptionId)
-    : null;
-
-  // Sort activities by vote score
-  const sortedActivities = [...proposedActivities].sort((a, b) => {
-    const votesA = event.activityVotes.find((v) => v.activityId === a.id);
-    const votesB = event.activityVotes.find((v) => v.activityId === b.id);
-    const scoreA = (votesA?.votes.filter((v) => v.vote === "for").length || 0) - 
-                   (votesA?.votes.filter((v) => v.vote === "against").length || 0);
-    const scoreB = (votesB?.votes.filter((v) => v.vote === "for").length || 0) - 
-                   (votesB?.votes.filter((v) => v.vote === "against").length || 0);
-    return scoreB - scoreA;
-  });
-
-  const nextPhases = getNextPhases(event.phase);
-  const canAdvance = nextPhases.length > 0;
-
-  return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="gap-2 -ml-2"
-        onClick={() => navigate(`/rooms/${roomId}`)}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Zurück zum Raum
-      </Button>
-
-      {/* Event Header */}
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
-          {event.description && (
-            <p className="text-muted-foreground mt-1">{event.description}</p>
-          )}
-        </div>
-
-        {/* Meta Info */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
-            <span>{formatTimeWindow(event.timeWindow)}</span>
+    const proposedActivities = activities.filter((a) =>
+      event.proposedActivityIds.includes(a.id)
+    );
+  
+    const nonExcludedProposedActivities = proposedActivities.filter(
+      (a) => !event.excludedActivityIds?.includes(a.id)
+    );
+  
+    const chosenActivity = event.chosenActivityId
+      ? activities.find((a) => a.id === event.chosenActivityId)
+      : null;
+  
+    const finalDateOption = event.finalDateOptionId
+      ? event.dateOptions.find((d) => d.id === event.finalDateOptionId)
+      : null;
+  
+    // Sort activities by vote score, only considering non-excluded activities
+    const sortedActivities = [...nonExcludedProposedActivities].sort((a, b) => {
+      const votesA = event.activityVotes.find((v) => v.activityId === a.id);
+      const votesB = event.activityVotes.find((v) => v.activityId === b.id);
+      const scoreA = (votesA?.votes.filter((v) => v.vote === "for").length || 0) -
+                     (votesA?.votes.filter((v) => v.vote === "against").length || 0);
+      const scoreB = (votesB?.votes.filter((v) => v.vote === "for").length || 0) -
+                     (votesB?.votes.filter((v) => v.vote === "against").length || 0);
+      return scoreB - scoreA;
+    });
+  
+    const nextPhases = getNextPhases(event.phase);
+    const canAdvance = nextPhases.length > 0;
+  
+    return (
+      <div className="space-y-6">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2 -ml-2"
+          onClick={() => navigate(`/rooms/${roomId}`)}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zum Raum
+        </Button>
+  
+        {/* Event Header */}
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
+            {event.description && (
+              <p className="text-muted-foreground mt-1">{event.description}</p>
+            )}
           </div>
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-4 w-4" />
-            <span>{RegionLabels[event.locationRegion]}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Euro className="h-4 w-4" />
-            <span>{formatBudget(event.budgetAmount, event.budgetType)}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" />
-            <span>{event.participants.length} Teilnehmer</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Phase Header */}
-      <EventPhaseHeader 
-        currentPhase={event.phase} 
-        canAdvance={canAdvance}
-        onAdvance={handleAdvancePhase}
-      />
-
-      {/* Admin Actions */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <EmailActions eventId={event.id} className="md:col-span-3" />
-      </div>
-
-      {/* Phase Content */}
-      <Tabs value={event.phase} className="space-y-6">
-        <TabsList className="bg-secondary/50 rounded-xl p-1">
-          <TabsTrigger value="proposal" className="rounded-lg" disabled={event.phase !== "proposal"}>
-            Vorschläge
-          </TabsTrigger>
-          <TabsTrigger value="voting" className="rounded-lg" disabled={event.phase !== "voting"}>
-            Abstimmung
-          </TabsTrigger>
-          <TabsTrigger value="scheduling" className="rounded-lg" disabled={event.phase !== "scheduling"}>
-            Terminfindung
-          </TabsTrigger>
-          <TabsTrigger value="info" className="rounded-lg" disabled={event.phase !== "info"}>
-            Event-Info
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Proposal Phase */}
-        <TabsContent value="proposal" className="space-y-4">
-          <Card className="bg-card/60 border-border/50 rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-lg">Vorgeschlagene Aktivitäten</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {proposedActivities.map((activity) => (
-                <div key={activity.id} className="p-4 rounded-xl bg-secondary/30 flex items-center gap-4">
-                  <img 
-                    src={activity.imageUrl} 
-                    alt={activity.title}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-medium">{activity.title}</h4>
-                    <p className="text-sm text-muted-foreground">{activity.shortDescription}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge>{CategoryLabels[activity.category]}</Badge>
-                    {isCreator && event.phase === "proposal" && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleRemoveProposal(activity.id)}
-                        disabled={actionLoading}
-                      >
-                        Entfernen
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {canAdvance && (
-                <Button 
-                  onClick={handleAdvancePhase} 
-                  className="w-full rounded-xl"
-                  disabled={actionLoading}
-                >
-                  Zur Abstimmung übergehen
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Voting Phase */}
-        <TabsContent value="voting" className="space-y-4">
-          <p className="text-muted-foreground">
-            Stimme über die Aktivitäten ab – die beliebtesten rücken nach oben.
-          </p>
-          {sortedActivities.map((activity, index) => (
-            <div
-              key={activity.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <VotingCard
-                activity={activity}
-                votes={event.activityVotes.find((v) => v.activityId === activity.id)}
-                currentUserId={currentUserId}
-                onVote={handleVote}
-                isLoading={actionLoading}
-              />
+  
+          {/* Meta Info */}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4" />
+              <span>{formatTimeWindow(event.timeWindow)}</span>
             </div>
-          ))}
-          {canAdvance && sortedActivities.length > 0 && (
-            <Card className="bg-primary/10 border-primary/20 rounded-2xl">
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground mb-3">
-                  Gewinner auswählen und zur Terminfindung übergehen:
-                </p>
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => handleSelectActivity(sortedActivities[0].id)}
-                    className="flex-1 rounded-xl"
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-4 w-4" />
+              <span>{RegionLabels[event.locationRegion]}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Euro className="h-4 w-4" />
+              <span>{formatBudget(event.budgetAmount, event.budgetType)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Users className="h-4 w-4" />
+              <span>{event.participants.length} Teilnehmer</span>
+            </div>
+          </div>
+        </div>
+  
+        {/* Phase Header */}
+        <EventPhaseHeader
+          currentPhase={event.phase}
+          canAdvance={canAdvance}
+          onAdvance={handleAdvancePhase}
+        />
+  
+        {/* Admin Actions */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <EmailActions eventId={event.id} className="md:col-span-3" />
+        </div>
+  
+        {/* Phase Content */}
+        <Tabs value={event.phase} className="space-y-6">
+          <TabsList className="bg-secondary/50 rounded-xl p-1">
+            <TabsTrigger value="proposal" className="rounded-lg" disabled={event.phase !== "proposal"}>
+              Vorschläge
+            </TabsTrigger>
+            <TabsTrigger value="voting" className="rounded-lg" disabled={event.phase !== "voting"}>
+              Abstimmung
+            </TabsTrigger>
+            <TabsTrigger value="scheduling" className="rounded-lg" disabled={event.phase !== "scheduling"}>
+              Terminfindung
+            </TabsTrigger>
+            <TabsTrigger value="info" className="rounded-lg" disabled={event.phase !== "info"}>
+              Event-Info
+            </TabsTrigger>
+          </TabsList>
+  
+          {/* Proposal Phase */}
+          <TabsContent value="proposal" className="space-y-4">
+            <Card className="bg-card/60 border-border/50 rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Vorgeschlagene Aktivitäten</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {proposedActivities.map((activity) => {
+                  const isExcluded = event.excludedActivityIds?.includes(activity.id);
+                  return (
+                    <div 
+                      key={activity.id} 
+                      className={cn(
+                        "p-4 rounded-xl bg-secondary/30 flex items-center gap-4",
+                        isExcluded && "opacity-50"
+                      )}
+                    >
+                      <img
+                        src={activity.imageUrl}
+                        alt={activity.title}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-medium">{activity.title}</h4>
+                        <p className="text-sm text-muted-foreground">{activity.shortDescription}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge>{CategoryLabels[activity.category]}</Badge>
+                        {isExcluded && (
+                          <Badge variant="destructive" className="ml-2">Ausgeschlossen</Badge>
+                        )}
+                        {isCreator && event.phase === "proposal" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className={cn(
+                              isExcluded ? "text-success hover:text-success" : "text-destructive hover:text-destructive"
+                            )}
+                            onClick={() => handleToggleExclusion(activity.id, isExcluded)}
+                            disabled={actionLoading}
+                          >
+                            {isExcluded ? "Wieder aufnehmen" : "Ausschließen"}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {canAdvance && (
+                  <Button
+                    onClick={handleAdvancePhase}
+                    className="w-full rounded-xl"
                     disabled={actionLoading}
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    "{sortedActivities[0].title}" auswählen
+                    Zur Abstimmung übergehen
                   </Button>
-                </div>
+                )}
               </CardContent>
             </Card>
-          )}
-        </TabsContent>
-
+          </TabsContent>
+  
+          {/* Voting Phase */}
+          <TabsContent value="voting" className="space-y-4">
+            <p className="text-muted-foreground">
+              Stimme über die Aktivitäten ab – die beliebtesten rücken nach oben.
+            </p>
+            {sortedActivities.length > 0 ? (
+              sortedActivities.map((activity, index) => (
+                <div
+                  key={activity.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <VotingCard
+                    activity={activity}
+                    votes={event.activityVotes.find((v) => v.activityId === activity.id)}
+                    currentUserId={currentUserId}
+                    onVote={handleVote}
+                    isLoading={actionLoading}
+                  />
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                icon={Users}
+                title="Keine Aktivitäten zur Abstimmung"
+                description="Alle Aktivitäten wurden ausgeschlossen oder es wurden noch keine vorgeschlagen."
+              />
+            )}
+            {canAdvance && sortedActivities.length > 0 && (
+              <Card className="bg-primary/10 border-primary/20 rounded-2xl">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Gewinner auswählen und zur Terminfindung übergehen:
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleSelectActivity(sortedActivities[0].id)}
+                      className="flex-1 rounded-xl"
+                      disabled={actionLoading}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      "{sortedActivities[0].title}" auswählen
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
         {/* Scheduling Phase */}
         <TabsContent value="scheduling" className="space-y-4">
           {chosenActivity && (

@@ -86,24 +86,63 @@ async function geocodeAddress(address: string): Promise<[number, number] | null>
     console.warn("Geocoding failed for address", address, error);
   }
 
-  return null;
-}
+      return null;
 
-// Component to fit bounds
-function FitBounds({ positions }: { positions: [number, number][] }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (positions.length > 0) {
-      const bounds = new LatLngBounds(positions);
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }
-  }, [positions, map]);
-  
-  return null;
-}
+  }
 
-// Component for markers to avoid context issues
+  
+
+  // Component for map event handling
+
+  function MapEventHandlers({ 
+
+    activityMarkers, 
+
+    selectedActivity 
+
+  }: { 
+
+    activityMarkers: { activity: Activity; position: [number, number] }[];
+
+    selectedActivity: Activity | null;
+
+  }) {
+
+    const map = useMap();
+
+  
+
+    // Fit all markers on initial load or when activityMarkers change
+
+    useEffect(() => {
+
+      if (activityMarkers.length > 0) {
+
+        const bounds = new LatLngBounds(activityMarkers.map(m => m.position));
+
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+
+      } else {
+
+        map.setView(AUSTRIA_CENTER, 7); // Fallback if no markers
+
+      }
+
+    }, [activityMarkers, map]);
+
+  
+
+
+
+    
+
+    return null;
+
+  }
+
+  
+
+  // Component for markers to avoid context issues
 function MapMarkers({ 
   activityMarkers, 
   onSelect 
@@ -239,7 +278,10 @@ export default function MapPage() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  <FitBounds positions={activityMarkers.map((m) => m.position)} />
+                  <MapEventHandlers 
+                    activityMarkers={activityMarkers} 
+                    selectedActivity={selectedActivity} 
+                  />
                   <MapMarkers
                     activityMarkers={activityMarkers}
                     onSelect={setSelectedActivity}
