@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Check, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles } from "lucide-react";
+import { X, Check, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -20,6 +20,7 @@ export interface ActivityFilters {
   priceRange: [number, number];
   groupSizeRange: [number, number];
   durationRange: [number, number];
+  travelTimeWalkingRange: [number, number];
   physicalIntensity: [number, number];
   mentalChallenge: [number, number];
   teamworkLevel: [number, number];
@@ -45,6 +46,7 @@ export const defaultFilters: ActivityFilters = {
   priceRange: [0, 200],
   groupSizeRange: [1, 100],
   durationRange: [0, 480], // in minutes
+  travelTimeWalkingRange: [0, 60], // in minutes
   physicalIntensity: [1, 5],
   mentalChallenge: [1, 5],
   teamworkLevel: [1, 5],
@@ -119,7 +121,7 @@ export function ActivityFilterPanel({
     onChange({ ...filters, primaryGoals: newGoals });
   };
 
-  const activeFilterCount = 
+  const activeFilterCount =
     (filters.categories?.length || 0) +
     (filters.regions?.length || 0) +
     (filters.seasons?.length || 0) +
@@ -128,6 +130,7 @@ export function ActivityFilterPanel({
     ((filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 200) ? 1 : 0) +
     ((filters.groupSizeRange?.[0] > 1 || filters.groupSizeRange?.[1] < 100) ? 1 : 0) +
     ((filters.durationRange?.[0] > 0 || filters.durationRange?.[1] < 480) ? 1 : 0) +
+    ((filters.travelTimeWalkingRange?.[0] > 0 || filters.travelTimeWalkingRange?.[1] < 60) ? 1 : 0) +
     ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
     ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
     ((filters.teamworkLevel?.[0] > 1 || filters.teamworkLevel?.[1] < 5) ? 1 : 0) +
@@ -401,7 +404,7 @@ export function ActivityFilterPanel({
               min={0}
               max={480}
               step={30}
-              onValueChange={(value) => 
+              onValueChange={(value) =>
                 onChange({ ...filters, durationRange: value as [number, number] })
               }
               className="mb-2"
@@ -409,6 +412,41 @@ export function ActivityFilterPanel({
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{formatDuration(filters.durationRange[0])}</span>
               <span>{formatDuration(filters.durationRange[1])}+</span>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Travel Time Walking */}
+      <Collapsible open={openSections.includes("travelWalking")}>
+        <CollapsibleTrigger
+          className="flex w-full items-center justify-between py-2 text-sm font-medium"
+          onClick={() => toggleSection("travelWalking")}
+        >
+          <span className="flex items-center gap-2">
+            <Footprints className="h-4 w-4 text-primary" />
+            Gehzeit vom Büro
+          </span>
+          <ChevronDown className={cn(
+            "h-4 w-4 transition-transform",
+            openSections.includes("travelWalking") && "rotate-180"
+          )} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4 pb-2">
+          <div className="px-2">
+            <Slider
+              value={filters.travelTimeWalkingRange}
+              min={0}
+              max={60}
+              step={5}
+              onValueChange={(value) =>
+                onChange({ ...filters, travelTimeWalkingRange: value as [number, number] })
+              }
+              className="mb-2"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{filters.travelTimeWalkingRange[0]} min</span>
+              <span>{filters.travelTimeWalkingRange[1]}+ min</span>
             </div>
           </div>
         </CollapsibleContent>
