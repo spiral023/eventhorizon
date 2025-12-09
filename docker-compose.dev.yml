@@ -24,6 +24,11 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: eventhorizon
       SECRET_KEY: dgdjds2352!!sddfg
+      # OpenRouter API Configuration
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_BASE_URL: https://openrouter.ai/api/v1
+      OPENROUTER_APP_NAME: EventHorizon
+      OPENROUTER_SITE_URL: http://localhost:5173
     depends_on:
       - db
 
