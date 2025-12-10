@@ -494,7 +494,7 @@ function mapActivityFromApi(apiActivity: any): Activity {
     shortDescription: apiActivity.short_description,
     longDescription: apiActivity.long_description,
     imageUrl: apiActivity.image_url,
-    galleryUrls: apiActivity.gallery_urls,
+    galleryUrls: apiActivity.gallery_urls || [],
     season: apiActivity.season,
     riskLevel: apiActivity.risk_level,
 
@@ -516,6 +516,7 @@ function mapActivityFromApi(apiActivity: any): Activity {
     externalRating: apiActivity.external_rating,
     favoritesCount: apiActivity.favorites_count || apiActivity.favoritesCount || 0,
     primaryGoal: apiActivity.primary_goal,
+    tags: apiActivity.tags || [],
 
     travelTimeMinutes: apiActivity.travel_time_from_office_minutes,
     travelTimeMinutesWalking: apiActivity.travel_time_from_office_minutes_walking,
