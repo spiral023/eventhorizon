@@ -1,9 +1,17 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EventHorizon{% endblock %}</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:AllowPNG/>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
     <style>
         /* Reset & Base */
         body {
@@ -11,202 +19,149 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            /* EventHorizon Dark Blue Theme (Slate-950) */
-            background-color: #020617; 
-            color: #9ca3af; /* Gray-400 for body text */
+            background-color: #f4f4f4;
+            color: #333333;
+        }
+
+        /* Tables */
+        table {
+            border-spacing: 0;
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
         }
         
         /* Layout */
         .wrapper {
             width: 100%;
             table-layout: fixed;
-            background-color: #020617;
+            background-color: #f4f4f4;
             padding-bottom: 40px;
         }
         
         .container {
             max-width: 600px;
             margin: 0 auto;
-            /* Card Look: Slate-900 / Dark Blue */
-            background-color: #0f172a;
-            border-radius: 16px;
-            /* Subtle Border: Gray-900/Slate-800 */
-            border: 1px solid #1e293b;
-            overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 0; /* Padding handled by cells */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* Header */
         .header {
-            text-align: left; /* Links ausrichten */
-            padding: 40px 30px 20px 30px;
-            /* Radial Gradient Top-Left */
-            background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
-            border-bottom: 1px solid #1e293b;
-        }
-
-        .header-eyebrow {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #16ceb8; /* Teal Accent */
-            margin-bottom: 8px;
+            text-align: center;
+            padding: 30px 20px 20px 20px;
+            border-bottom: 2px solid #3b82f6;
         }
 
         .logo {
             font-size: 24px;
-            font-weight: 800;
-            color: #f9fafb;
-            letter-spacing: -0.5px;
+            font-weight: bold;
+            color: #3b82f6;
             text-decoration: none;
-            display: inline-block;
-        }
-
-        .logo span {
-            color: #16ceb8; /* Teal Accent */
         }
 
         /* Content */
         .content {
             padding: 30px 30px 40px 30px;
-            color: #9ca3af;
+            color: #333333;
         }
 
         /* Typography */
         h1, h2, h3 {
-            color: #f9fafb; /* Gray-50 */
+            color: #1f2937;
             margin-top: 0;
+            margin-bottom: 20px;
             font-weight: 700;
-            letter-spacing: -0.025em;
         }
-
-        h1 { font-size: 26px; margin-bottom: 20px; line-height: 1.3; }
-        h2 { font-size: 20px; margin-bottom: 16px; }
         
-        p { margin-bottom: 16px; font-size: 14px; line-height: 1.6; }
+        p { margin-bottom: 16px; font-size: 16px; margin-top: 0; }
         
-        strong { color: #e2e8f0; font-weight: 600; } /* Slate-200 */
-
         a {
-            color: #16ceb8; /* Teal Accent */
+            color: #2563eb;
             text-decoration: none;
-            font-weight: 500;
         }
-        a:hover { text-decoration: underline; }
-
+        
         /* Components */
         .button {
             display: inline-block;
-            padding: 14px 32px;
-            /* Teal/Cyan Gradient Button */
-            background: linear-gradient(135deg, #16ceb8 0%, #0ea5e9 100%);
+            padding: 12px 24px;
+            background-color: #3b82f6;
             color: #ffffff !important;
             text-decoration: none !important;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 15px;
-            margin: 24px 0;
+            margin: 20px 0;
             text-align: center;
-            box-shadow: 0 4px 14px 0 rgba(22, 206, 184, 0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.2s;
         }
         
-        .button:hover {
-            box-shadow: 0 6px 20px rgba(22, 206, 184, 0.2);
-            transform: translateY(-1px);
-        }
-
         .highlight {
-            /* Darker stat-tile style */
-            background-color: #020617; /* Slate-950 */
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #1e293b;
-            border-left: 4px solid #16ceb8; /* Teal Accent */
-            margin: 24px 0;
+            background-color: #eff6ff;
+            padding: 15px;
+            border-left: 4px solid #3b82f6;
+            margin: 20px 0;
+            border-radius: 4px;
         }
         
-        .highlight ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-        
-        .highlight li {
-            margin-bottom: 8px;
-            color: #cbd5e1; /* Slate-300 */
-            font-size: 14px;
-        }
-        
+        .highlight ul { margin: 0; padding-left: 20px; }
+        .highlight li { margin-bottom: 5px; }
+
         /* Footer */
         .footer {
-            background-color: #0f172a;
-            padding: 30px;
-            border-top: 1px solid #1e293b;
-            text-align: left; /* Links aligned */
+            padding: 20px 30px 30px 30px;
+            border-top: 1px solid #e5e5e5;
+            text-align: center;
             font-size: 12px;
-            color: #64748b; /* Slate-500 */
-        }
-        
-        .footer-links {
-            margin-bottom: 20px;
-        }
-
-        .footer-link {
-            color: #16ceb8 !important;
-            text-decoration: none;
-            margin-right: 20px;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .footer-link span {
-            font-size: 14px;
-            line-height: 1;
-            vertical-align: middle;
-        }
-
-        .footer p {
-            margin: 5px 0;
-            font-size: 12px;
-        }
-
-        /* Utilities */
-        .text-center { text-align: center; }
-        
-        @media only screen and (max-width: 600px) {
-            .container { width: 100% !important; border-radius: 0; }
-            .content { padding: 30px 20px; }
-            .header { padding: 30px 20px; }
+            color: #666666;
         }
     </style>
 </head>
-<body>
-    <div class="wrapper">
-        <br>
-        <div class="container">
-            <div class="header">
-                <!-- Eyebrow for that welcome-card feel -->
-                <span class="header-eyebrow">EventHorizon</span>
-                <a href="{{ frontend_url }}" class="logo">
-                    <span>◈</span> EventHorizon
-                </a>
-            </div>
-            <div class="content">
-                {% block content %}{% endblock %}
-            </div>
-            <div class="footer">
-                <div class="footer-links">
-                    <a href="{{ frontend_url }}" class="footer-link">App öffnen <span>&rarr;</span></a>
-                    <a href="{{ frontend_url }}/settings/notifications" class="footer-link">Benachrichtigungen verwalten <span>&rarr;</span></a>
-                </div>
-                <p>&copy; 2025 EventHorizon. System Status: Operational.</p>
-                <p>Automatisch generierte Nachricht. Bitte nicht antworten.</p>
-            </div>
-        </div>
-        <br>
-    </div>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+    
+    <table role="presentation" class="wrapper" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f4">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                
+                <!--[if mso]>
+                <table role="presentation" align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+                <tr>
+                <td align="center" valign="top" width="600">
+                <![endif]-->
+                
+                <table role="presentation" class="container" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td class="header" style="text-align: center; padding: 30px 20px 20px 20px; border-bottom: 2px solid #3b82f6;">
+                            <div class="logo" style="font-size: 24px; font-weight: bold; color: #3b82f6;">🎯 EventHorizon</div>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td class="content" style="padding: 30px 30px 40px 30px; color: #333333; font-size: 16px; line-height: 1.6;">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer" style="padding: 20px 30px 30px 30px; border-top: 1px solid #e5e5e5; text-align: center; font-size: 12px; color: #666666;">
+                            <p style="margin: 5px 0;">© 2025 EventHorizon | <a href="{{ frontend_url }}" style="color: #666666; text-decoration: underline;">Zur App</a></p>
+                            <p style="margin: 5px 0;">Du erhältst diese E-Mail, weil du bei EventHorizon registriert bist.</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!--[if mso]>
+                </td>
+                </tr>
+                </table>
+                <![endif]-->
+
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
