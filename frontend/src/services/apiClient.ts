@@ -678,7 +678,7 @@ export async function getRoomMembers(roomId: string): Promise<ApiResult<RoomMemb
       id: m.id,
       name: m.name,
       email: m.email,
-      username: m.username,
+      username: m.name,
       avatarUrl: m.avatar_url,
       role: m.role,
       joinedAt: m.joined_at,
