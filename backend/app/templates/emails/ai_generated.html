@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+{{ body | safe }}
+
+{% if cta_url and cta_text %}
+<a href="{{ cta_url }}" class="button">{{ cta_text }}</a>
+{% endif %}
+
+<p>Dein EventHorizon Team</p>
+{% endblock %}

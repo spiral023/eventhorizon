@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>⏰ Abstimmung läuft bald ab!</h1>
+
+<p>Hallo {{ user_name }},</p>
+
+<p>Die Abstimmung für <strong>{{ event_name }}</strong> endet in
+{% if days_remaining == 0 %}
+    heute!
+{% elif days_remaining == 1 %}
+    morgen!
+{% else %}
+    {{ days_remaining }} Tagen.
+{% endif %}
+</p>
+
+<div class="highlight">
+    <strong>Deadline:</strong> {{ deadline }}
+</div>
+
+<p>Deine Stimme zählt! Hilf deinem Team, das perfekte Event zu finden.</p>
+
+<a href="{{ event_url }}" class="button">Jetzt abstimmen</a>
+
+<p>Beste Grüße,<br>Dein EventHorizon Team</p>
+{% endblock %}

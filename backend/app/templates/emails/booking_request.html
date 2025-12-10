@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Neue Buchungsanfrage für {{ activity_title }}</h1>
+
+<p>Hallo {{ provider_name }},</p>
+
+<p>Sie haben eine neue Buchungsanfrage über EventHorizon erhalten.</p>
+
+<div class="highlight">
+    <h3>Anfrage-Details:</h3>
+    <ul>
+        <li><strong>Aktivität:</strong> {{ activity_title }}</li>
+        <li><strong>Event:</strong> {{ event_name }}</li>
+        <li><strong>Teilnehmerzahl:</strong> {{ participant_count }} Personen</li>
+        <li><strong>Gewünschter Termin:</strong> {{ preferred_date }}</li>
+        <li><strong>Budget:</strong> ca. {{ budget }}€ pro Person</li>
+    </ul>
+</div>
+
+<h3>Kontaktperson:</h3>
+<p>
+    <strong>{{ organizer_name }}</strong><br>
+    E-Mail: <a href="mailto:{{ organizer_email }}">{{ organizer_email }}</a><br>
+    {% if organizer_phone %}
+    Telefon: {{ organizer_phone }}<br>
+    {% endif %}
+</p>
+
+{% if additional_notes %}
+<div class="highlight">
+    <strong>Zusätzliche Hinweise:</strong>
+    <p>{{ additional_notes }}</p>
+</div>
+{% endif %}
+
+<p>Bitte kontaktieren Sie {{ organizer_name }} direkt, um die Buchung zu besprechen.</p>
+
+<p>Mit freundlichen Grüßen,<br>Das EventHorizon Team</p>
+{% endblock %}

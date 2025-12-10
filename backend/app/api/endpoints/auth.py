@@ -27,6 +27,8 @@ async def _get_user_by_identifier(db: AsyncSession, identifier: str) -> User | N
     return result.scalar_one_or_none()
 
 
+from app.services.email_service import email_service
+
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> Token:
     existing = await db.execute(
@@ -50,6 +52,12 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> T
     db.add(user)
     await db.commit()
     await db.refresh(user)
+
+    # Send welcome email
+    await email_service.send_welcome_email(
+        user_email=user.email,
+        user_name=user.name
+    )
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(user.id, expires_delta=access_token_expires)

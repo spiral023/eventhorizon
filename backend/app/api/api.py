@@ -15,7 +15,7 @@ from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate
 )
-from app.api.endpoints import auth, users, ai
+from app.api.endpoints import auth, users, ai, emails
 
 router = APIRouter()
 
@@ -23,6 +23,7 @@ router = APIRouter()
 router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(ai.router)
+router.include_router(emails.router)
 
 @router.get("/health")
 async def health_check():

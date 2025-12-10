@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Einladung: {{ event_name }}</h1>
+<p>Hallo {{ user_name }},</p>
+<p>{{ organizer_name }} hat dich zum Event <strong>{{ event_name }}</strong> im Raum <strong>{{ room_name }}</strong> eingeladen.</p>
+<p>{{ event_description }}</p>
+<a href="{{ event_url }}" class="button">Zum Event</a>
+{% endblock %}

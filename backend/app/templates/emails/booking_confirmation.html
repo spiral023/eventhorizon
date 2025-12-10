@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Buchungsanfrage versendet</h1>
+
+<p>Hallo {{ organizer_name }},</p>
+
+<p>Wir haben deine Buchungsanfrage für <strong>{{ activity_title }}</strong> erfolgreich an <strong>{{ provider_name }}</strong> versendet.</p>
+
+<div class="highlight">
+    <strong>Provider E-Mail:</strong> {{ provider_email }}
+</div>
+
+<p>Der Anbieter wird sich in Kürze direkt bei dir melden.</p>
+
+<p>Viel Erfolg bei der Planung!</p>
+<p>Dein EventHorizon Team</p>
+{% endblock %}

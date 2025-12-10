@@ -20,6 +20,8 @@ from pydantic import BaseModel, Field
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.services.ai_service import ai_service
+from app.services.email_service import email_service
+from app.core.config import settings
 from app.schemas.ai import (
     TeamPreferenceSummary,
     AiRecommendation,
@@ -371,20 +373,18 @@ async def send_event_invites(
                 role=role
             )
 
-            # TODO: Actually send email here
-            # await email_service.send_email(
-            #     to=user.email,
-            #     subject=invite["subject"],
-            #     body=invite["body"]
-            # )
-
-            print(f"Generated invite for {user.name}:")
-            print(f"Subject: {invite['subject']}")
-            print(f"Body: {invite['body'][:100]}...")
+            # Actually send email here
+            await email_service.send_ai_generated_invite(
+                user_email=user.email,
+                subject=invite["subject"],
+                body=invite["body"],
+                call_to_action_text=invite["callToAction"],
+                call_to_action_url=f"{settings.FRONTEND_URL}/rooms/{event.room_id}/events/{event_id}"
+            )
 
             sent_count += 1
         except Exception as e:
-            print(f"Failed to generate invite for {user.name}: {e}")
+            print(f"Failed to generate/send invite for {user.name}: {e}")
             continue
 
     return {"sent": sent_count}
@@ -455,20 +455,19 @@ async def send_voting_reminders(
                 days_until_deadline=days_until
             )
 
-            # TODO: Send email
-            # await email_service.send_email(
-            #     to=user.email,
-            #     subject=reminder["subject"],
-            #     body=reminder["body"]
-            # )
-
-            print(f"Generated reminder for {user.name}:")
-            print(f"Subject: {reminder['subject']}")
-            print(f"Urgency: {reminder['urgency']}")
+            # Send email
+            await email_service.send_voting_reminder(
+                user_email=user.email,
+                user_name=user.name,
+                event_name=event.name,
+                event_id=str(event.id),
+                deadline=event.voting_deadline.strftime("%d.%m.%Y") if event.voting_deadline else "Unbekannt",
+                days_remaining=days_until
+            )
 
             sent_count += 1
         except Exception as e:
-            print(f"Failed to generate reminder for {user.name}: {e}")
+            print(f"Failed to generate/send reminder for {user.name}: {e}")
             continue
 
     return {"sent": sent_count}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Willkommen bei EventHorizon, {{ user_name }}! 🎉</h1>
+
+<p>Schön, dass du dabei bist!</p>
+
+<p>EventHorizon hilft dir dabei, unvergessliche Team-Events zu planen – von der Ideenfindung über die Abstimmung bis zur finalen Organisation.</p>
+
+<div class="highlight">
+    <strong>Was du jetzt tun kannst:</strong>
+    <ul>
+        <li>Einem Room beitreten oder einen eigenen erstellen</li>
+        <li>Aktivitäten entdecken und favorisieren</li>
+        <li>Events planen und dein Team abstimmen lassen</li>
+    </ul>
+</div>
+
+<a href="{{ login_url }}" class="button">Jetzt loslegen</a>
+
+<p>Viel Spaß beim Event-Planen!</p>
+<p>Dein EventHorizon Team</p>
+{% endblock %}

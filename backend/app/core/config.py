@@ -8,6 +8,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
     ALGORITHM: str = "HS256"
     
+    # Email
+    RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
+    MAIL_FROM_EMAIL: str = os.getenv("MAIL_FROM_EMAIL", "noreply@eventhorizon.app")
+    MAIL_FROM_NAME: str = os.getenv("MAIL_FROM_NAME", "EventHorizon")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    
     # Database
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "user")

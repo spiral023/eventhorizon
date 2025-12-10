@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>E-Mail bestätigen</h1>
+<p>Hallo {{ user_name }},</p>
+<p>Bitte bestätige deine E-Mail Adresse:</p>
+<a href="{{ verify_url }}" class="button">E-Mail bestätigen</a>
+{% endblock %}

@@ -29,6 +29,11 @@ services:
       OPENROUTER_BASE_URL: https://openrouter.ai/api/v1
       OPENROUTER_APP_NAME: EventHorizon
       OPENROUTER_SITE_URL: http://localhost:5173
+      # Email Configuration
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-noreply@eventhorizon.app}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-EventHorizon}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     depends_on:
       - db
 
