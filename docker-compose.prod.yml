@@ -10,6 +10,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - traefik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-eventhorizon}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
@@ -24,6 +29,11 @@ services:
       - db
     networks:
       - traefik
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build: ./frontend
@@ -32,6 +42,7 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.eventhorizon.rule=Host(`event-horizon.sp23.online`)"
       - "traefik.http.routers.eventhorizon.entrypoints=websecure"
       - "traefik.http.routers.eventhorizon.tls.certresolver=le"
