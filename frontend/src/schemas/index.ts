@@ -183,9 +183,10 @@ export const EventSchema = z.object({
 
 export const UserSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  name: z.string(), // Derived full name
   email: z.string().email(),
-  username: z.string(),
   avatarUrl: z.string().optional(),
   phone: z.string().optional(),
   department: z.string().optional(),

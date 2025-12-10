@@ -231,8 +231,9 @@ let favoriteActivityIds: string[] = ["act-1"];
 const currentUser: User = {
   id: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", // Backend Mock User ID
   name: "Max Mustermann",
+  firstName: "Max",
+  lastName: "Mustermann",
   email: "max.mustermann@firma.at",
-  username: "max",
   avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
   department: "Marketing",
   createdAt: "2024-01-01T00:00:00Z",
@@ -251,8 +252,9 @@ function mapUserFromApi(apiUser: any): User {
   return {
     id: apiUser.id,
     email: apiUser.email,
-    username: apiUser.username || apiUser.email,
-    name: apiUser.name,
+    firstName: apiUser.first_name,
+    lastName: apiUser.last_name,
+    name: `${apiUser.first_name} ${apiUser.last_name}`.trim(),
     avatarUrl: apiUser.avatar_url,
     phone: apiUser.phone,
     department: apiUser.department,
@@ -286,7 +288,7 @@ function mapRoomFromApi(apiRoom: any): Room {
     avatarUrl: apiRoom.avatar_url ?? apiRoom.avatarUrl,
     members: (apiRoom.members || []).map((member: any) => ({
       userId: member.user_id ?? member.userId,
-      userName: member.user_name ?? member.userName,
+      userName: member.user_name ?? member.userName ?? member.name,
       avatarUrl: member.avatar_url ?? member.avatarUrl,
       role: member.role,
       joinedAt: member.joined_at ?? member.joinedAt,
@@ -294,9 +296,9 @@ function mapRoomFromApi(apiRoom: any): Room {
   } as Room;
 }
 
-export async function login(username: string, password: string): Promise<ApiResult<User>> {
+export async function login(email: string, password: string): Promise<ApiResult<User>> {
   if (USE_MOCKS) {
-    const result = await mockLogin(username, password);
+    const result = await mockLogin(email, password);
     if (result.data) {
       setStoredToken("mock-token");
     }
@@ -305,7 +307,7 @@ export async function login(username: string, password: string): Promise<ApiResu
 
   try {
     const body = new URLSearchParams();
-    body.append("username", username);
+    body.append("username", email);
     body.append("password", password);
 
     const response = await fetch(`${API_BASE}/auth/login`, {
@@ -327,13 +329,14 @@ export async function login(username: string, password: string): Promise<ApiResu
   }
 }
 
-export async function register(user: { email: string; username: string; name: string; password: string }): Promise<ApiResult<User>> {
+export async function register(user: { email: string; firstName: string; lastName: string; password: string }): Promise<ApiResult<User>> {
   if (USE_MOCKS) {
     const mockUser: User = {
       id: `user-${Date.now()}`,
       email: user.email,
-      username: user.username,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      name: `${user.firstName} ${user.lastName}`.trim(),
       avatarUrl: "",
       department: "",
       createdAt: new Date().toISOString(),
@@ -344,10 +347,17 @@ export async function register(user: { email: string; username: string; name: st
   }
 
   try {
+    const payload = {
+      email: user.email,
+      password: user.password,
+      first_name: user.firstName,
+      last_name: user.lastName,
+    };
+
     const response = await fetch(`${API_BASE}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -380,7 +390,8 @@ export async function getCurrentUser(): Promise<ApiResult<User | null>> {
 }
 
 export async function updateUser(updates: {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   department?: string;
   position?: string;
@@ -404,12 +415,18 @@ export async function updateUser(updates: {
 
     // Update mock user
     Object.assign(currentUser, updates);
+    if (updates.firstName || updates.lastName) {
+       currentUser.firstName = updates.firstName || currentUser.firstName;
+       currentUser.lastName = updates.lastName || currentUser.lastName;
+       currentUser.name = `${currentUser.firstName} ${currentUser.lastName}`.trim();
+    }
     return { data: currentUser };
   }
 
   // Convert camelCase to snake_case for API
   const apiUpdates: any = {};
-  if (updates.name !== undefined) apiUpdates.name = updates.name;
+  if (updates.firstName !== undefined) apiUpdates.first_name = updates.firstName;
+  if (updates.lastName !== undefined) apiUpdates.last_name = updates.lastName;
   if (updates.phone !== undefined) apiUpdates.phone = updates.phone;
   if (updates.department !== undefined) apiUpdates.department = updates.department;
   if (updates.position !== undefined) apiUpdates.position = updates.position;

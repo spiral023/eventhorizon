@@ -82,8 +82,8 @@ class User(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String, unique=True, index=True, nullable=False)
-    username = Column(String, unique=True, index=True, nullable=False)
-    name = Column(String, nullable=False)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
     avatar_url = Column(String)
     phone = Column(String)
     department = Column(String)
@@ -101,6 +101,10 @@ class User(Base):
     budget_preference = Column(String)  # low, medium, high, any
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
     created_at = Column(DateTime, default=datetime.utcnow)
     

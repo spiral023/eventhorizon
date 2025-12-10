@@ -13,6 +13,8 @@ import { getCurrentUser } from "@/services/apiClient";
 
 export interface UserProfile {
   name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone?: string;
   department: string;
@@ -56,7 +58,9 @@ export default function ProfilePage() {
       if (result.data) {
         // Map API user to UserProfile with default values
         setUser({
-          name: result.data.name,
+          name: result.data.name || `${result.data.firstName} ${result.data.lastName}`.trim(),
+          firstName: result.data.firstName,
+          lastName: result.data.lastName,
           email: result.data.email,
           phone: result.data.phone,
           department: result.data.department || "",

@@ -11,10 +11,10 @@ import { toast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("max.mustermann@firma.at");
-  const [username, setUsername] = useState("max");
-  const [name, setName] = useState("Max Mustermann");
-  const [password, setPassword] = useState("demo123");
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
       const success =
         mode === "login"
           ? await login(email, password)
-          : await register({ email, username, name, password });
+          : await register({ email, firstName, lastName, password });
 
       if (success) {
         toast({
@@ -99,29 +99,42 @@ export default function LoginPage() {
           <CardContent className="pt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "register" && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Max Mustermann"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="rounded-xl"
-                    required
-                    autoComplete="name"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Vorname</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="Max"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="rounded-xl"
+                      required
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Nachname</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Mustermann"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="rounded-xl"
+                      required
+                      autoComplete="family-name"
+                    />
+                  </div>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">
-                  {mode === "login" ? "E-Mail oder Benutzername" : "E-Mail"}
-                </Label>
+                <Label htmlFor="email">E-Mail</Label>
                 <Input
                   id="email"
-                  type={mode === "login" ? "text" : "email"}
-                  placeholder={mode === "login" ? "max@firma.at oder max" : "max@firma.at"}
+                  type="email"
+                  placeholder="max.mustermann@firma.at"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="rounded-xl"
@@ -129,22 +142,6 @@ export default function LoginPage() {
                   autoComplete="email"
                 />
               </div>
-
-              {mode === "register" && (
-                <div className="space-y-2">
-                  <Label htmlFor="username">Benutzername</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="max"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="rounded-xl"
-                    required
-                    autoComplete="username"
-                  />
-                </div>
-              )}
 
               <div className="space-y-2">
                 <Label htmlFor="password">Passwort</Label>
@@ -192,14 +189,6 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 p-4 rounded-xl bg-secondary/30 text-center">
-              <p className="text-sm text-muted-foreground">
-                <strong>Demo-Modus:</strong> Klicke einfach auf "{mode === "login" ? "Anmelden" : "Registrieren"}"
-                <br />
-                (Vorausgefüllte Daten funktionieren)
-              </p>
-            </div>
-
             <div className="mt-4 text-center text-sm text-muted-foreground">
               {mode === "login" ? (
                 <>
@@ -224,24 +213,6 @@ export default function LoginPage() {
                   </button>
                 </>
               )}
-            </div>
-
-            {/* SSO Placeholder */}
-            <div className="mt-4 pt-4 border-t border-border/50">
-              <p className="text-xs text-center text-muted-foreground mb-3">
-                Oder anmelden mit
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="secondary" className="rounded-xl" disabled>
-                  Microsoft SSO
-                </Button>
-                <Button variant="secondary" className="rounded-xl" disabled>
-                  Google SSO
-                </Button>
-              </div>
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                (SSO in Entwicklung)
-              </p>
             </div>
           </CardContent>
         </Card>

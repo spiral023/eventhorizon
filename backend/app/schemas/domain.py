@@ -10,8 +10,8 @@ class BaseSchema(BaseModel):
 # --- User ---
 class UserBase(BaseSchema):
     email: str
-    username: str
-    name: str
+    first_name: str
+    last_name: str
     avatar_url: Optional[str] = None
     phone: Optional[str] = None
     department: Optional[str] = None
@@ -31,7 +31,8 @@ class UserCreate(UserBase):
     password: str
 
 class UserUpdate(BaseSchema):
-    name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     phone: Optional[str] = None
     department: Optional[str] = None
     position: Optional[str] = None

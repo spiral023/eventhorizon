@@ -46,7 +46,8 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [open, setOpen] = useState(false);
   
   // Basic Info
-  const [name, setName] = useState(user.name);
+  const [firstName, setFirstName] = useState(user.firstName);
+  const [lastName, setLastName] = useState(user.lastName);
   const [phone, setPhone] = useState(user.phone || "");
   const [department, setDepartment] = useState(user.department);
   const [position, setPosition] = useState(user.position || "");
@@ -109,8 +110,8 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      toast.error("Bitte gib deinen Namen ein");
+    if (!firstName.trim() || !lastName.trim()) {
+      toast.error("Bitte gib deinen Vor- und Nachnamen ein");
       return;
     }
 
@@ -118,7 +119,8 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
     try {
       // Call API to update user
       const result = await updateUser({
-        name: name.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         phone: phone.trim() || undefined,
         department: department.trim(),
         position: position.trim() || undefined,
@@ -144,7 +146,9 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
 
       // Update local state with additional fields that aren't stored in DB yet
       const updatedUser: Partial<UserProfile> = {
-        name: name.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        name: `${firstName.trim()} ${lastName.trim()}`,
         phone: phone.trim() || undefined,
         department: department.trim(),
         position: position.trim() || undefined,
@@ -201,14 +205,26 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
               <TabsContent value="basic" className="space-y-4 mt-0">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label htmlFor="profile-name">Name *</Label>
+                    <Label htmlFor="profile-firstname">Vorname *</Label>
                     <Input
-                      id="profile-name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      id="profile-firstname"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       className="rounded-xl"
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="profile-lastname">Nachname *</Label>
+                    <Input
+                      id="profile-lastname"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="profile-phone">Telefon</Label>
                     <Input
@@ -220,10 +236,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       className="rounded-xl"
                     />
                   </div>
-                </div>
-                
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="grid gap-2">
+                   <div className="grid gap-2">
                     <Label htmlFor="profile-department">Abteilung</Label>
                     <Input
                       id="profile-department"
@@ -232,6 +245,9 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       className="rounded-xl"
                     />
                   </div>
+                </div>
+                
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="profile-position">Position</Label>
                     <Input
@@ -242,10 +258,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       className="rounded-xl"
                     />
                   </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="grid gap-2">
+                   <div className="grid gap-2">
                     <Label htmlFor="profile-location">Standort</Label>
                     <Input
                       id="profile-location"
@@ -255,6 +268,9 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       className="rounded-xl"
                     />
                   </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="profile-birthday">Geburtstag (optional)</Label>
                     <div className="flex gap-2">
@@ -294,6 +310,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       </Popover>
                     </div>
                   </div>
+                  {/* Empty placeholder to keep grid balanced if needed, or just let it flow */}
                 </div>
 
                 <div className="grid gap-2">

@@ -11,8 +11,8 @@ interface AuthState {
   roomRoles: Record<string, RoomRole>; // roomId -> role
   
   // Actions
-  login: (usernameOrEmail: string, password: string) => Promise<boolean>;
-  register: (input: { email: string; username: string; name: string; password: string }) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (input: { email: string; firstName: string; lastName: string; password: string }) => Promise<boolean>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setRoomRole: (roomId: string, role: RoomRole) => void;
@@ -34,10 +34,10 @@ export const useAuthStore = create<AuthState>()(
         "room-4": "owner",
       },
 
-      login: async (usernameOrEmail: string, password: string) => {
+      login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const result = await apiLogin(usernameOrEmail, password);
+          const result = await apiLogin(email, password);
           if (result.error) {
             set({ error: result.error.message, isLoading: false });
             return false;

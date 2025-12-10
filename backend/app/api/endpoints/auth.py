@@ -22,7 +22,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 async def _get_user_by_identifier(db: AsyncSession, identifier: str) -> User | None:
     result = await db.execute(
-        select(User).where(or_(User.username == identifier, User.email == identifier))
+        select(User).where(User.email == identifier)
     )
     return result.scalar_one_or_none()
 
@@ -32,19 +32,19 @@ from app.services.email_service import email_service
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> Token:
     existing = await db.execute(
-        select(User).where(or_(User.email == user_in.email, User.username == user_in.username))
+        select(User).where(User.email == user_in.email)
     )
     if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email or username already exists",
+            detail="User with this email already exists",
         )
 
     user = User(
         id=uuid4(),
         email=user_in.email,
-        username=user_in.username,
-        name=user_in.name,
+        first_name=user_in.first_name,
+        last_name=user_in.last_name,
         avatar_url=user_in.avatar_url,
         department=user_in.department,
         hashed_password=get_password_hash(user_in.password),
@@ -73,7 +73,7 @@ async def login_for_access_token(
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

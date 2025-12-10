@@ -360,7 +360,6 @@ async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
             "id": str(creator.id),
             "name": creator.name,
             "email": creator.email,
-            "username": creator.username,
             "avatar_url": creator.avatar_url,
             "role": "owner",  # Creator is always owner
             "joined_at": room.created_at.isoformat() if room.created_at else None
@@ -378,7 +377,6 @@ async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
             "id": str(user.id),
             "name": user.name,
             "email": user.email,
-            "username": user.username,
             "avatar_url": user.avatar_url,
             "role": room_member.role.value if hasattr(room_member.role, 'value') else room_member.role,
             "joined_at": room_member.joined_at.isoformat() if room_member.joined_at else None
