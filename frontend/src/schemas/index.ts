@@ -240,3 +240,8 @@ export const AddDateOptionsSchema = z.object({
 });
 
 export type AddDateOptionsInput = z.infer<typeof AddDateOptionsSchema>;
+
+export const UserStatsSchema = z.object({
+  upcomingEventsCount: z.number(),
+  openVotesCount: z.number(),
+});

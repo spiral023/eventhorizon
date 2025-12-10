@@ -181,3 +181,7 @@ class SelectActivity(BaseSchema):
 
 class FinalizeDate(BaseSchema):
     date_option_id: UUID
+
+class UserStats(BaseSchema):
+    upcoming_events_count: int
+    open_votes_count: int

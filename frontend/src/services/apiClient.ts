@@ -1,4 +1,4 @@
-import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal } from "@/types/domain";
+import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 
@@ -451,6 +451,28 @@ export async function updateUser(updates: {
     return { data: mapUserFromApi(result.data) };
   }
   return { data: null, error: result.error };
+}
+
+export async function getUserStats(): Promise<ApiResult<UserStats>> {
+  if (USE_MOCKS) {
+    await delay(200);
+    return { 
+      data: {
+        upcomingEventsCount: 2,
+        openVotesCount: 3
+      }
+    };
+  }
+  const result = await request<any>('/users/me/stats');
+  if (result.data) {
+    return { 
+      data: {
+        upcomingEventsCount: result.data.upcoming_events_count,
+        openVotesCount: result.data.open_votes_count,
+      }
+    };
+  }
+  return { data: { upcomingEventsCount: 0, openVotesCount: 0 }, error: result.error };
 }
 
 // --- Activities ---

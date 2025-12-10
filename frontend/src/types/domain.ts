@@ -29,6 +29,7 @@ export type ActivityVote = z.infer<typeof Schemas.ActivityVoteSchema>;
 export type EventParticipant = z.infer<typeof Schemas.EventParticipantSchema>;
 export type Event = z.infer<typeof Schemas.EventSchema>;
 export type User = z.infer<typeof Schemas.UserSchema>;
+export type UserStats = z.infer<typeof Schemas.UserStatsSchema>;
 
 // ============================================
 // UI HELPERS

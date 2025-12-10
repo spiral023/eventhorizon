@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoomCard } from "@/components/shared/RoomCard";
 import { ActivityCard } from "@/components/shared/ActivityCard";
-import { getRooms, getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
-import type { Room, Activity } from "@/types/domain";
+import { getRooms, getActivities, getFavoriteActivityIds, toggleFavorite, getUserStats } from "@/services/apiClient";
+import type { Room, Activity, UserStats } from "@/types/domain";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { getGreeting } from "@/utils/greeting";
@@ -16,6 +16,7 @@ export default function HomePage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [roomCount, setRoomCount] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [userStats, setUserStats] = useState<UserStats>({ upcomingEventsCount: 0, openVotesCount: 0 });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -23,15 +24,19 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [roomsResult, activitiesResult, favoritesResult] = await Promise.all([
+      const [roomsResult, activitiesResult, favoritesResult, statsResult] = await Promise.all([
         getRooms(),
         getActivities(),
         getFavoriteActivityIds(),
+        getUserStats(),
       ]);
       setRooms(roomsResult.data.slice(0, 2));
       setRoomCount(roomsResult.data.length);
       setActivities(sortTopByFavorites(activitiesResult.data, 4));
       setFavoriteIds(favoritesResult.data || []);
+      if (statsResult.data) {
+        setUserStats(statsResult.data);
+      }
       setLoading(false);
     };
     fetchData();
@@ -77,7 +82,7 @@ export default function HomePage() {
             {greeting}, {user?.firstName || "Gast"}!
           </h1>
           <p className="text-muted-foreground max-w-lg">
-            Du hast 2 anstehende Events und 3 offene Abstimmungen. Schau dir die neuesten Aktivitäten an!
+            Du hast {userStats.upcomingEventsCount} anstehende Events und {userStats.openVotesCount} offene Abstimmungen. Schau dir die neuesten Aktivitäten an!
           </p>
         </div>
       </div>
@@ -87,8 +92,8 @@ export default function HomePage() {
         {[
           { label: "Aktive Räume", value: roomCount.toString(), icon: Users, color: "text-primary" },
           { label: "Aktivitäten favorisiert", value: favoriteIds.length.toString(), icon: Heart, color: "text-destructive" },
-          { label: "Events diesen Monat", value: "3", icon: TrendingUp, color: "text-success" },
-          { label: "Offene Votings", value: "3", icon: Sparkles, color: "text-purple-400" },
+          { label: "Anstehende Events", value: userStats.upcomingEventsCount.toString(), icon: TrendingUp, color: "text-success" },
+          { label: "Offene Votings", value: userStats.openVotesCount.toString(), icon: Sparkles, color: "text-purple-400" },
         ].map((stat, index) => (
           <Card 
             key={stat.label} 
