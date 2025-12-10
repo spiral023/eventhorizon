@@ -19,8 +19,7 @@ services:
   backend:
     build: ./backend
     restart: always
-    # No ports exposed to host, only internal network
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'
+    # Command is defined in Dockerfile (runs migrations then app)
     environment:
       POSTGRES_SERVER: db
       POSTGRES_USER: ${POSTGRES_USER:-user}
