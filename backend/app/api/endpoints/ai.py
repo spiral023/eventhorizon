@@ -58,7 +58,7 @@ class TestAIRequest(BaseModel):
 class TestAIResponse(BaseModel):
     """Response model for AI test endpoint"""
     response: str = Field(description="AI's response")
-    model_used: str = Field(description="Model that was used")
+    ai_model_used: str = Field(description="Model that was used")
 
 
 @router.post("/test", response_model=TestAIResponse)
@@ -109,7 +109,7 @@ async def test_ai_connection(
 
         return TestAIResponse(
             response=response,
-            model_used=request.model
+            ai_model_used=request.model
         )
 
     except Exception as e:
