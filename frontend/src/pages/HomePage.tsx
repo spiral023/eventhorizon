@@ -8,6 +8,8 @@ import { ActivityCard } from "@/components/shared/ActivityCard";
 import { getRooms, getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Room, Activity } from "@/types/domain";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/authStore";
+import { getGreeting } from "@/utils/greeting";
 
 export default function HomePage() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -16,6 +18,8 @@ export default function HomePage() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const greeting = getGreeting();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,7 +74,7 @@ export default function HomePage() {
             <span className="text-sm font-medium">Willkommen zurück!</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Guten Tag, Max!
+            {greeting}, {user?.firstName || "Gast"}!
           </h1>
           <p className="text-muted-foreground max-w-lg">
             Du hast 2 anstehende Events und 3 offene Abstimmungen. Schau dir die neuesten Aktivitäten an!
