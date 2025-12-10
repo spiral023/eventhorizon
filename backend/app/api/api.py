@@ -418,6 +418,15 @@ async def create_event(
         created_by_user_id=current_user.id
     )
     db.add(event)
+    
+    # Add creator as participant/organizer
+    participant = EventParticipant(
+        event_id=event.id,
+        user_id=current_user.id,
+        is_organizer=True
+    )
+    db.add(participant)
+    
     await db.commit()
     await db.refresh(event)
     return event
