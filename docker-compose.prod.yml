@@ -9,7 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - traefik
+      - internal
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-eventhorizon}"]
       interval: 10s
@@ -19,38 +19,55 @@ services:
   backend:
     build: ./backend
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    # No ports exposed to host, only internal network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'
     environment:
       POSTGRES_SERVER: db
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-eventhorizon}
+      # Backend Config
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
-      - traefik
+      - internal
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build: ./frontend
     restart: always
     networks:
-      - traefik
+      - traefik # Public facing
+      - internal # To talk to backend
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
+      # Router Configuration
       - "traefik.http.routers.eventhorizon.rule=Host(`event-horizon.sp23.online`)"
       - "traefik.http.routers.eventhorizon.entrypoints=websecure"
       - "traefik.http.routers.eventhorizon.tls.certresolver=le"
+      # Service Configuration (Nginx is on port 80 inside container)
       - "traefik.http.services.eventhorizon.loadbalancer.server.port=80"
+    depends_on:
+      backend:
+        condition: service_healthy
 
 networks:
   traefik:
     external: true
+  internal:
+    driver: bridge
 
 volumes:
   postgres_data:
