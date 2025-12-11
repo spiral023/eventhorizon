@@ -27,7 +27,8 @@ import {
   RegionLabels, 
   formatTimeWindow, 
   formatBudget,
-  CategoryLabels
+  CategoryLabels,
+  PhaseLabels
 } from "@/types/domain";
 import { useAuthStore } from "@/stores/authStore";
 import { getNextPhases, getPhaseIndex } from "@/utils/phaseStateMachine";
@@ -191,17 +192,17 @@ export default function EventDetailPage() {
   const canAdvance = nextPhases.length > 0;
   
   // Phase helper
-  const phases: EventPhase[] = ["proposal", "voting", "scheduling", "info"];
+  const phaseOrder: EventPhase[] = ["proposal", "voting", "scheduling", "info"];
   const isPhaseEnabled = (phase: EventPhase) => {
     if (!event) return false;
-    const currentIdx = phases.indexOf(event.phase);
-    const targetIdx = phases.indexOf(phase);
+    const currentIdx = phaseOrder.indexOf(event.phase);
+    const targetIdx = phaseOrder.indexOf(phase);
     if (currentIdx === -1) return true; // Fallback
     return targetIdx <= currentIdx;
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Back Button */}
       <Button
         variant="ghost"
@@ -214,7 +215,7 @@ export default function EventDetailPage() {
       </Button>
 
       {/* Event Header */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
           {event.description && (
@@ -223,7 +224,7 @@ export default function EventDetailPage() {
         </div>
 
         {/* Meta Info */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4" />
             <span>{formatTimeWindow(event.timeWindow)}</span>
@@ -236,12 +237,13 @@ export default function EventDetailPage() {
             <Euro className="h-4 w-4" />
             <span>{formatBudget(event.budgetAmount, event.budgetType)}</span>
           </div>
-      <div className="flex items-center gap-1.5">
-        <Users className="h-4 w-4" />
-        <span>{event.participants.length} Teilnehmer</span>
+          <div className="flex items-center gap-1.5">
+            <Users className="h-4 w-4" />
+            <span>{event.participants.length} Teilnehmer</span>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+
       {/* Phase Header */}
       <EventPhaseHeader
         currentPhase={event.phase}
@@ -250,17 +252,28 @@ export default function EventDetailPage() {
         onAdvance={handleAdvancePhase}
       />
 
-      {/* Communication & Actions */}
-      <div className="grid gap-6">
-        <EmailActions eventId={event.id}>
-           <PhaseComments eventId={event.id} phase={activeTab as EventPhase} />
-        </EmailActions>
-      </div>
-
-      {/* Phase Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        
-        {/* Proposal Phase */}
+        {/* Communication & Actions */}
+        <div className="grid gap-6">
+          <EmailActions eventId={event.id}>
+            <PhaseComments eventId={event.id} phase={activeTab as EventPhase} />
+          </EmailActions>
+        </div>
+
+        <TabsList className="w-full justify-start gap-2 overflow-x-auto rounded-2xl bg-muted/30 p-1">
+          {phaseOrder.map((phase) => (
+            <TabsTrigger
+              key={phase}
+              value={phase}
+              disabled={!isPhaseEnabled(phase)}
+              className="min-w-[130px] whitespace-nowrap rounded-xl text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              {PhaseLabels[phase]}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {/* Phase Content */}
         <TabsContent value="proposal" className="space-y-4">
           <Card className="bg-card/60 border-border/50 rounded-2xl">
             <CardHeader>
@@ -273,30 +286,35 @@ export default function EventDetailPage() {
                   <div 
                     key={activity.id} 
                     className={cn(
-                      "p-4 rounded-xl bg-secondary/30 flex items-center gap-4",
+                      "p-4 rounded-xl bg-secondary/30 flex flex-col sm:flex-row gap-3 sm:gap-4",
                       isExcluded && "opacity-50"
                     )}
                   >
                     <img
                       src={activity.imageUrl}
                       alt={activity.title}
-                      className="w-16 h-16 rounded-lg object-cover"
+                      className="w-full sm:w-16 h-32 sm:h-16 rounded-lg object-cover"
                     />
-                    <div className="flex-1">
-                      <h4 className="font-medium">{activity.title}</h4>
-                      <p className="text-sm text-muted-foreground">{activity.shortDescription}</p>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <h4 className="font-medium line-clamp-2">{activity.title}</h4>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{activity.shortDescription}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge>{CategoryLabels[activity.category]}</Badge>
+                        {isExcluded && (
+                          <Badge variant="destructive">Ausgeschlossen</Badge>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge>{CategoryLabels[activity.category]}</Badge>
-                      {isExcluded && (
-                        <Badge variant="destructive" className="ml-2">Ausgeschlossen</Badge>
-                      )}
+                    <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
                       {isCreator && event.phase === "proposal" && (
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           className={cn(
-                            isExcluded ? "text-success hover:text-success" : "text-destructive hover:text-destructive"
+                            "w-full sm:w-auto border-border/60 hover:bg-secondary/50 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-primary/40",
+                            isExcluded
+                              ? "text-success border-success/50 hover:text-success"
+                              : "text-destructive border-destructive/50 hover:text-destructive"
                           )}
                           onClick={() => handleToggleExclusion(activity.id, isExcluded)}
                           disabled={actionLoading}
@@ -320,7 +338,6 @@ export default function EventDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* Voting Phase */}
         <TabsContent value="voting" className="space-y-4">
           <p className="text-muted-foreground">

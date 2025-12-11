@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface EventCardProps {
   event: Event;
   onClick?: () => void;
+  actionSlot?: React.ReactNode;
 }
 
 const phaseColors: Record<string, string> = {
@@ -17,7 +18,7 @@ const phaseColors: Record<string, string> = {
   info: "bg-success/20 text-success",
 };
 
-export function EventCard({ event, onClick }: EventCardProps) {
+export function EventCard({ event, onClick, actionSlot }: EventCardProps) {
   const formattedDate = new Date(event.createdAt).toLocaleDateString("de-DE", {
     day: "numeric",
     month: "short",
@@ -96,7 +97,14 @@ export function EventCard({ event, onClick }: EventCardProps) {
             )}
           </div>
 
-          <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+            {actionSlot && (
+              <div className="flex-shrink-0">
+                {actionSlot}
+              </div>
+            )}
+            <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all mt-auto" />
+          </div>
         </div>
       </CardContent>
     </Card>

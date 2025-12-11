@@ -14,7 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { Activity, ActivityVote, VoteType } from "@/types/domain";
+import type { Activity, ActivityVote, VoteType, EventParticipant } from "@/types/domain";
 import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,7 @@ interface VotingCardProps {
   isOwner?: boolean;
   onSelect?: () => void;
   rank?: number;
-  participants: EventParticipant[];
+  participants?: EventParticipant[];
 }
 
 export function VotingCard({
@@ -40,7 +40,8 @@ export function VotingCard({
   disabled,
   isOwner,
   onSelect,
-  rank
+  rank,
+  participants = [],
 }: VotingCardProps) {
   const forVotes = votes?.votes.filter((v) => v.vote === "for").length || 0;
   const againstVotes = votes?.votes.filter((v) => v.vote === "against").length || 0;

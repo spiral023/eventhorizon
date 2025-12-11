@@ -92,6 +92,11 @@ class Room(RoomBase):
     created_at: datetime
     member_count: Optional[int] = 0
 
+class RoomUpdate(BaseSchema):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    avatar_url: Optional[str] = None
+
 # --- Activity ---
 class ActivityBase(BaseSchema):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)

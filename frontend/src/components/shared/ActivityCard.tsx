@@ -1,4 +1,4 @@
-import { MapPin, Euro, Clock, Users, Heart, Star, Zap, Brain, Sparkles } from "lucide-react";
+import { MapPin, Euro, Clock, Users, Heart, Star, Zap, Brain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ interface ActivityCardProps {
   onFavoriteToggle?: (activityId: string) => void;
   onClick?: () => void;
   showDetails?: boolean;
+  showTags?: boolean;
 }
 
 export function ActivityCard({ 
@@ -20,7 +21,8 @@ export function ActivityCard({
   isFavorite = false,
   onFavoriteToggle,
   onClick,
-  showDetails = false
+  showDetails = false,
+  showTags = true
 }: ActivityCardProps) {
   const formatDuration = () => {
     if (activity.duration) return activity.duration;
@@ -139,12 +141,6 @@ export function ActivityCard({
               colorClass="bg-purple-500"
             />
             <ScaleBar 
-              value={activity.funFactor} 
-              label="Spaßfaktor" 
-              size="sm"
-              colorClass="bg-success"
-            />
-            <ScaleBar 
               value={activity.teamworkLevel} 
               label="Teamwork" 
               size="sm"
@@ -178,13 +174,6 @@ export function ActivityCard({
               )} />
               <span className="text-xs">{activity.socialInteractionLevel ?? "-"}/5</span>
             </div>
-            <div className="flex items-center gap-1" title="Spassfaktor">
-              <Sparkles className={cn(
-                "h-4 w-4",
-                activity.funFactor >= 4 ? "text-success" : "text-muted-foreground"
-              )} />
-              <span className="text-xs">{activity.funFactor}/5</span>
-            </div>
             <div className="flex items-center gap-3 ml-auto text-xs text-muted-foreground">
               <div className="flex items-center gap-1" title="Favoriten">
                 <Heart className={cn("h-4 w-4", (activity.favoritesCount ?? 0) > 0 && "text-destructive")} />
@@ -199,17 +188,19 @@ export function ActivityCard({
         )}
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {activity.tags.slice(0, 3).map((tag) => (
-            <Badge 
-              key={tag} 
-              variant="secondary" 
-              className="rounded-md text-xs font-normal px-2 py-0.5"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
+        {showTags && activity.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {activity.tags.slice(0, 3).map((tag) => (
+              <Badge 
+                key={tag} 
+                variant="secondary" 
+                className="rounded-md text-xs font-normal px-2 py-0.5"
+              >
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

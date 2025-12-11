@@ -110,8 +110,8 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
         "border-transparent"
     )}>
       {/* Top Section: Date & Info */}
-      <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
-        <div className="space-y-1.5">
+      <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+        <div className="space-y-1.5 w-full">
           <CardTitle className="text-xl capitalize flex items-center gap-2">
             {format(new Date(option.date), "EEEE, d. MMMM", { locale: de })}
             {isPriority && <Star className="h-5 w-5 fill-yellow-500 text-yellow-500 animate-pulse" />}
@@ -134,7 +134,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
             {/* Score Badge */}
             <Badge variant="secondary" className="text-lg px-3 py-1 font-bold">
                 {score} <span className="text-xs font-normal ml-1 text-muted-foreground">Pkt</span>
@@ -145,7 +145,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
                 <Button
                 variant="ghost"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8"
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8 flex-shrink-0"
                 onClick={handleDelete}
                 >
                 <Trash2 className="h-4 w-4" />

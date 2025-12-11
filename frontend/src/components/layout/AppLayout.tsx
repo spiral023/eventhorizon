@@ -10,9 +10,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     <div className="min-h-screen relative page-stable">
       <div className="fixed inset-0 gradient-bg -z-10" />
       <Header />
-      <div className="flex">
+      <div className="flex w-full min-w-0 overflow-x-hidden">
         <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 lg:ml-64">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:ml-64">
           {children}
         </main>
       </div>

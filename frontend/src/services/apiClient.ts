@@ -676,6 +676,101 @@ export async function getRoomById(id: string): Promise<ApiResult<Room | null>> {
   return { data: null, error: result.error };
 }
 
+export async function updateRoom(roomId: string, updates: { name?: string; description?: string; avatarUrl?: string }): Promise<ApiResult<Room | null>> {
+  if (USE_MOCKS) {
+    await delay(250);
+    const idx = mockRooms.findIndex((r) => r.id === roomId);
+    if (idx === -1) return { data: null, error: { code: "NOT_FOUND", message: "Raum nicht gefunden" } };
+    mockRooms[idx] = { ...mockRooms[idx], ...updates };
+    return { data: mockRooms[idx] };
+  }
+
+  const apiPayload: any = {};
+  if (updates.name !== undefined) apiPayload.name = updates.name;
+  if (updates.description !== undefined) apiPayload.description = updates.description;
+  if (updates.avatarUrl !== undefined) apiPayload.avatar_url = updates.avatarUrl;
+
+  const result = await request<any>(`/rooms/${roomId}`, {
+    method: "PATCH",
+    body: JSON.stringify(apiPayload),
+  });
+  if (result.data) {
+    return { data: mapRoomFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
+
+export async function getRoomAvatarUploadUrl(roomId: string, contentType: string, fileSize: number): Promise<ApiResult<AvatarUploadInfo>> {
+  if (USE_MOCKS) {
+    await delay(80);
+    return {
+      data: {
+        uploadUrl: "https://example.com/mock-upload",
+        publicUrl: `https://picsum.photos/seed/room-${roomId}/256`,
+        uploadKey: `rooms/${roomId}/orig.png`,
+      },
+    };
+  }
+
+  const result = await request<any>(`/rooms/${roomId}/avatar/upload-url`, {
+    method: "POST",
+    body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
+  });
+  if (result.data) {
+    return {
+      data: {
+        uploadUrl: (result.data as any).upload_url ?? (result.data as any).uploadUrl,
+        publicUrl: (result.data as any).public_url ?? (result.data as any).publicUrl,
+        uploadKey: (result.data as any).upload_key ?? (result.data as any).uploadKey,
+      },
+    };
+  }
+  return { data: null as any, error: result.error };
+}
+
+export async function processRoomAvatar(roomId: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Room | null>> {
+  if (USE_MOCKS) {
+    await delay(120);
+    const url = `https://picsum.photos/seed/room-${roomId}-${Date.now()}/256`;
+    const idx = mockRooms.findIndex((r) => r.id === roomId);
+    if (idx !== -1) mockRooms[idx].avatarUrl = url;
+    return { data: idx !== -1 ? mockRooms[idx] : null };
+  }
+
+  const result = await request<any>(`/rooms/${roomId}/avatar/process`, {
+    method: "POST",
+    body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
+  });
+  if (result.data) {
+    return { data: mapRoomFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
+}
+
+export async function uploadRoomAvatar(roomId: string, file: File): Promise<ApiResult<Room | null>> {
+  const presign = await getRoomAvatarUploadUrl(roomId, file.type, file.size);
+  if (presign.error || !presign.data) {
+    return { data: null, error: presign.error };
+  }
+
+  const putRes = await fetch(presign.data.uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type,
+    },
+    body: file,
+  });
+  if (!putRes.ok) {
+    return { data: null, error: { code: String(putRes.status), message: "Upload fehlgeschlagen" } };
+  }
+
+  if (!presign.data.uploadKey) {
+    return { data: null as any, error: { code: "UPLOAD_KEY_MISSING", message: "Upload key fehlt" } };
+  }
+
+  return await processRoomAvatar(roomId, presign.data.uploadKey, "webp");
+}
+
 export async function createRoom(input: { name: string; description?: string }): Promise<ApiResult<Room>> {
   if (USE_MOCKS) {
     await delay(400);

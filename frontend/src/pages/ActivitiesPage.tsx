@@ -297,6 +297,7 @@ export default function ActivitiesPage() {
                   )
                 );
               }}
+              showTags={false}
               onClick={() => navigate(`/activities/${activity.id}`)}
             />
           ))}

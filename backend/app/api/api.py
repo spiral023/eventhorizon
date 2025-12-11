@@ -12,12 +12,17 @@ from app.api.deps import get_current_user
 from app.core.utils import generate_room_invite_code
 from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment, ActivityComment
 from app.schemas.domain import (
-    Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
+    Activity as ActivitySchema, Room as RoomSchema, RoomCreate, RoomUpdate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate,
     DateOptionCreate, EventComment as EventCommentSchema, EventCommentCreate,
-    ActivityComment as ActivityCommentSchema, ActivityCommentCreate
+    ActivityComment as ActivityCommentSchema, ActivityCommentCreate,
+    AvatarUploadRequest, AvatarUploadResponse, AvatarProcessRequest
 )
 from app.api.endpoints import auth, users, ai, emails
+from app.services.room_avatar_service import (
+    generate_room_avatar_upload_url,
+    process_room_avatar_upload,
+)
 
 router = APIRouter()
 
@@ -413,6 +418,74 @@ async def create_room(
         created_at=datetime.utcnow(),
         created_by_user_id=current_user.id
     )
+    db.add(room)
+    await db.commit()
+    await db.refresh(room)
+    return room
+
+@router.patch("/rooms/{room_id}", response_model=RoomSchema)
+async def update_room(
+    room_id: UUID,
+    room_in: RoomUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Room).where(Room.id == room_id))
+    room = result.scalar_one_or_none()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the room creator can update this room")
+
+    data = room_in.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        setattr(room, field, value)
+
+    await db.commit()
+    await db.refresh(room)
+    return room
+
+@router.post("/rooms/{room_id}/avatar/upload-url", response_model=AvatarUploadResponse)
+async def create_room_avatar_upload_url(
+    room_id: UUID,
+    payload: AvatarUploadRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Room).where(Room.id == room_id))
+    room = result.scalar_one_or_none()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the room creator can upload a room image")
+
+    upload_url, public_url, upload_key = generate_room_avatar_upload_url(
+        room_id=room_id,
+        content_type=payload.content_type,
+        file_size=payload.file_size,
+    )
+    return AvatarUploadResponse(upload_url=upload_url, public_url=public_url, upload_key=upload_key)
+
+@router.post("/rooms/{room_id}/avatar/process", response_model=RoomSchema)
+async def process_room_avatar(
+    room_id: UUID,
+    payload: AvatarProcessRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Room).where(Room.id == room_id))
+    room = result.scalar_one_or_none()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the room creator can upload a room image")
+
+    processed_url = process_room_avatar_upload(
+        room_id=room_id,
+        upload_key=payload.upload_key,
+        desired_format=payload.output_format,
+    )
+    room.avatar_url = processed_url
     db.add(room)
     await db.commit()
     await db.refresh(room)

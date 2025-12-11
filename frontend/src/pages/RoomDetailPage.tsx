@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Calendar, Users, Link2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ShareRoomDialog } from "@/components/shared/ShareRoomDialog";
@@ -61,14 +60,14 @@ export default function RoomDetailPage() {
     try {
       const result = await deleteEvent(deleteDialogEvent.id);
       if (result.error) {
-        toast.error(result.error.message || "Fehler beim LÃ‡Ã´schen des Events");
+        toast.error(result.error.message || "Fehler beim Löschen des Events");
         return;
       }
       setEvents((prev) => prev.filter((e) => e.id !== deleteDialogEvent.id));
-      toast.success("Event erfolgreich gelÃ‡Ã´scht!");
+      toast.success("Event erfolgreich gelöscht!");
       setDeleteDialogEvent(null);
     } catch {
-      toast.error("Fehler beim LÃ‡Ã´schen des Events");
+      toast.error("Fehler beim Löschen des Events");
     } finally {
       setDeleteLoading(false);
     }
@@ -93,10 +92,10 @@ export default function RoomDetailPage() {
       <EmptyState
         icon={Users}
         title="Raum nicht gefunden"
-        description="Der gesuchte Raum existiert nicht oder wurde gelÃ¶scht."
+        description="Der gesuchte Raum existiert nicht oder wurde gelöscht."
         action={
           <Button onClick={() => navigate("/rooms")} className="rounded-xl">
-            ZurÃ¼ck zu RÃ¤umen
+            Zurück zu Räumen
           </Button>
         }
       />
@@ -107,54 +106,55 @@ export default function RoomDetailPage() {
   const pastEvents = events.filter((e) => e.phase === "info");
 
   return (
-    <div>
+    <div className="space-y-6 pb-16">
       {/* Back Button */}
       <Button
         variant="ghost"
         size="sm"
-        className="gap-2 mb-4 -ml-2"
+        className="gap-2 -ml-2 w-full sm:w-auto justify-start"
         onClick={() => navigate("/rooms")}
       >
         <ArrowLeft className="h-4 w-4" />
-        ZurÃ¼ck zu RÃ¤umen
+        Zurück zu Räumen
       </Button>
 
       {/* Room Header */}
-      <div className="flex items-start gap-6 mb-8">
-        <Avatar className="h-20 w-20 rounded-2xl ring-2 ring-border">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+        <Avatar className="h-16 w-16 lg:h-20 lg:w-20 rounded-2xl ring-2 ring-border">
           <AvatarImage src={room.avatarUrl} className="object-cover" />
           <AvatarFallback className="rounded-2xl text-2xl font-semibold bg-secondary">
             {room.name.charAt(0)}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">{room.name}</h1>
+        <div className="flex-1 space-y-2">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight break-words">{room.name}</h1>
           {room.description && (
-            <p className="text-muted-foreground mt-1">{room.description}</p>
+            <p className="text-muted-foreground text-sm lg:text-base">{room.description}</p>
           )}
-          <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5 min-w-[140px]">
               <Users className="h-4 w-4" />
               <span>{room.memberCount} Mitglieder</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-[140px]">
               <Calendar className="h-4 w-4" />
               <span>{events.length} Events</span>
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 flex-nowrap">
           <ShareRoomDialog
             room={room}
             trigger={
-              <Button variant="outline" size="icon" className="rounded-xl">
+              <Button variant="outline" size="icon" className="rounded-xl shrink-0">
                 <Link2 className="h-4 w-4" />
               </Button>
             }
           />
           <EditRoomDialog room={room} onRoomUpdated={handleRoomUpdated} />
           <Button 
-            className="gap-2 rounded-xl"
+            size="sm"
+            className="gap-2 rounded-xl shrink-0 whitespace-nowrap"
             onClick={() => navigate(`/rooms/${roomId}/events/new`)}
           >
             <Plus className="h-4 w-4" />
@@ -165,14 +165,14 @@ export default function RoomDetailPage() {
 
       {/* Events Tabs */}
       <Tabs defaultValue="active" className="space-y-6">
-        <TabsList className="bg-secondary/50 rounded-xl p-1">
-          <TabsTrigger value="active" className="rounded-lg">
+        <TabsList className="bg-secondary/50 rounded-xl p-1 flex flex-wrap gap-2 w-full overflow-x-auto">
+          <TabsTrigger value="active" className="rounded-lg flex-1 min-w-[160px]">
             Aktive Events ({activeEvents.length})
           </TabsTrigger>
-          <TabsTrigger value="past" className="rounded-lg">
+          <TabsTrigger value="past" className="rounded-lg flex-1 min-w-[160px]">
             Vergangene Events ({pastEvents.length})
           </TabsTrigger>
-          <TabsTrigger value="members" className="rounded-lg">
+          <TabsTrigger value="members" className="rounded-lg flex-1 min-w-[160px]">
             Mitglieder
           </TabsTrigger>
         </TabsList>
@@ -200,22 +200,22 @@ export default function RoomDetailPage() {
                 className="animate-fade-in-up relative"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {user?.id && event.createdByUserId === user.id && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-2 text-destructive hover:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteDialogEvent(event);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
                 <EventCard
                   event={event}
+                  actionSlot={user?.id && event.createdByUserId === user.id ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteDialogEvent(event);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  ) : undefined}
                   onClick={() => navigate(`/rooms/${roomId}/events/${event.id}`)}
                 />
               </div>
@@ -237,22 +237,22 @@ export default function RoomDetailPage() {
                 className="animate-fade-in-up opacity-70 relative"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {user?.id && event.createdByUserId === user.id && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-2 text-destructive hover:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteDialogEvent(event);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
                 <EventCard
                   event={event}
+                  actionSlot={user?.id && event.createdByUserId === user.id ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteDialogEvent(event);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  ) : undefined}
                   onClick={() => navigate(`/rooms/${roomId}/events/${event.id}`)}
                 />
               </div>
@@ -302,9 +302,9 @@ export default function RoomDetailPage() {
       <AlertDialog open={!!deleteDialogEvent} onOpenChange={(open) => !open && setDeleteDialogEvent(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Event lÃ‡Ã´schen?</AlertDialogTitle>
+            <AlertDialogTitle>Event löschen?</AlertDialogTitle>
             <AlertDialogDescription>
-              Dieses Event und alle zugehÃ‡Ã´rigen Daten werden dauerhaft gelÃ‡Ã´scht. "{deleteDialogEvent?.name}" wirklich entfernen?
+              Dieses Event und alle zugehörigen Daten werden dauerhaft gelöscht. "{deleteDialogEvent?.name}" wirklich entfernen?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -314,7 +314,7 @@ export default function RoomDetailPage() {
               onClick={handleDeleteEvent}
               disabled={deleteLoading}
             >
-              {deleteLoading ? "LÃ‡Ã´sche..." : "Event lÃ‡Ã´schen"}
+              {deleteLoading ? "Lösche..." : "Event löschen"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
