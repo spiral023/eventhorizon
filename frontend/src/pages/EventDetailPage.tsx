@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -236,19 +236,12 @@ export default function EventDetailPage() {
             <Euro className="h-4 w-4" />
             <span>{formatBudget(event.budgetAmount, event.budgetType)}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" />
-            <span>{event.participants.length} Teilnehmer</span>
-          </div>
-        </div>
+      <div className="flex items-center gap-1.5">
+        <Users className="h-4 w-4" />
+        <span>{event.participants.length} Teilnehmer</span>
       </div>
-
-import { PhaseComments } from "@/components/events/PhaseComments";
-
-// ... existing imports ...
-
-// ... inside render ...
-
+    </div>
+  </div>
       {/* Phase Header */}
       <EventPhaseHeader
         currentPhase={event.phase}
@@ -457,12 +450,33 @@ import { PhaseComments } from "@/components/events/PhaseComments";
                     </div>
                   </div>
 
-                  {chosenActivity.website && (
-                    <Button variant="outline" className="w-full mt-4" asChild>
-                      <a href={chosenActivity.website} target="_blank" rel="noopener noreferrer">
-                        Webseite besuchen
-                      </a>
-                    </Button>
+                  {(chosenActivity.website || chosenActivity.facebook || chosenActivity.instagram) && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {chosenActivity.website && (
+                        <Button variant="outline" className="rounded-xl gap-2" asChild>
+                          <a href={chosenActivity.website} target="_blank" rel="noopener noreferrer">
+                            <Globe className="h-4 w-4" />
+                            Webseite
+                          </a>
+                        </Button>
+                      )}
+                      {chosenActivity.facebook && (
+                        <Button variant="outline" className="rounded-xl gap-2" asChild>
+                          <a href={chosenActivity.facebook} target="_blank" rel="noopener noreferrer">
+                            <Facebook className="h-4 w-4" />
+                            Facebook
+                          </a>
+                        </Button>
+                      )}
+                      {chosenActivity.instagram && (
+                        <Button variant="outline" className="rounded-xl gap-2" asChild>
+                          <a href={chosenActivity.instagram} target="_blank" rel="noopener noreferrer">
+                            <Instagram className="h-4 w-4" />
+                            Instagram
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>

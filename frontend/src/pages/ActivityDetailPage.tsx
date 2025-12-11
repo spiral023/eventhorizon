@@ -21,6 +21,9 @@ import {
   Target,
   Accessibility,
   CloudSun
+  ,
+  Facebook,
+  Instagram
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -567,6 +570,22 @@ export default function ActivityDetailPage() {
                       <a href={activity.website} target="_blank" rel="noopener noreferrer">
                         <Globe className="h-4 w-4" />
                         Website
+                      </a>
+                    </Button>
+                  )}
+                  {activity.facebook && (
+                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
+                      <a href={activity.facebook} target="_blank" rel="noopener noreferrer">
+                        <Facebook className="h-4 w-4" />
+                        Facebook
+                      </a>
+                    </Button>
+                  )}
+                  {activity.instagram && (
+                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
+                      <a href={activity.instagram} target="_blank" rel="noopener noreferrer">
+                        <Instagram className="h-4 w-4" />
+                        Instagram
                       </a>
                     </Button>
                   )}

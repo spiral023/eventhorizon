@@ -112,6 +112,8 @@ class ActivityBase(BaseSchema):
     
     website: Optional[str] = None
     provider: Optional[str] = None
+    facebook: Optional[str] = None
+    instagram: Optional[str] = None
     phone: Optional[str] = Field(None, validation_alias="contact_phone", serialization_alias="phone")
     email: Optional[str] = Field(None, validation_alias="contact_email", serialization_alias="email")
     

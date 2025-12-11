@@ -187,6 +187,8 @@ const mockActivities: Activity[] = [
     primaryGoal: "teambuilding",
     provider: "Masters of Escape GmbH",
     website: "https://www.mastersofescape.at",
+    facebook: "https://www.facebook.com/mastersofescape",
+    instagram: "https://www.instagram.com/mastersofescape",
     contactPhone: "0732272999",
     contactEmail: "office@mastersofescape.at",
     coordinates: [48.3129, 14.2830],
@@ -523,6 +525,8 @@ function mapActivityFromApi(apiActivity: any): Activity {
 
     provider: apiActivity.provider,
     website: apiActivity.website,
+    facebook: apiActivity.facebook,
+    instagram: apiActivity.instagram,
     contactPhone: apiActivity.phone || apiActivity.contact_phone,
     contactEmail: apiActivity.email || apiActivity.contact_email,
   } as Activity;

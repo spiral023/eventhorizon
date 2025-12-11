@@ -64,6 +64,8 @@ def map_json_to_model(activity_json: dict) -> Activity:
         contact_phone=activity_json.get("phone"),
         external_rating=activity_json.get("external_rating"),
         primary_goal=activity_json.get("primary_goal"),
+        facebook=activity_json.get("facebook"),
+        instagram=activity_json.get("instagram"),
 
         travel_time_from_office_minutes=activity_json.get("travel_time_from_office_minutes"),
         travel_time_from_office_minutes_walking=activity_json.get("travel_time_from_office_minutes_walking"),

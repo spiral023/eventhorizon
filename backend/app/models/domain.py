@@ -190,6 +190,8 @@ class Activity(Base):
     website = Column(String)
     contact_email = Column(String)
     contact_phone = Column(String)
+    facebook = Column(String)
+    instagram = Column(String)
     external_rating = Column(Float)
     primary_goal = Column(String)
     

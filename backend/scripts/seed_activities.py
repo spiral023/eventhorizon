@@ -31,6 +31,8 @@ FIELD_MAPPING = {
     "typical_duration_hours": "typical_duration_hours",
     "provider": "provider",
     "website": "website",
+    "facebook": "facebook",
+    "instagram": "instagram",
     "description": "description",
     "weather_dependent": "weather_dependent",
     "accessibility_flags": "accessibility_flags",

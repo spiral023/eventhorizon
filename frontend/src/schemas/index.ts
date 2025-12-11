@@ -105,6 +105,8 @@ export const ActivitySchema = z.object({
   // Provider
   provider: z.string().optional(),
   website: z.string().optional(),
+  facebook: z.string().url().optional(),
+  instagram: z.string().url().optional(),
   contactEmail: z.string().email().optional(),
   contactPhone: z.string().optional(),
   // Meta
