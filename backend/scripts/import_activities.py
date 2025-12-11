@@ -60,8 +60,12 @@ def map_json_to_model(activity_json: dict) -> Activity:
 
         provider=activity_json.get("provider"),
         website=activity_json.get("website"),
+        reservation_url=activity_json.get("reservation_url"),
+        menu_url=activity_json.get("menu_url"),
         contact_email=activity_json.get("email"),
         contact_phone=activity_json.get("phone"),
+        max_capacity=activity_json.get("max_capacity"),
+        outdoor_seating=activity_json.get("outdoor_seating"),
         external_rating=activity_json.get("external_rating"),
         primary_goal=activity_json.get("primary_goal"),
         facebook=activity_json.get("facebook"),

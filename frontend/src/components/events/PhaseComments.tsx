@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
-import { Send, MessageSquare, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Send, Loader2, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,9 +11,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { getEventComments, createEventComment } from "@/services/apiClient";
+import { getEventComments, createEventComment, deleteEventComment } from "@/services/apiClient";
 import type { EventComment, EventPhase } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
 
 interface PhaseCommentsProps {
   eventId: string;
@@ -26,7 +27,9 @@ export const PhaseComments: React.FC<PhaseCommentsProps> = ({ eventId, phase }) 
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const { toast } = useToast();
+  const currentUserId = useAuthStore((state) => state.user?.id);
 
   const fetchComments = async () => {
     setIsLoading(true);
@@ -52,34 +55,80 @@ export const PhaseComments: React.FC<PhaseCommentsProps> = ({ eventId, phase }) 
     } else {
       toast({
         title: "Fehler",
-        description: "Kommentar konnte nicht gesendet werden.",
+        description: error?.message || "Kommentar konnte nicht gesendet werden.",
         variant: "destructive",
       });
     }
     setIsSending(false);
   };
 
-  const CommentItem = ({ comment, isLatest = false }: { comment: EventComment, isLatest?: boolean }) => (
-    <div className={cn("flex gap-3", isLatest ? "items-start" : "items-center opacity-90")}>
-      <Avatar className={cn("border border-border", isLatest ? "h-10 w-10" : "h-8 w-8")}>
-        <AvatarImage src={comment.userAvatar} />
-        <AvatarFallback className="text-[10px]">
-          {comment.userName?.substring(0, 2).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold">{comment.userName}</span>
-          <span className="text-xs text-muted-foreground">
-            vor {formatDistanceToNow(new Date(comment.createdAt), { locale: de })}
-          </span>
+  const handleDelete = async (commentId: string) => {
+    if (!currentUserId) {
+      toast({
+        title: "Aktion nicht möglich",
+        description: "Bitte melde dich an, um Kommentare zu löschen.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const confirmDelete = window.confirm("Diesen Kommentar löschen?");
+    if (!confirmDelete) return;
+
+    setDeletingId(commentId);
+    const { error } = await deleteEventComment(eventId, commentId);
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: error.message || "Kommentar konnte nicht gelöscht werden.",
+        variant: "destructive",
+      });
+    } else {
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    }
+    setDeletingId(null);
+  };
+
+  const CommentItem = ({ comment, isLatest = false }: { comment: EventComment, isLatest?: boolean }) => {
+    const isOwn = currentUserId === comment.userId;
+    const isDeleting = deletingId === comment.id;
+    return (
+      <div className={cn("flex gap-3", isLatest ? "items-start" : "items-center opacity-90")}>
+        <Avatar className={cn("border border-border", isLatest ? "h-10 w-10" : "h-8 w-8")}>
+          <AvatarImage src={comment.userAvatar} />
+          <AvatarFallback className="text-[10px]">
+            {comment.userName?.substring(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold">{comment.userName}</span>
+            <span className="text-xs text-muted-foreground">
+              vor {formatDistanceToNow(new Date(comment.createdAt), { locale: de })}
+            </span>
+            {isOwn && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-[11px] text-muted-foreground"
+                onClick={() => handleDelete(comment.id)}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                )}
+                Löschen
+              </Button>
+            )}
+          </div>
+          <p className={cn("text-sm text-foreground leading-relaxed", !isLatest && "text-muted-foreground")}>
+            {comment.content}
+          </p>
         </div>
-        <p className={cn("text-sm text-foreground leading-relaxed", !isLatest && "text-muted-foreground")}>
-          {comment.content}
-        </p>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-4">

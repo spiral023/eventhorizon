@@ -31,6 +31,10 @@ FIELD_MAPPING = {
     "typical_duration_hours": "typical_duration_hours",
     "provider": "provider",
     "website": "website",
+    "reservation_url": "reservation_url",
+    "menu_url": "menu_url",
+    "max_capacity": "max_capacity",
+    "outdoor_seating": "outdoor_seating",
     "facebook": "facebook",
     "instagram": "instagram",
     "description": "description",
@@ -157,33 +161,38 @@ async def seed_activities(force: bool = False):
             if existing:
                 print(f"⚠️  {len(existing)} Activities bereits in der Datenbank vorhanden.")
                 if force:
-                    print("Automatischer Neuimport (force aktiviert) ...")
+                    print("Automatisches Update (force) – bestehende Activities werden aktualisiert, nicht gelöscht (FK-Schutz).")
                 else:
                     try:
-                        response = input("Alle löschen und neu importieren? (j/n): ")
+                        response = input("Bestehende Activities aktualisieren/ergänzen? (j/n): ")
                     except EOFError:
-                        print("Keine Eingabe möglich (non-interactive). Mit --force neu importieren.")
+                        print("Keine Eingabe möglich (non-interactive). Mit --force oder Eingabe erneut ausführen.")
                         return
                     if response.lower() != 'j':
                         print("Abgebrochen.")
                         return
 
-                for activity in existing:
-                    await session.delete(activity)
-                await session.commit()
-                print("✓ Alte Activities gelöscht\n")
+            existing_by_title = {a.title: a for a in existing}
 
-            # Add activities
-            count = 0
+            created = 0
+            updated = 0
             errors = 0
 
             for idx, activity_json in enumerate(activities_json, 1):
                 try:
                     activity_data = map_activity_data(activity_json)
-                    activity = Activity(**activity_data)
-                    session.add(activity)
-                    count += 1
-                    print(f"[{idx:2d}/{len(activities_json)}] ✓ {activity.title}")
+                    title = activity_data.get("title")
+                    if title and title in existing_by_title:
+                        act = existing_by_title[title]
+                        for field, value in activity_data.items():
+                            setattr(act, field, value)
+                        updated += 1
+                        print(f"[{idx:2d}/{len(activities_json)}] ↻ Aktualisiert: {title}")
+                    else:
+                        activity = Activity(**activity_data)
+                        session.add(activity)
+                        created += 1
+                        print(f"[{idx:2d}/{len(activities_json)}] ✓ Neu: {activity.title}")
                 except Exception as e:
                     errors += 1
                     print(f"[{idx:2d}/{len(activities_json)}] ❌ Fehler: {activity_json.get('title', 'Unknown')}")
@@ -192,7 +201,7 @@ async def seed_activities(force: bool = False):
             await session.commit()
 
             print(f"\n{'='*60}")
-            print(f"✅ {count} Activities erfolgreich importiert!")
+            print(f"✅ Import abgeschlossen – Neu: {created}, Aktualisiert: {updated}")
             if errors > 0:
                 print(f"⚠️  {errors} Fehler beim Import")
             print(f"{'='*60}")

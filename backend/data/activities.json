@@ -43,7 +43,11 @@
       14.2810701
     ],
     "facebook": "https://facebook.com/masters-of-escape-team-r-tselspa-in-linz",
-    "instagram": "https://instagram.com/masters-of-escape-team-r-tselspa-in-linz"
+    "instagram": "https://instagram.com/masters-of-escape-team-r-tselspa-in-linz",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://vreservierung.activity.com",
+    "menu_url": "https://vspeisekarte.activity.com"
   },
   {
     "title": "Lasertron: Actionreiches Lasertag Battle",
@@ -82,7 +86,11 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "facebook": "https://facebook.com/lasertron-actionreiches-lasertag-battle",
-    "instagram": "https://instagram.com/lasertron-actionreiches-lasertag-battle"
+    "instagram": "https://instagram.com/lasertron-actionreiches-lasertag-battle",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Exit the Room: Das Escape Abenteuer Linz",
@@ -125,7 +133,11 @@
       14.2894709
     ],
     "facebook": "https://facebook.com/exit-the-room-das-escape-abenteuer-linz",
-    "instagram": "https://instagram.com/exit-the-room-das-escape-abenteuer-linz"
+    "instagram": "https://instagram.com/exit-the-room-das-escape-abenteuer-linz",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "NoWayOut: Premium Escape Room Erlebnis",
@@ -164,7 +176,11 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "facebook": "https://facebook.com/nowayout-premium-escape-room-erlebnis",
-    "instagram": "https://instagram.com/nowayout-premium-escape-room-erlebnis"
+    "instagram": "https://instagram.com/nowayout-premium-escape-room-erlebnis",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Ocean Park: Bowling & Dinner Teamevent",
@@ -209,7 +225,11 @@
       14.2358488
     ],
     "facebook": "https://facebook.com/ocean-park-bowling-dinner-teamevent",
-    "instagram": "https://instagram.com/ocean-park-bowling-dinner-teamevent"
+    "instagram": "https://instagram.com/ocean-park-bowling-dinner-teamevent",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "JUMP DOME Linz: Trampolin-Action pur",
@@ -253,7 +273,11 @@
       14.2467145
     ],
     "facebook": "https://facebook.com/jump-dome-linz-trampolin-action-pur",
-    "instagram": "https://instagram.com/jump-dome-linz-trampolin-action-pur"
+    "instagram": "https://instagram.com/jump-dome-linz-trampolin-action-pur",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Linzer Bier: Brauereiführung & Verkostung",
@@ -299,7 +323,11 @@
       14.2988529
     ],
     "facebook": "https://facebook.com/linzer-bier-brauereif-hrung-verkostung",
-    "instagram": "https://instagram.com/linzer-bier-brauereif-hrung-verkostung"
+    "instagram": "https://instagram.com/linzer-bier-brauereif-hrung-verkostung",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Ruff Indoor Golf: Die Team-Challenge Linz",
@@ -338,7 +366,11 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "facebook": "https://facebook.com/ruff-indoor-golf-die-team-challenge-linz",
-    "instagram": "https://instagram.com/ruff-indoor-golf-die-team-challenge-linz"
+    "instagram": "https://instagram.com/ruff-indoor-golf-die-team-challenge-linz",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Another World: VR Team-Abenteuer erleben",
@@ -383,7 +415,11 @@
       14.2793947
     ],
     "facebook": "https://facebook.com/another-world-vr-team-abenteuer-erleben",
-    "instagram": "https://instagram.com/another-world-vr-team-abenteuer-erleben"
+    "instagram": "https://instagram.com/another-world-vr-team-abenteuer-erleben",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Deep Space 8K: Zukunftstrip im AEC Linz",
@@ -427,7 +463,11 @@
       14.2844998
     ],
     "facebook": "https://facebook.com/deep-space-8k-zukunftstrip-im-aec-linz",
-    "instagram": "https://instagram.com/deep-space-8k-zukunftstrip-im-aec-linz"
+    "instagram": "https://instagram.com/deep-space-8k-zukunftstrip-im-aec-linz",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Segway Tour: Linz schwebend entdecken",
@@ -470,7 +510,11 @@
       14.2869766
     ],
     "facebook": "https://facebook.com/segway-tour-linz-schwebend-entdecken",
-    "instagram": "https://instagram.com/segway-tour-linz-schwebend-entdecken"
+    "instagram": "https://instagram.com/segway-tour-linz-schwebend-entdecken",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Mural Harbor: Graffiti Walk & Spray Class",
@@ -511,7 +555,11 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "facebook": "https://facebook.com/mural-harbor-graffiti-walk-spray-class",
-    "instagram": "https://instagram.com/mural-harbor-graffiti-walk-spray-class"
+    "instagram": "https://instagram.com/mural-harbor-graffiti-walk-spray-class",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Stahlwelt Linz: Werkstour & Industriekultur",
@@ -555,7 +603,11 @@
       14.3193157
     ],
     "facebook": "https://facebook.com/stahlwelt-linz-werkstour-industriekultur",
-    "instagram": "https://instagram.com/stahlwelt-linz-werkstour-industriekultur"
+    "instagram": "https://instagram.com/stahlwelt-linz-werkstour-industriekultur",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Stefan's Stubm: Kulinarik & Gemütlichkeit",
@@ -599,7 +651,11 @@
       14.3106989
     ],
     "facebook": "https://facebook.com/stefan-s-stubm-kulinarik-gem-tlichkeit",
-    "instagram": "https://instagram.com/stefan-s-stubm-kulinarik-gem-tlichkeit"
+    "instagram": "https://instagram.com/stefan-s-stubm-kulinarik-gem-tlichkeit",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Il Teatro: Italienischer Abend fürs Team",
@@ -643,7 +699,11 @@
       14.3051051
     ],
     "facebook": "https://facebook.com/il-teatro-italienischer-abend-f-rs-team",
-    "instagram": "https://instagram.com/il-teatro-italienischer-abend-f-rs-team"
+    "instagram": "https://instagram.com/il-teatro-italienischer-abend-f-rs-team",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Das Josef: Der Linzer Gastro-Klassiker",
@@ -687,7 +747,11 @@
       14.2914546
     ],
     "facebook": "https://facebook.com/das-josef-der-linzer-gastro-klassiker",
-    "instagram": "https://instagram.com/das-josef-der-linzer-gastro-klassiker"
+    "instagram": "https://instagram.com/das-josef-der-linzer-gastro-klassiker",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "PAULs am Dom: Stylisches Dinner & Drinks",
@@ -731,7 +795,11 @@
       14.2872487
     ],
     "facebook": "https://facebook.com/pauls-am-dom-stylisches-dinner-drinks",
-    "instagram": "https://instagram.com/pauls-am-dom-stylisches-dinner-drinks"
+    "instagram": "https://instagram.com/pauls-am-dom-stylisches-dinner-drinks",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Weinstadl Urfahr: Uriges Dinner & Wein",
@@ -776,7 +844,11 @@
       14.300065
     ],
     "facebook": "https://facebook.com/weinstadl-urfahr-uriges-dinner-wein",
-    "instagram": "https://instagram.com/weinstadl-urfahr-uriges-dinner-wein"
+    "instagram": "https://instagram.com/weinstadl-urfahr-uriges-dinner-wein",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Eisstockschießen & Bratl: Winter-Teamevent",
@@ -820,7 +892,11 @@
       14.2953021
     ],
     "facebook": "https://facebook.com/eisstockschie-en-bratl-winter-teamevent",
-    "instagram": "https://instagram.com/eisstockschie-en-bratl-winter-teamevent"
+    "instagram": "https://instagram.com/eisstockschie-en-bratl-winter-teamevent",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Hollywood Megaplex: Privates Kino-Event",
@@ -864,7 +940,11 @@
       14.2358488
     ],
     "facebook": "https://facebook.com/hollywood-megaplex-privates-kino-event",
-    "instagram": "https://instagram.com/hollywood-megaplex-privates-kino-event"
+    "instagram": "https://instagram.com/hollywood-megaplex-privates-kino-event",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Cocktail-Kurs im Lennox: Mix it up Team!",
@@ -908,7 +988,11 @@
       14.2896724
     ],
     "facebook": "https://facebook.com/cocktail-kurs-im-lennox-mix-it-up-team",
-    "instagram": "https://instagram.com/cocktail-kurs-im-lennox-mix-it-up-team"
+    "instagram": "https://instagram.com/cocktail-kurs-im-lennox-mix-it-up-team",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "ÄNGUS Downtown: Bestes Steak-Dinner Linz",
@@ -951,7 +1035,11 @@
       14.2897106
     ],
     "facebook": "https://facebook.com/ngus-downtown-bestes-steak-dinner-linz",
-    "instagram": "https://instagram.com/ngus-downtown-bestes-steak-dinner-linz"
+    "instagram": "https://instagram.com/ngus-downtown-bestes-steak-dinner-linz",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Glorious Bastards: Pizza, Grill & Vibes",
@@ -996,7 +1084,11 @@
       14.2850119
     ],
     "facebook": "https://facebook.com/glorious-bastards-pizza-grill-vibes",
-    "instagram": "https://instagram.com/glorious-bastards-pizza-grill-vibes"
+    "instagram": "https://instagram.com/glorious-bastards-pizza-grill-vibes",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Bratwurstglöckerl: Linzer Wirtshauskultur",
@@ -1040,7 +1132,11 @@
       14.3061821
     ],
     "facebook": "https://facebook.com/bratwurstgl-ckerl-linzer-wirtshauskultur",
-    "instagram": "https://instagram.com/bratwurstgl-ckerl-linzer-wirtshauskultur"
+    "instagram": "https://instagram.com/bratwurstgl-ckerl-linzer-wirtshauskultur",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Stadtliebe Linz: Urbanes Wirtshaus-Event",
@@ -1084,7 +1180,11 @@
       14.2904616
     ],
     "facebook": "https://facebook.com/stadtliebe-linz-urbanes-wirtshaus-event",
-    "instagram": "https://instagram.com/stadtliebe-linz-urbanes-wirtshaus-event"
+    "instagram": "https://instagram.com/stadtliebe-linz-urbanes-wirtshaus-event",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Wia z'haus Lehner: Schmankerl & Ausblick",
@@ -1127,7 +1227,11 @@
       14.2773665
     ],
     "facebook": "https://facebook.com/wia-z-haus-lehner-schmankerl-ausblick",
-    "instagram": "https://instagram.com/wia-z-haus-lehner-schmankerl-ausblick"
+    "instagram": "https://instagram.com/wia-z-haus-lehner-schmankerl-ausblick",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Zur Eisernen Hand: Tradition & Genuss",
@@ -1170,7 +1274,11 @@
       14.2992758
     ],
     "facebook": "https://facebook.com/zur-eisernen-hand-tradition-genuss",
-    "instagram": "https://instagram.com/zur-eisernen-hand-tradition-genuss"
+    "instagram": "https://instagram.com/zur-eisernen-hand-tradition-genuss",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Rotax MAX Dome: High-Speed E-Kart Action",
@@ -1214,7 +1322,11 @@
       14.301592
     ],
     "facebook": "https://facebook.com/rotax-max-dome-high-speed-e-kart-action",
-    "instagram": "https://instagram.com/rotax-max-dome-high-speed-e-kart-action"
+    "instagram": "https://instagram.com/rotax-max-dome-high-speed-e-kart-action",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Booosters Kartbahn: Rennfeeling für Teams",
@@ -1258,7 +1370,11 @@
       14.2467145
     ],
     "facebook": "https://facebook.com/booosters-kartbahn-rennfeeling-f-r-teams",
-    "instagram": "https://instagram.com/booosters-kartbahn-rennfeeling-f-r-teams"
+    "instagram": "https://instagram.com/booosters-kartbahn-rennfeeling-f-r-teams",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   },
   {
     "title": "Mission Games: Die Live Game-Show Linz",
@@ -1298,6 +1414,10 @@
     "recommended_group_size_min": 6,
     "recommended_group_size_max": 60,
     "facebook": "https://facebook.com/mission-games-die-live-game-show-linz",
-    "instagram": "https://instagram.com/mission-games-die-live-game-show-linz"
+    "instagram": "https://instagram.com/mission-games-die-live-game-show-linz",
+    "max_capacity": 100,
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com"
   }
 ]

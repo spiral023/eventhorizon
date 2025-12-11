@@ -81,6 +81,7 @@ export const ActivitySchema = z.object({
   typicalDurationHours: z.number().optional(),
   groupSizeMin: z.number().min(1).optional(),
   groupSizeMax: z.number().min(1).optional(),
+  maxCapacity: z.number().optional(),
   recommendedGroupSizeMin: z.number().optional(),
   recommendedGroupSizeMax: z.number().optional(),
   minParticipants: z.number().optional(),
@@ -105,8 +106,11 @@ export const ActivitySchema = z.object({
   // Provider
   provider: z.string().optional(),
   website: z.string().optional(),
+  reservationUrl: z.string().url().optional(),
+  menuUrl: z.string().url().optional(),
   facebook: z.string().url().optional(),
   instagram: z.string().url().optional(),
+  outdoorSeating: z.boolean().optional(),
   contactEmail: z.string().email().optional(),
   contactPhone: z.string().optional(),
   // Meta

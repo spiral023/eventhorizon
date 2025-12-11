@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -448,15 +448,43 @@ export default function EventDetailPage() {
                       <MapPin className="h-4 w-4" />
                       <span>{RegionLabels[chosenActivity.locationRegion]} {chosenActivity.locationCity && `• ${chosenActivity.locationCity}`}</span>
                     </div>
+                    {typeof chosenActivity.maxCapacity === "number" && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">
+                        <Users className="h-4 w-4" />
+                        <span>Max. {chosenActivity.maxCapacity} Personen</span>
+                      </div>
+                    )}
+                    {chosenActivity.outdoorSeating !== undefined && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">
+                        <CloudSun className="h-4 w-4" />
+                        <span>{chosenActivity.outdoorSeating ? "Sitzplätze im Freien verfügbar" : "Keine Sitzplätze im Freien"}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {(chosenActivity.website || chosenActivity.facebook || chosenActivity.instagram) && (
+                  {(chosenActivity.website || chosenActivity.reservationUrl || chosenActivity.menuUrl || chosenActivity.facebook || chosenActivity.instagram) && (
                     <div className="flex flex-wrap gap-2 pt-2">
                       {chosenActivity.website && (
                         <Button variant="outline" className="rounded-xl gap-2" asChild>
                           <a href={chosenActivity.website} target="_blank" rel="noopener noreferrer">
                             <Globe className="h-4 w-4" />
                             Webseite
+                          </a>
+                        </Button>
+                      )}
+                      {chosenActivity.reservationUrl && (
+                        <Button variant="outline" className="rounded-xl gap-2" asChild>
+                          <a href={chosenActivity.reservationUrl} target="_blank" rel="noopener noreferrer">
+                            <Calendar className="h-4 w-4" />
+                            Reservierung
+                          </a>
+                        </Button>
+                      )}
+                      {chosenActivity.menuUrl && (
+                        <Button variant="outline" className="rounded-xl gap-2" asChild>
+                          <a href={chosenActivity.menuUrl} target="_blank" rel="noopener noreferrer">
+                            <BookOpen className="h-4 w-4" />
+                            Speisekarte
                           </a>
                         </Button>
                       )}

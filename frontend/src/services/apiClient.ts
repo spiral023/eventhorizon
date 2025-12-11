@@ -187,10 +187,14 @@ const mockActivities: Activity[] = [
     primaryGoal: "teambuilding",
     provider: "Masters of Escape GmbH",
     website: "https://www.mastersofescape.at",
+    reservationUrl: "https://reservierung.activity.com",
+    menuUrl: "https://speisekarte.activity.com",
     facebook: "https://www.facebook.com/mastersofescape",
     instagram: "https://www.instagram.com/mastersofescape",
     contactPhone: "0732272999",
     contactEmail: "office@mastersofescape.at",
+    maxCapacity: 100,
+    outdoorSeating: false,
     coordinates: [48.3129, 14.2830],
   },
   // ... (more activities would be here)
@@ -506,6 +510,7 @@ function mapActivityFromApi(apiActivity: any): Activity {
     groupSizeMin: apiActivity.recommended_group_size_min, // Fallback/Alias
     groupSizeMax: apiActivity.recommended_group_size_max, // Fallback/Alias
     minParticipants: apiActivity.recommended_group_size_min, // Fallback
+    maxCapacity: apiActivity.max_capacity,
 
     physicalIntensity: apiActivity.physical_intensity,
     mentalChallenge: apiActivity.mental_challenge,
@@ -525,8 +530,11 @@ function mapActivityFromApi(apiActivity: any): Activity {
 
     provider: apiActivity.provider,
     website: apiActivity.website,
+    reservationUrl: apiActivity.reservation_url,
+    menuUrl: apiActivity.menu_url,
     facebook: apiActivity.facebook,
     instagram: apiActivity.instagram,
+    outdoorSeating: apiActivity.outdoor_seating,
     contactPhone: apiActivity.phone || apiActivity.contact_phone,
     contactEmail: apiActivity.email || apiActivity.contact_email,
   } as Activity;
@@ -1318,6 +1326,21 @@ export async function createEventComment(eventId: string, content: string, phase
   return { data: null as any, error: result.error };
 }
 
+export async function deleteEventComment(eventId: string, commentId: string): Promise<ApiResult<void>> {
+  if (USE_MOCKS) {
+    await delay(150);
+    return { data: undefined };
+  }
+
+  const result = await request<void>(`/events/${eventId}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+  if (result.error) {
+    return { data: undefined as any, error: result.error };
+  }
+  return { data: undefined as any };
+}
+
 function mapActivityCommentFromApi(apiComment: any): ActivityComment {
   return {
     id: apiComment.id,
@@ -1371,6 +1394,21 @@ export async function createActivityComment(activityId: string, content: string)
     return { data: mapActivityCommentFromApi(result.data) };
   }
   return { data: null as any, error: result.error };
+}
+
+export async function deleteActivityComment(activityId: string, commentId: string): Promise<ApiResult<void>> {
+  if (USE_MOCKS) {
+    await delay(150);
+    return { data: undefined };
+  }
+
+  const result = await request<void>(`/activities/${activityId}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+  if (result.error) {
+    return { data: undefined as any, error: result.error };
+  }
+  return { data: undefined as any };
 }
 
 // --- AI / Extras ---

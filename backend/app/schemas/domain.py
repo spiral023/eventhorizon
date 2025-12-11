@@ -111,9 +111,13 @@ class ActivityBase(BaseSchema):
     travel_time_from_office_minutes_walking: Optional[int] = None
     
     website: Optional[str] = None
+    reservation_url: Optional[str] = None
+    menu_url: Optional[str] = None
     provider: Optional[str] = None
     facebook: Optional[str] = None
     instagram: Optional[str] = None
+    max_capacity: Optional[int] = None
+    outdoor_seating: Optional[bool] = False
     phone: Optional[str] = Field(None, validation_alias="contact_phone", serialization_alias="phone")
     email: Optional[str] = Field(None, validation_alias="contact_email", serialization_alias="email")
     

@@ -18,12 +18,14 @@ import {
   Car,
   FootprintsIcon,
   Calendar,
+  BookOpen,
   Target,
   Accessibility,
   CloudSun
   ,
   Facebook,
-  Instagram
+  Instagram,
+  Trash2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ScaleBar } from "@/components/shared/ScaleBar";
-import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment } from "@/services/apiClient";
+import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
 import type { Activity, ActivityComment } from "@/types/domain";
 import {
   CategoryLabels,
@@ -113,6 +115,20 @@ export default function ActivityDetailPage() {
       toast.success("Kommentar gesendet");
     }
     setSubmittingComment(false);
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!activityId) return;
+    const confirmDelete = window.confirm("Diesen Kommentar löschen?");
+    if (!confirmDelete) return;
+
+    const result = await deleteActivityComment(activityId, commentId);
+    if (result.error) {
+      toast.error(result.error.message || "Kommentar konnte nicht gelöscht werden");
+      return;
+    }
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    toast.success("Kommentar gelöscht");
   };
 
   if (loading) {
@@ -344,6 +360,17 @@ export default function ActivityDetailPage() {
                             <span className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: de })}
                             </span>
+                            {comment.userId === user?.id && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs text-muted-foreground"
+                                onClick={() => handleDeleteComment(comment.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                Löschen
+                              </Button>
+                            )}
                           </div>
                           <p className="text-sm text-foreground/90 leading-relaxed">
                             {comment.content}
@@ -553,6 +580,34 @@ export default function ActivityDetailPage() {
                   </>
                 )}
 
+                {/* Capacity */}
+                {typeof activity.maxCapacity === "number" && (
+                  <>
+                    <Separator />
+                    <div className="flex items-center gap-3">
+                      <Users className="h-5 w-5 text-primary" />
+                      <p className="text-sm">
+                        Max. {activity.maxCapacity} Personen gleichzeitig
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Outdoor seating */}
+                {activity.outdoorSeating !== undefined && (
+                  <>
+                    <Separator />
+                    <div className="flex items-center gap-3">
+                      <CloudSun className="h-5 w-5 text-primary" />
+                      <p className="text-sm">
+                        {activity.outdoorSeating
+                          ? "Sitzplätze im Freien verfügbar"
+                          : "Keine Sitzplätze im Freien"}
+                      </p>
+                    </div>
+                  </>
+                )}
+
                 <Separator />
 
                 {/* Provider */}
@@ -570,6 +625,22 @@ export default function ActivityDetailPage() {
                       <a href={activity.website} target="_blank" rel="noopener noreferrer">
                         <Globe className="h-4 w-4" />
                         Website
+                      </a>
+                    </Button>
+                  )}
+                  {activity.reservationUrl && (
+                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
+                      <a href={activity.reservationUrl} target="_blank" rel="noopener noreferrer">
+                        <Calendar className="h-4 w-4" />
+                        Reservierung
+                      </a>
+                    </Button>
+                  )}
+                  {activity.menuUrl && (
+                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
+                      <a href={activity.menuUrl} target="_blank" rel="noopener noreferrer">
+                        <BookOpen className="h-4 w-4" />
+                        Speisekarte
                       </a>
                     </Button>
                   )}

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func, delete, desc
@@ -81,6 +81,26 @@ async def create_activity_comment(
     
     return comment
 
+@router.delete("/activities/{activity_id}/comments/{comment_id}", status_code=204)
+async def delete_activity_comment(
+    activity_id: UUID,
+    comment_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(ActivityComment).where(ActivityComment.id == comment_id)
+    )
+    comment = result.scalar_one_or_none()
+    if not comment or comment.activity_id != activity_id:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+
+    await db.delete(comment)
+    await db.commit()
+    return Response(status_code=204)
+
 # --- Comments ---
 @router.get("/events/{event_id}/comments", response_model=List[EventCommentSchema])
 async def get_event_comments(
@@ -140,6 +160,26 @@ async def create_event_comment(
     comment.user_avatar = current_user.avatar_url
     
     return comment
+
+@router.delete("/events/{event_id}/comments/{comment_id}", status_code=204)
+async def delete_event_comment(
+    event_id: UUID,
+    comment_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(EventComment).where(EventComment.id == comment_id)
+    )
+    comment = result.scalar_one_or_none()
+    if not comment or comment.event_id != event_id:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+
+    await db.delete(comment)
+    await db.commit()
+    return Response(status_code=204)
 
 @router.get("/health")
 async def health_check():

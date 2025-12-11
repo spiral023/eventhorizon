@@ -188,10 +188,14 @@ class Activity(Base):
     # Meta
     provider = Column(String)
     website = Column(String)
+    reservation_url = Column(String)
+    menu_url = Column(String)
     contact_email = Column(String)
     contact_phone = Column(String)
     facebook = Column(String)
     instagram = Column(String)
+    max_capacity = Column(Integer)
+    outdoor_seating = Column(Boolean, default=False)
     external_rating = Column(Float)
     primary_goal = Column(String)
     
