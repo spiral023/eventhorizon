@@ -13,7 +13,8 @@ from app.core.utils import generate_room_invite_code
 from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
-    EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate
+    EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate,
+    DateOptionCreate
 )
 from app.api.endpoints import auth, users, ai, emails
 
@@ -28,6 +29,30 @@ router.include_router(emails.router)
 @router.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+# --- Helpers ---
+def enhance_event_with_user_names_helper(event):
+    """Add user_name to votes from user relationship"""
+    if hasattr(event, 'votes') and event.votes:
+        for vote in event.votes:
+            if hasattr(vote, 'user') and vote.user:
+                vote.user_name = vote.user.name
+    return event
+
+def enhance_event_with_dates_helper(event):
+    """Add user_name to date responses from user relationship"""
+    if hasattr(event, 'date_options') and event.date_options:
+        for date_opt in event.date_options:
+            if hasattr(date_opt, 'responses') and date_opt.responses:
+                for response in date_opt.responses:
+                    if hasattr(response, 'user') and response.user:
+                        response.user_name = response.user.name
+    return event
+
+def enhance_event_full(event):
+    enhance_event_with_user_names_helper(event)
+    enhance_event_with_dates_helper(event)
+    return event
 
 # --- Activities ---
 @router.get("/activities", response_model=List[ActivitySchema])
@@ -388,19 +413,15 @@ async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
 async def get_room_events(room_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Event)
-        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .options(
+            selectinload(Event.votes).selectinload(Vote.user),
+            selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
+            selectinload(Event.participants).selectinload(EventParticipant.user)
+        )
         .where(Event.room_id == room_id)
     )
     events = result.scalars().all()
-    return [enhance_event_with_user_names_helper(e) for e in events]
-
-def enhance_event_with_user_names_helper(event):
-    """Add user_name to votes from user relationship"""
-    if hasattr(event, 'votes') and event.votes:
-        for vote in event.votes:
-            if hasattr(vote, 'user') and vote.user:
-                vote.user_name = vote.user.name
-    return event
+    return [enhance_event_full(e) for e in events]
 
 @router.post("/rooms/{room_id}/events", response_model=EventSchema)
 async def create_event(
@@ -436,14 +457,17 @@ async def create_event(
 async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Event)
-        .options(selectinload(Event.votes).selectinload(Vote.user))
+        .options(
+            selectinload(Event.votes).selectinload(Vote.user),
+            selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user)
+        )
         .where(Event.id == event_id)
     )
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    event = enhance_event_with_user_names_helper(event)
-    return event
+    
+    return enhance_event_full(event)
 
 @router.delete("/events/{event_id}/proposed-activities/{activity_id}", response_model=EventSchema)
 async def remove_proposed_activity(
@@ -638,12 +662,139 @@ async def vote_on_activity(
 
     return event 
 
-@router.post("/events/{event_id}/date-options/{date_option_id}/response", response_model=EventSchema)
-async def respond_to_date(event_id: UUID, date_option_id: UUID, response_in: DateResponseCreate, db: AsyncSession = Depends(get_db)):
-    # Mock impl
+import logging
+
+logger = logging.getLogger(__name__)
+
+@router.post("/events/{event_id}/date-options", response_model=EventSchema)
+async def create_date_option(
+    event_id: UUID,
+    date_in: DateOptionCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Check event
+    result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.date_options))
+        .where(Event.id == event_id)
+    )
+    event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if event.phase != "scheduling":
+        raise HTTPException(status_code=400, detail="Can only add dates in scheduling phase")
+    
+    # Check limits
+    if len(event.date_options) >= 10:
+        raise HTTPException(status_code=400, detail="Maximum 10 date options allowed")
+
+    # Validate times
+    if date_in.end_time and not date_in.start_time:
+        raise HTTPException(status_code=400, detail="End time requires a start time")
+
+    new_date = DateOption(
+        id=uuid4(),
+        event_id=event_id,
+        date=date_in.date.replace(tzinfo=None),
+        start_time=date_in.start_time,
+        end_time=date_in.end_time
+    )
+    db.add(new_date)
+    await db.commit()
+    
+    logger.info(f"Created date option {new_date.id} for event {event_id}")
+    
+    # Force reload of all objects in session to ensure relationships are up to date
+    db.expire_all()
+
+    # Reload event
+    updated_event = await get_event(event_id, db)
+    logger.info(f"Updated event has {len(updated_event.date_options)} date options")
+    return updated_event
+
+@router.delete("/events/{event_id}/date-options/{date_option_id}", response_model=EventSchema)
+async def delete_date_option(
+    event_id: UUID,
+    date_option_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     result = await db.execute(select(Event).where(Event.id == event_id))
     event = result.scalar_one_or_none()
-    return event
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only event creator can delete date options")
+        
+    await db.execute(
+        delete(DateOption).where(DateOption.id == date_option_id, DateOption.event_id == event_id)
+    )
+    await db.commit()
+    
+    return await get_event(event_id, db)
+
+@router.post("/events/{event_id}/date-options/{date_option_id}/response", response_model=EventSchema)
+async def respond_to_date(
+    event_id: UUID, 
+    date_option_id: UUID, 
+    response_in: DateResponseCreate, 
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    event_result = await db.execute(select(Event).where(Event.id == event_id))
+    event = event_result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    if event.phase != "scheduling":
+        raise HTTPException(status_code=400, detail="Voting allowed only in scheduling phase")
+
+    # Handle Priority: If this is priority, unset others for this user/event
+    if response_in.is_priority:
+        # Get all date options for this event
+        date_options_result = await db.execute(select(DateOption.id).where(DateOption.event_id == event_id))
+        date_option_ids = [row.id for row in date_options_result]
+        
+        if date_option_ids:
+            await db.execute(
+                DateResponse.__table__.update()
+                .where(
+                    DateResponse.user_id == current_user.id,
+                    DateResponse.date_option_id.in_(date_option_ids)
+                )
+                .values(is_priority=False)
+            )
+
+    # Upsert Response
+    existing_response = await db.execute(
+        select(DateResponse).where(
+            DateResponse.date_option_id == date_option_id,
+            DateResponse.user_id == current_user.id
+        )
+    )
+    response = existing_response.scalar_one_or_none()
+    
+    if response:
+        response.response = response_in.response
+        response.is_priority = response_in.is_priority
+        response.contribution = response_in.contribution or 0.0
+        response.note = response_in.note
+    else:
+        new_resp = DateResponse(
+            date_option_id=date_option_id,
+            user_id=current_user.id,
+            response=response_in.response,
+            is_priority=response_in.is_priority,
+            contribution=response_in.contribution or 0.0,
+            note=response_in.note
+        )
+        db.add(new_resp)
+        
+    await db.commit()
+    return await get_event(event_id, db)
 
 @router.post("/events/{event_id}/select-activity", response_model=EventSchema)
 async def select_activity(event_id: UUID, selection: SelectActivity, db: AsyncSession = Depends(get_db)):

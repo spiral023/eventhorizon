@@ -122,6 +122,7 @@ export const DateResponseSchema = z.object({
   userId: z.string(),
   userName: z.string(),
   response: DateResponseTypeSchema,
+  isPriority: z.boolean().optional(),
   contribution: z.number().optional(),
   note: z.string().optional(),
 });
@@ -231,12 +232,16 @@ export const CreateEventSchema = z.object({
 
 export type CreateEventInput = z.infer<typeof CreateEventSchema>;
 
+export const CreateDateOptionSchema = z.object({
+  date: z.string(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+});
+
+export type CreateDateOptionInput = z.infer<typeof CreateDateOptionSchema>;
+
 export const AddDateOptionsSchema = z.object({
-  dateOptions: z.array(z.object({
-    date: z.string(),
-    startTime: z.string().optional(),
-    endTime: z.string().optional(),
-  })).min(1, "Mindestens einen Termin angeben"),
+  dateOptions: z.array(CreateDateOptionSchema).min(1, "Mindestens einen Termin angeben"),
 });
 
 export type AddDateOptionsInput = z.infer<typeof AddDateOptionsSchema>;

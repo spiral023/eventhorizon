@@ -136,8 +136,65 @@ class EventParticipant(BaseSchema):
     is_organizer: bool = False
     has_voted: bool = False
     date_response: Optional[str] = None
+    user_name: Optional[str] = None
 
-# --- Event ---
+# --- Vote ---
+class Vote(BaseSchema):
+    event_id: UUID
+    activity_id: UUID
+    user_id: UUID
+    vote: str
+    voted_at: datetime
+    user_name: Optional[str] = None
+
+# --- Date Scheduling ---
+class DateResponseCreate(BaseSchema):
+    response: str
+    is_priority: bool = False
+    contribution: Optional[float] = 0.0
+    note: Optional[str] = None
+
+class DateResponse(BaseSchema):
+    date_option_id: UUID
+    user_id: UUID
+    response: str
+    is_priority: bool = False
+    contribution: float = 0.0
+    note: Optional[str] = None
+    user_name: Optional[str] = None # Hydrated at runtime
+
+class DateOptionCreate(BaseSchema):
+    date: datetime
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+
+class DateOption(BaseSchema):
+    id: UUID
+    event_id: UUID
+    date: datetime
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    responses: List[DateResponse] = []
+
+# --- Actions ---
+class VoteCreate(BaseSchema):
+    activity_id: UUID
+    vote: str 
+
+class PhaseUpdate(BaseSchema):
+    phase: str
+
+class SelectActivity(BaseSchema):
+    activity_id: UUID
+
+class FinalizeDate(BaseSchema):
+    date_option_id: UUID
+
+class UserStats(BaseSchema):
+    upcoming_events_count: int
+    open_votes_count: int
+
+# --- Event --- (Updated)
 class EventBase(BaseSchema):
     name: str
     description: Optional[str] = None
@@ -161,35 +218,4 @@ class Event(EventBase):
     voting_deadline: Optional[datetime] = None
     participants: List[EventParticipant] = [] 
     activity_votes: List["Vote"] = Field(default=[], validation_alias="votes", serialization_alias="activity_votes")
-    date_options: List[Any] = []
-
-# --- Vote ---
-class Vote(BaseSchema):
-    event_id: UUID
-    activity_id: UUID
-    user_id: UUID
-    vote: str
-    voted_at: datetime
-    user_name: Optional[str] = None
-
-# --- Actions ---
-class VoteCreate(BaseSchema):
-    activity_id: UUID
-    vote: str 
-
-class PhaseUpdate(BaseSchema):
-    phase: str
-
-class DateResponseCreate(BaseSchema):
-    response: str
-    contribution: Optional[float] = 0.0
-
-class SelectActivity(BaseSchema):
-    activity_id: UUID
-
-class FinalizeDate(BaseSchema):
-    date_option_id: UUID
-
-class UserStats(BaseSchema):
-    upcoming_events_count: int
-    open_votes_count: int
+    date_options: List[DateOption] = []

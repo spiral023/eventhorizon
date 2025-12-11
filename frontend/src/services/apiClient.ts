@@ -792,6 +792,7 @@ function mapEventFromApi(apiEvent: any): Event {
         ...r,
         userId: r.user_id || r.userId,
         userName: r.user_name || r.userName,
+        isPriority: r.is_priority !== undefined ? r.is_priority : r.isPriority,
       })),
     })),
     finalDateOptionId: apiEvent.final_date_option_id || apiEvent.finalDateOptionId,
@@ -1052,18 +1053,72 @@ export async function voteOnActivity(eventId: string, activityId: string, vote: 
   return { data: null, error: result.error };
 }
 
-export async function respondToDateOption(eventId: string, dateOptionId: string, response: DateResponseType, contribution?: number): Promise<ApiResult<Event | null>> {
+export async function addDateOption(eventId: string, date: string, startTime?: string, endTime?: string): Promise<ApiResult<Event | null>> {
+  if (USE_MOCKS) {
+    await delay(200);
+    const event = events.find((e) => e.id === eventId);
+    if (event) {
+      event.dateOptions.push({
+        id: `do-${Date.now()}`,
+        date,
+        startTime,
+        endTime,
+        responses: [],
+      });
+      return { data: event };
+    }
+    return { data: null };
+  }
+  const result = await request<any>(`/events/${eventId}/date-options`, {
+    method: 'POST',
+    body: JSON.stringify({ date, start_time: startTime, end_time: endTime }),
+  });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
+
+export async function deleteDateOption(eventId: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
+  if (USE_MOCKS) {
+    await delay(200);
+    const event = events.find((e) => e.id === eventId);
+    if (event) {
+      event.dateOptions = event.dateOptions.filter((d) => d.id !== dateOptionId);
+      return { data: event };
+    }
+    return { data: null };
+  }
+  const result = await request<any>(`/events/${eventId}/date-options/${dateOptionId}`, {
+    method: 'DELETE',
+  });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null, error: result.error };
+}
+
+export async function respondToDateOption(eventId: string, dateOptionId: string, response: DateResponseType, isPriority: boolean = false, contribution?: number): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
     const event = events.find((e) => e.id === eventId);
     if (event) {
       const dateOption = event.dateOptions.find((d) => d.id === dateOptionId);
       if (dateOption) {
+        // If priority is set, unset for other options for this user
+        if (isPriority) {
+          event.dateOptions.forEach(d => {
+            const resp = d.responses.find(r => r.userId === currentUser.id);
+            if (resp) resp.isPriority = false;
+          });
+        }
+        
         dateOption.responses = dateOption.responses.filter((r) => r.userId !== currentUser.id);
         dateOption.responses.push({
           userId: currentUser.id,
           userName: currentUser.name,
           response,
+          isPriority,
           contribution,
         });
       }
@@ -1073,7 +1128,7 @@ export async function respondToDateOption(eventId: string, dateOptionId: string,
   }
   const result = await request<any>(`/events/${eventId}/date-options/${dateOptionId}/response`, {
     method: 'POST',
-    body: JSON.stringify({ response, contribution }),
+    body: JSON.stringify({ response, is_priority: isPriority, contribution }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };

@@ -281,7 +281,9 @@ class DateResponse(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), primary_key=True)
     
     response = Column(SQLEnum(DateResponseType), nullable=False)
+    is_priority = Column(Boolean, default=False)
     contribution = Column(Float, default=0.0)
     note = Column(String)
     
     date_option = relationship("DateOption", back_populates="responses")
+    user = relationship("User")
