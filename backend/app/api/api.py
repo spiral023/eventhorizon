@@ -202,6 +202,7 @@ def enhance_event_with_dates_helper(event):
                 for response in date_opt.responses:
                     if hasattr(response, 'user') and response.user:
                         response.user_name = response.user.name
+                        response.user_avatar = response.user.avatar_url
     return event
 
 def enhance_event_full(event):
@@ -614,7 +615,8 @@ async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
         select(Event)
         .options(
             selectinload(Event.votes).selectinload(Vote.user),
-            selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user)
+            selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
+            selectinload(Event.participants).selectinload(EventParticipant.user)
         )
         .where(Event.id == event_id)
     )

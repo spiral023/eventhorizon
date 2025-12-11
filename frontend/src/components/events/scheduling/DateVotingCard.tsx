@@ -224,7 +224,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
                                             "h-8 w-8 border-2 border-background ring-1",
                                             r.response === "yes" ? "ring-green-500/30" : "ring-yellow-500/30"
                                         )}>
-                                            <AvatarImage src="" /> {/* Placeholder, in real app load from user store or separate call if needed */}
+                                            <AvatarImage src={r.avatarUrl} />
                                             <AvatarFallback className={cn(
                                                 "text-[10px] font-medium",
                                                 r.response === "yes" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"

@@ -53,6 +53,11 @@ class User(UserBase):
     is_active: bool = True
     created_at: datetime
 
+    @computed_field
+    @property
+    def name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip()
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -150,7 +155,17 @@ class EventParticipant(BaseSchema):
     is_organizer: bool = False
     has_voted: bool = False
     date_response: Optional[str] = None
-    user_name: Optional[str] = None
+    user: Optional["User"] = None
+
+    @computed_field
+    @property
+    def user_name(self) -> Optional[str]:
+        return self.user.name if self.user else None
+
+    @computed_field
+    @property
+    def avatar_url(self) -> Optional[str]:
+        return self.user.avatar_url if self.user else None
 
 # --- Vote ---
 class Vote(BaseSchema):
@@ -176,6 +191,7 @@ class DateResponse(BaseSchema):
     contribution: float = 0.0
     note: Optional[str] = None
     user_name: Optional[str] = None # Hydrated at runtime
+    user_avatar: Optional[str] = None # Hydrated at runtime
 
 class DateOptionCreate(BaseSchema):
     date: datetime

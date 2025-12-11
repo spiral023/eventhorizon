@@ -10,6 +10,7 @@ EXTENSION_MAP = {
     "image/png": "png",
     "image/jpeg": "jpg",
     "image/webp": "webp",
+    "image/avif": "avif",
 }
 
 
@@ -24,8 +25,8 @@ def _get_s3_client():
 
 
 def generate_avatar_upload_url(user_id, content_type: str, file_size: int):
-    if not settings.AVATAR_BUCKET:
-        raise HTTPException(status_code=500, detail="Avatar bucket not configured")
+    if not settings.STORAGE_BUCKET:
+        raise HTTPException(status_code=500, detail="Storage bucket not configured")
 
     if content_type not in settings.AVATAR_ALLOWED_MIME:
         raise HTTPException(status_code=400, detail="File type not allowed")
@@ -42,7 +43,7 @@ def generate_avatar_upload_url(user_id, content_type: str, file_size: int):
 
     s3_client = _get_s3_client()
     params = {
-        "Bucket": settings.AVATAR_BUCKET,
+        "Bucket": settings.STORAGE_BUCKET,
         "Key": key,
         "ContentType": content_type,
         "CacheControl": "public, max-age=31536000, immutable",
@@ -54,7 +55,7 @@ def generate_avatar_upload_url(user_id, content_type: str, file_size: int):
         ExpiresIn=300,  # 5 minutes
     )
 
-    base_url = settings.AVATAR_BUCKET_BASE_URL or f"https://{settings.AVATAR_BUCKET}.s3.{settings.AWS_DEFAULT_REGION}.amazonaws.com"
+    base_url = settings.STORAGE_BUCKET_BASE_URL or f"https://{settings.STORAGE_BUCKET}.s3.{settings.AWS_DEFAULT_REGION}.amazonaws.com"
     public_url = f"{base_url}/{key}"
 
     return upload_url, public_url

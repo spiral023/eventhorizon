@@ -22,12 +22,15 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "eventhorizon")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
 
-    # S3 / Avatars
+    # S3 / Storage (avatars, assets)
     AWS_DEFAULT_REGION: str = os.getenv("AWS_DEFAULT_REGION", "eu-west-1")
-    AVATAR_BUCKET: str = os.getenv("AVATAR_BUCKET", "")
-    AVATAR_BUCKET_BASE_URL: str = os.getenv("AVATAR_BUCKET_BASE_URL", "")
+    STORAGE_BUCKET: str = os.getenv("AWS_STORAGE_BUCKET") or os.getenv("AVATAR_BUCKET", "")
+    STORAGE_BUCKET_BASE_URL: str = os.getenv("AWS_STORAGE_BUCKET_BASE_URL") or os.getenv("AVATAR_BUCKET_BASE_URL", "")
     AVATAR_MAX_SIZE_MB: int = int(os.getenv("AVATAR_MAX_SIZE_MB", "5"))
-    AVATAR_ALLOWED_MIME: List[str] = ["image/png", "image/jpeg", "image/webp"]
+    AVATAR_ALLOWED_MIME: List[str] = ["image/png", "image/jpeg", "image/webp", "image/avif"]
+    # Backwards compatibility for existing callers
+    AVATAR_BUCKET: str = STORAGE_BUCKET
+    AVATAR_BUCKET_BASE_URL: str = STORAGE_BUCKET_BASE_URL
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

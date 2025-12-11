@@ -347,6 +347,7 @@ export default function EventDetailPage() {
                     isOwner={isCreator}
                     onSelect={() => handleSelectActivity(activity.id)}
                     rank={index + 1}
+                    participants={event.participants}
                   />
                 </motion.div>
               ))}

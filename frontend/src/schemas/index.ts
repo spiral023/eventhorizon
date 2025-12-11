@@ -131,6 +131,7 @@ export const DateResponseSchema = z.object({
   isPriority: z.boolean().optional(),
   contribution: z.number().optional(),
   note: z.string().optional(),
+  avatarUrl: z.string().optional(),
 });
 
 export const DateOptionSchema = z.object({

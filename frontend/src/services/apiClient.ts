@@ -860,6 +860,7 @@ function mapEventFromApi(apiEvent: any): Event {
         ...r,
         userId: r.user_id || r.userId,
         userName: r.user_name || r.userName,
+        avatarUrl: r.user_avatar || r.avatarUrl,
         isPriority: r.is_priority !== undefined ? r.is_priority : r.isPriority,
       })),
     })),

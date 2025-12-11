@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Activity, ActivityVote, VoteType } from "@/types/domain";
 import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ interface VotingCardProps {
   isOwner?: boolean;
   onSelect?: () => void;
   rank?: number;
+  participants: EventParticipant[];
 }
 
 export function VotingCard({
@@ -50,6 +52,12 @@ export function VotingCard({
 
   const score = forVotes - againstVotes;
   const showProminentButton = isOwner && !disabled && score > 0 && rank !== undefined && rank <= 3;
+
+  const forVoterIds = votes?.votes.filter(v => v.vote === "for").map(v => v.userId) || [];
+  const againstVoterIds = votes?.votes.filter(v => v.vote === "against").map(v => v.userId) || [];
+
+  const forVoters = participants.filter(p => forVoterIds.includes(p.userId));
+  const againstVoters = participants.filter(p => againstVoterIds.includes(p.userId));
 
   return (
     <Card className="bg-card/60 border-border/50 rounded-2xl overflow-hidden">
@@ -149,10 +157,26 @@ export function VotingCard({
                     <div className="flex items-center gap-1.5">
                         <span className={cn("font-medium", userIsFor ? "text-success" : "text-muted-foreground")}>{forVotes}</span>
                         <ThumbsUp className={cn("h-3.5 w-3.5", userIsFor ? "text-success" : "text-muted-foreground")}/>
+                        <div className="flex -space-x-2 overflow-hidden">
+                          {forVoters.map(voter => (
+                            <Avatar key={voter.userId} className="h-6 w-6 border-2 border-white">
+                              <AvatarImage src={voter.avatarUrl} />
+                              <AvatarFallback>{voter.userName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className={cn("font-medium", userIsAgainst ? "text-destructive" : "text-muted-foreground")}>{againstVotes}</span>
                         <ThumbsDown className={cn("h-3.5 w-3.5", userIsAgainst ? "text-destructive" : "text-muted-foreground")}/>
+                        <div className="flex -space-x-2 overflow-hidden">
+                          {againstVoters.map(voter => (
+                            <Avatar key={voter.userId} className="h-6 w-6 border-2 border-white">
+                              <AvatarImage src={voter.avatarUrl} />
+                              <AvatarFallback>{voter.userName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
                     </div>
                     <div className="px-2 py-1 rounded-lg bg-secondary">
                         <span
