@@ -261,3 +261,13 @@ export const EventCommentSchema = z.object({
   userName: z.string().optional(),
   userAvatar: z.string().optional(),
 });
+
+export const ActivityCommentSchema = z.object({
+  id: z.string(),
+  activityId: z.string(),
+  userId: z.string(),
+  content: z.string(),
+  createdAt: z.string(),
+  userName: z.string().optional(),
+  userAvatar: z.string().optional(),
+});

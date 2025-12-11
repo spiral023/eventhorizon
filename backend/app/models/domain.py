@@ -200,6 +200,7 @@ class Activity(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     favorited_by = relationship("User", secondary=user_favorites, back_populates="favorite_activities")
+    comments = relationship("ActivityComment", back_populates="activity", cascade="all, delete-orphan")
 
 class Event(Base):
     __tablename__ = "event"
@@ -300,3 +301,15 @@ class EventComment(Base):
 
     user = relationship("User")
     event = relationship("Event")
+
+class ActivityComment(Base):
+    __tablename__ = "activity_comment"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activity.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    activity = relationship("Activity", back_populates="comments")

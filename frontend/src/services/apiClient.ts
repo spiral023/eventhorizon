@@ -1,4 +1,4 @@
-import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats, EventComment } from "@/types/domain";
+import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats, EventComment, ActivityComment } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 
@@ -1310,6 +1310,61 @@ export async function createEventComment(eventId: string, content: string, phase
   
   if (result.data) {
     return { data: mapCommentFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
+}
+
+function mapActivityCommentFromApi(apiComment: any): ActivityComment {
+  return {
+    id: apiComment.id,
+    activityId: apiComment.activity_id || apiComment.activityId,
+    userId: apiComment.user_id || apiComment.userId,
+    content: apiComment.content,
+    createdAt: apiComment.created_at || apiComment.createdAt,
+    userName: apiComment.user_name || apiComment.userName,
+    userAvatar: apiComment.user_avatar || apiComment.userAvatar,
+  } as ActivityComment;
+}
+
+export async function getActivityComments(activityId: string, skip = 0, limit = 50): Promise<ApiResult<ActivityComment[]>> {
+  if (USE_MOCKS) {
+    await delay(300);
+    // Mock comments
+    const mockComments: ActivityComment[] = [
+      {
+        id: "ac1", activityId, userId: "u2", content: "War letztes Jahr super!", createdAt: new Date(Date.now() - 100000000).toISOString(), userName: "Anna", userAvatar: ""
+      },
+      {
+        id: "ac2", activityId, userId: "u3", content: "Kann ich empfehlen.", createdAt: new Date().toISOString(), userName: "Tom", userAvatar: ""
+      }
+    ];
+    return { data: mockComments };
+  }
+  
+  const result = await request<any[]>(`/activities/${activityId}/comments?skip=${skip}&limit=${limit}`);
+  if (result.data) {
+    return { data: result.data.map(mapActivityCommentFromApi) };
+  }
+  return { data: [], error: result.error };
+}
+
+export async function createActivityComment(activityId: string, content: string): Promise<ApiResult<ActivityComment>> {
+  if (USE_MOCKS) {
+    await delay(300);
+    return { 
+      data: {
+        id: `ac-${Date.now()}`, activityId, userId: currentUser.id, content, createdAt: new Date().toISOString(), userName: currentUser.name, userAvatar: currentUser.avatarUrl
+      }
+    };
+  }
+  
+  const result = await request<any>(`/activities/${activityId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+  
+  if (result.data) {
+    return { data: mapActivityCommentFromApi(result.data) };
   }
   return { data: null as any, error: result.error };
 }

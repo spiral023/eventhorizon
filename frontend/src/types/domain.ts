@@ -31,6 +31,7 @@ export type Event = z.infer<typeof Schemas.EventSchema>;
 export type User = z.infer<typeof Schemas.UserSchema>;
 export type UserStats = z.infer<typeof Schemas.UserStatsSchema>;
 export type EventComment = z.infer<typeof Schemas.EventCommentSchema>;
+export type ActivityComment = z.infer<typeof Schemas.ActivityCommentSchema>;
 
 // ============================================
 // UI HELPERS

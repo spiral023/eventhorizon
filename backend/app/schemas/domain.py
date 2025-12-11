@@ -236,3 +236,16 @@ class EventComment(BaseSchema):
     created_at: datetime
     user_name: Optional[str] = None
     user_avatar: Optional[str] = None
+
+# --- Activity Comments ---
+class ActivityCommentCreate(BaseSchema):
+    content: str
+
+class ActivityComment(BaseSchema):
+    id: UUID
+    activity_id: UUID
+    user_id: UUID
+    content: str
+    created_at: datetime
+    user_name: Optional[str] = None
+    user_avatar: Optional[str] = None

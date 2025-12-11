@@ -28,8 +28,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ScaleBar } from "@/components/shared/ScaleBar";
-import { getActivityById, isFavorite, toggleFavorite } from "@/services/apiClient";
-import type { Activity } from "@/types/domain";
+import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment } from "@/services/apiClient";
+import type { Activity, ActivityComment } from "@/types/domain";
 import {
   CategoryLabels,
   CategoryColors,
@@ -38,6 +38,11 @@ import {
 } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/authStore";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 
 const PrimaryGoalLabels: Record<string, string> = {
   teambuilding: "Teambuilding",
@@ -53,19 +58,26 @@ export default function ActivityDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
+  
+  const { user } = useAuthStore();
+  const [comments, setComments] = useState<ActivityComment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   useEffect(() => {
     const fetchActivity = async () => {
       if (!activityId) return;
-      const [activityResult, favResult] = await Promise.all([
+      const [activityResult, favResult, commentsResult] = await Promise.all([
         getActivityById(activityId),
-        isFavorite(activityId)
+        isFavorite(activityId),
+        getActivityComments(activityId)
       ]);
       setActivity(activityResult.data);
       setIsFav(favResult.data?.isFavorite ?? false);
       setFavoriteCount(
         favResult.data?.favoritesCount ?? activityResult.data?.favoritesCount ?? 0
       );
+      setComments(commentsResult.data || []);
       setLoading(false);
     };
     fetchActivity();
@@ -84,6 +96,20 @@ export default function ActivityDetailPage() {
     setFavoriteCount(count);
     setActivity((prev) => (prev ? { ...prev, favoritesCount: count } : prev));
     toast.success(isFavorite ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
+  };
+
+  const handleSubmitComment = async () => {
+    if (!activityId || !newComment.trim()) return;
+    setSubmittingComment(true);
+    const result = await createActivityComment(activityId, newComment);
+    if (result.error) {
+      toast.error(result.error.message || "Kommentar konnte nicht gesendet werden");
+    } else if (result.data) {
+      setComments([result.data, ...comments]);
+      setNewComment("");
+      toast.success("Kommentar gesendet");
+    }
+    setSubmittingComment(false);
   };
 
   if (loading) {
@@ -253,6 +279,80 @@ export default function ActivityDetailPage() {
               </Card>
             </motion.div>
           )}
+
+          {/* Comments Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="bg-card/60 border-border/50 rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Kommentare</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Comment Input */}
+                {user ? (
+                  <div className="flex gap-4">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.avatarUrl} alt={user.name} />
+                      <AvatarFallback>{user.firstName?.[0]}{user.lastName?.[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                      <Textarea
+                        placeholder="Schreibe einen Kommentar..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                      <Button 
+                        onClick={handleSubmitComment} 
+                        disabled={!newComment.trim() || submittingComment}
+                        className="ml-auto"
+                      >
+                        {submittingComment ? "Sende..." : "Kommentieren"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Bitte <Link to="/login" className="text-primary hover:underline">anmelden</Link>, um zu kommentieren.
+                    </p>
+                  </div>
+                )}
+
+                {/* Comments List */}
+                <div className="space-y-6">
+                  {comments.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Noch keine Kommentare vorhanden. Sei der Erste!
+                    </p>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-4">
+                         <Avatar className="h-10 w-10">
+                          <AvatarImage src={comment.userAvatar} alt={comment.userName} />
+                          <AvatarFallback>{comment.userName?.[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{comment.userName}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: de })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground/90 leading-relaxed">
+                            {comment.content}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
         {/* Sidebar */}

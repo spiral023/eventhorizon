@@ -10,11 +10,12 @@ from datetime import datetime
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.core.utils import generate_room_invite_code
-from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment
+from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment, ActivityComment
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate,
-    DateOptionCreate, EventComment as EventCommentSchema, EventCommentCreate
+    DateOptionCreate, EventComment as EventCommentSchema, EventCommentCreate,
+    ActivityComment as ActivityCommentSchema, ActivityCommentCreate
 )
 from app.api.endpoints import auth, users, ai, emails
 
@@ -25,6 +26,60 @@ router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(ai.router)
 router.include_router(emails.router)
+
+# --- Activity Comments ---
+@router.get("/activities/{activity_id}/comments", response_model=List[ActivityCommentSchema])
+async def get_activity_comments(
+    activity_id: UUID,
+    skip: int = 0,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db)
+):
+    query = select(ActivityComment).where(ActivityComment.activity_id == activity_id)
+    query = query.order_by(desc(ActivityComment.created_at)).offset(skip).limit(limit).options(selectinload(ActivityComment.user))
+    
+    result = await db.execute(query)
+    comments = result.scalars().all()
+    
+    # Hydrate user details
+    for comment in comments:
+        if comment.user:
+            comment.user_name = comment.user.name
+            comment.user_avatar = comment.user.avatar_url
+            
+    return comments
+
+@router.post("/activities/{activity_id}/comments", response_model=ActivityCommentSchema)
+async def create_activity_comment(
+    activity_id: UUID,
+    comment_in: ActivityCommentCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify activity exists
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+        
+    comment = ActivityComment(
+        id=uuid4(),
+        activity_id=activity_id,
+        user_id=current_user.id,
+        content=comment_in.content,
+        created_at=datetime.utcnow()
+    )
+    db.add(comment)
+    await db.commit()
+    await db.refresh(comment)
+    
+    # Load user for response
+    await db.refresh(comment, attribute_names=['user'])
+    
+    comment.user_name = current_user.name
+    comment.user_avatar = current_user.avatar_url
+    
+    return comment
 
 # --- Comments ---
 @router.get("/events/{event_id}/comments", response_model=List[EventCommentSchema])
