@@ -1,9 +1,16 @@
 import React from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Check, HelpCircle, X, Trash2, Star } from "lucide-react";
+import { Check, HelpCircle, X, Trash2, Star, Clock, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -11,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
 import { respondToDateOption, deleteDateOption } from "@/services/apiClient";
 import { useToast } from "@/hooks/use-toast";
@@ -40,19 +48,20 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
     return acc + val;
   }, 0);
 
+  // Group responses for display
+  const yesVoters = option.responses.filter(r => r.response === "yes");
+  const maybeVoters = option.responses.filter(r => r.response === "maybe");
+  // We don't usually show "No" voters in the main face pile to save space, or we can appended them at the end with low opacity
+  const displayVoters = [...yesVoters, ...maybeVoters];
+
   const handleVote = async (response: DateResponseType) => {
     if (!user) return;
-    
-    // Toggle logic: if clicking same vote, remove it? (Not typical for radio logic, but ok)
-    // Actually, usually you just switch. Let's stick to switching.
-    // If clicking same vote, we keep it.
-    
     try {
       const { data, error } = await respondToDateOption(
         event.id,
         option.id,
         response,
-        isPriority // Keep priority unless toggled separately
+        isPriority
       );
       if (error || !data) throw new Error(error?.message);
       onUpdate(data);
@@ -62,8 +71,8 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
   };
 
   const togglePriority = async () => {
-    if (!user || !myVote) {
-        toast({ title: "Zuerst abstimmen", description: "Wähle Zusage oder Vielleicht, um zu priorisieren.", variant: "destructive" });
+    if (!user || !myVote || myVote === "no") {
+        toast({ title: "Nicht möglich", description: "Du musst zugesagt haben, um diesen Termin zu favorisieren.", variant: "destructive" });
         return;
     }
     
@@ -93,163 +102,179 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
     }
   };
 
-  const getVoteColor = (type: DateResponseType) => {
-    switch (type) {
-      case "yes": return "bg-green-500/20 text-green-600 hover:bg-green-500/30";
-      case "maybe": return "bg-yellow-500/20 text-yellow-600 hover:bg-yellow-500/30";
-      case "no": return "bg-red-500/20 text-red-600 hover:bg-red-500/30";
-    }
-  };
-
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg border bg-card hover:shadow-sm transition-all group relative">
-      {/* Delete Button (Owner) */}
-      {isOwner && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8"
-          onClick={handleDelete}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      )}
-
-      {/* Date & Time */}
-      <div className="flex-1 min-w-[140px] text-center sm:text-left">
-        <div className="font-semibold text-lg capitalize">
-          {format(new Date(option.date), "EEE, d. MMM", { locale: de })}
-        </div>
-        {(option.startTime || option.endTime) && (
-          <div className="text-sm text-muted-foreground">
-            {option.startTime}
-            {option.endTime && ` – ${option.endTime}`} Uhr
-          </div>
-        )}
-      </div>
-
-      {/* Voting Controls */}
-      <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-full border">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleVote("yes")}
-                className={cn(
-                  "rounded-full w-9 h-9 p-0 transition-all",
-                  myVote === "yes" ? "bg-green-500 text-white hover:bg-green-600 shadow-sm" : "hover:bg-green-500/10 hover:text-green-600 text-muted-foreground"
-                )}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Bin dabei (+2)</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleVote("maybe")}
-                className={cn(
-                  "rounded-full w-9 h-9 p-0 transition-all",
-                  myVote === "maybe" ? "bg-yellow-500 text-white hover:bg-yellow-600 shadow-sm" : "hover:bg-yellow-500/10 hover:text-yellow-600 text-muted-foreground"
-                )}
-              >
-                <HelpCircle className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Vielleicht (+1)</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleVote("no")}
-                className={cn(
-                  "rounded-full w-9 h-9 p-0 transition-all",
-                  myVote === "no" ? "bg-red-500 text-white hover:bg-red-600 shadow-sm" : "hover:bg-red-500/10 hover:text-red-600 text-muted-foreground"
-                )}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Keine Zeit (0)</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-
-      {/* Priority Toggle */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={togglePriority}
-              disabled={myVote === "no"}
-              className={cn(
-                "rounded-full transition-all",
-                isPriority ? "text-yellow-500 hover:text-yellow-600 bg-yellow-500/10" : "text-muted-foreground/30 hover:text-yellow-500"
-              )}
-            >
-              <Star className={cn("h-5 w-5", isPriority && "fill-current")} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Favorit (+1 Punkt)</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* Results / Avatars */}
-      <div className="flex-1 flex items-center justify-end gap-3 min-w-[120px]">
-        {/* Avatars */}
-        <div className="flex -space-x-2 overflow-hidden">
-          {option.responses
-            .filter(r => r.response !== "no") // Only show yes/maybe
-            .slice(0, 5) // Limit
-            .map((r) => (
-              <TooltipProvider key={r.userId}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Avatar className={cn(
-                        "h-8 w-8 border-2 border-background ring-1",
-                        r.response === "yes" ? "ring-green-500/30" : "ring-yellow-500/30"
-                    )}>
-                      <AvatarImage src="" /> {/* Avatar URL missing in response type right now, using fallback */}
-                      <AvatarFallback className={cn(
-                          "text-[10px]",
-                          r.response === "yes" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                      )}>
-                        {r.userName?.substring(0, 2).toUpperCase()}
-                        {r.isPriority && <Star className="absolute -top-1 -right-1 h-3 w-3 fill-yellow-500 text-yellow-500" />}
-                      </AvatarFallback>
-                    </Avatar>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {r.userName} ({r.response === "yes" ? "Ja" : "Vielleicht"})
-                    {r.isPriority && " ⭐"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
-            {option.responses.filter(r => r.response !== "no").length > 5 && (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium text-muted-foreground">
-                    +{option.responses.filter(r => r.response !== "no").length - 5}
+    <Card className={cn(
+        "group relative transition-all hover:shadow-md border-2",
+        myVote === "yes" ? "border-green-500/20 bg-green-50/10" : 
+        myVote === "maybe" ? "border-yellow-500/20 bg-yellow-50/10" : 
+        "border-transparent"
+    )}>
+      {/* Top Section: Date & Info */}
+      <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
+        <div className="space-y-1.5">
+          <CardTitle className="text-xl capitalize flex items-center gap-2">
+            {format(new Date(option.date), "EEEE, d. MMMM", { locale: de })}
+            {isPriority && <Star className="h-5 w-5 fill-yellow-500 text-yellow-500 animate-pulse" />}
+          </CardTitle>
+          
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            {(option.startTime || option.endTime) && (
+                <div className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>
+                    {option.startTime}
+                    {option.endTime && ` – ${option.endTime}`} Uhr
+                    </span>
                 </div>
             )}
+            <div className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5" />
+                <span>{displayVoters.length} Stimmen</span>
+            </div>
+          </div>
         </div>
 
-        {/* Score Badge */}
-        <div className="flex flex-col items-center justify-center min-w-[40px] px-2 py-1 bg-secondary rounded-md">
-            <span className="text-sm font-bold">{score}</span>
-            <span className="text-[10px] text-muted-foreground uppercase">Pkt</span>
+        <div className="flex items-center gap-2">
+            {/* Score Badge */}
+            <Badge variant="secondary" className="text-lg px-3 py-1 font-bold">
+                {score} <span className="text-xs font-normal ml-1 text-muted-foreground">Pkt</span>
+            </Badge>
+
+            {/* Delete Button (Owner) */}
+            {isOwner && (
+                <Button
+                variant="ghost"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8"
+                onClick={handleDelete}
+                >
+                <Trash2 className="h-4 w-4" />
+                </Button>
+            )}
         </div>
-      </div>
-    </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {/* Voting Action Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Button
+                variant="outline"
+                className={cn(
+                    "h-auto py-3 flex flex-col gap-1 hover:border-green-500/50 hover:bg-green-500/5",
+                    myVote === "yes" && "border-green-500 bg-green-500/10 text-green-600 ring-1 ring-green-500"
+                )}
+                onClick={() => handleVote("yes")}
+            >
+                <Check className="h-5 w-5" />
+                <span className="text-xs font-medium">Bin dabei</span>
+            </Button>
+
+            <Button
+                variant="outline"
+                className={cn(
+                    "h-auto py-3 flex flex-col gap-1 hover:border-yellow-500/50 hover:bg-yellow-500/5",
+                    myVote === "maybe" && "border-yellow-500 bg-yellow-500/10 text-yellow-600 ring-1 ring-yellow-500"
+                )}
+                onClick={() => handleVote("maybe")}
+            >
+                <HelpCircle className="h-5 w-5" />
+                <span className="text-xs font-medium">Vielleicht</span>
+            </Button>
+
+            <Button
+                variant="outline"
+                className={cn(
+                    "h-auto py-3 flex flex-col gap-1 hover:border-red-500/50 hover:bg-red-500/5",
+                    myVote === "no" && "border-red-500 bg-red-500/10 text-red-600 ring-1 ring-red-500"
+                )}
+                onClick={() => handleVote("no")}
+            >
+                <X className="h-5 w-5" />
+                <span className="text-xs font-medium">Keine Zeit</span>
+            </Button>
+
+            <Button
+                variant="outline"
+                className={cn(
+                    "h-auto py-3 flex flex-col gap-1",
+                    isPriority ? "border-yellow-500 bg-yellow-100 text-yellow-700" : "text-muted-foreground hover:text-yellow-600",
+                    (myVote === "no" || !myVote) && "opacity-50 cursor-not-allowed"
+                )}
+                onClick={togglePriority}
+                disabled={myVote === "no" || !myVote}
+            >
+                <Star className={cn("h-5 w-5", isPriority && "fill-current")} />
+                <span className="text-xs font-medium">Favorit</span>
+            </Button>
+        </div>
+
+        {/* Participants Avatars */}
+        {displayVoters.length > 0 && (
+            <div className="pt-2">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-muted-foreground">Zusagen ({yesVoters.length}) & Vielleicht ({maybeVoters.length})</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                    {displayVoters.slice(0, 7).map((r) => (
+                        <TooltipProvider key={r.userId}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="relative">
+                                        <Avatar className={cn(
+                                            "h-8 w-8 border-2 border-background ring-1",
+                                            r.response === "yes" ? "ring-green-500/30" : "ring-yellow-500/30"
+                                        )}>
+                                            <AvatarImage src="" /> {/* Placeholder, in real app load from user store or separate call if needed */}
+                                            <AvatarFallback className={cn(
+                                                "text-[10px] font-medium",
+                                                r.response === "yes" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                                            )}>
+                                                {(r.userName || "?").substring(0, 2).toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        {r.isPriority && (
+                                            <div className="absolute -top-1 -right-1 bg-background rounded-full p-[1px]">
+                                                <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="font-semibold">{r.userName}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {r.response === "yes" ? "Nimmt teil" : "Vielleicht"}
+                                        {r.isPriority ? " (Favorisiert)" : ""}
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    ))}
+                    
+                    {/* Overflow Indicator */}
+                    {displayVoters.length > 7 && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30 bg-muted text-[10px] font-medium text-muted-foreground cursor-help">
+                                        +{displayVoters.length - 7}
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" className="max-h-60 overflow-y-auto">
+                                    <div className="flex flex-col gap-1">
+                                        {displayVoters.slice(7).map(r => (
+                                            <span key={r.userId} className="text-xs">
+                                                {r.userName} ({r.response === 'yes' ? 'Ja' : 'Vielleicht'})
+                                            </span>
+                                        ))}
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
+            </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

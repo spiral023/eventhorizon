@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Calendar as CalendarIcon, ArrowUpDown, UserX } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowUpDown, UserX, CheckCircle, Trophy } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,10 +12,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/stores/authStore";
 
 import { DateProposal } from "../scheduling/DateProposal";
 import { DateVotingCard } from "../scheduling/DateVotingCard";
@@ -23,10 +32,14 @@ import type { Event, DateOption } from "@/types/domain";
 interface SchedulingPhaseProps {
   event: Event;
   onUpdate: (event: Event) => void;
+  onFinalize: (dateOptionId: string) => void;
 }
 
-export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdate }) => {
+export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdate, onFinalize }) => {
   const [sortByScore, setSortByScore] = useState(true);
+  const [isFinalizeOpen, setIsFinalizeOpen] = useState(false);
+  const { user } = useAuthStore();
+  const isOwner = user?.id === event.createdByUserId;
 
   // Helper to calc score
   const getScore = (opt: DateOption) =>
@@ -49,12 +62,6 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
 
   // Pending Voters Logic
   const pendingVoters = useMemo(() => {
-    // A voter is pending if they haven't voted on ANY date option yet?
-    // Or if they haven't voted on enough? Usually "has voted at all" is a good start.
-    // Let's check who hasn't responded to at least one date.
-    // Actually better: Who has 0 responses across all options?
-    
-    // Get all user IDs who have responded to at least one option
     const activeVoterIds = new Set<string>();
     event.dateOptions.forEach(opt => {
         opt.responses.forEach(r => activeVoterIds.add(r.userId));
@@ -126,8 +133,50 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
             </Button>
         </div>
         
-        <div className="w-full sm:w-auto">
-            <DateProposal event={event} onUpdate={onUpdate} />
+        <div className="flex gap-2 w-full sm:w-auto">
+            {isOwner && event.dateOptions.length > 0 && (
+                <Dialog open={isFinalizeOpen} onOpenChange={setIsFinalizeOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" className="w-full sm:w-auto">
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Termin fixieren
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Finalen Termin wählen</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
+                            {sortedDates.map((opt) => (
+                                <div key={opt.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                                    <div>
+                                        <div className="font-medium">
+                                            {format(new Date(opt.date), "EEE, d. MMM", { locale: de })}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            {getScore(opt)} Punkte
+                                        </div>
+                                    </div>
+                                    <Button 
+                                        size="sm" 
+                                        onClick={() => {
+                                            if(confirm("Diesen Termin final setzen? Das Event wechselt dann in die Info-Phase.")) {
+                                                onFinalize(opt.id);
+                                                setIsFinalizeOpen(false);
+                                            }
+                                        }}
+                                    >
+                                        Wählen
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+            <div className="w-full sm:w-auto">
+                <DateProposal event={event} onUpdate={onUpdate} />
+            </div>
         </div>
       </div>
 
@@ -140,14 +189,33 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
                 <p className="text-muted-foreground">Schlage den ersten Termin vor!</p>
             </div>
         ) : (
-            sortedDates.map((option) => (
-                <DateVotingCard 
-                    key={option.id} 
-                    event={event} 
-                    option={option} 
-                    onUpdate={onUpdate} 
-                />
-            ))
+            <AnimatePresence>
+                {sortedDates.map((option, index) => (
+                    <motion.div
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        key={option.id}
+                    >
+                        <DateVotingCard 
+                            event={event} 
+                            option={option} 
+                            onUpdate={onUpdate} 
+                        />
+                        {/* Winner Badge for top item if sorted by score */}
+                        {sortByScore && index === 0 && getScore(option) > 0 && (
+                            <div className="absolute -top-3 -left-2 z-10">
+                                <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white border-white border-2 shadow-sm">
+                                    <Trophy className="w-3 h-3 mr-1" />
+                                    Favorit
+                                </Badge>
+                            </div>
+                        )}
+                    </motion.div>
+                ))}
+            </AnimatePresence>
         )}
       </div>
     </div>

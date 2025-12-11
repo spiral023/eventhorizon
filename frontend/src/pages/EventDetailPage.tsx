@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
   excludeActivity,
   includeActivity,
 } from "@/services/apiClient";
-import type { Event, Activity, VoteType } from "@/types/domain";
+import type { Event, Activity, VoteType, EventPhase } from "@/types/domain";
 import { 
   RegionLabels, 
   formatTimeWindow, 
@@ -28,7 +28,7 @@ import {
   CategoryLabels
 } from "@/types/domain";
 import { useAuthStore } from "@/stores/authStore";
-import { getNextPhases } from "@/utils/phaseStateMachine";
+import { getNextPhases, getPhaseIndex } from "@/utils/phaseStateMachine";
 import { cn } from "@/lib/utils";
 
 export default function EventDetailPage() {
@@ -38,6 +38,11 @@ export default function EventDetailPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("proposal");
+  
+  // Track previous phase to only auto-switch tab when phase actually changes
+  const prevPhaseRef = useRef<EventPhase | null>(null);
+
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = currentUser?.id ?? "";
   const isCreator = event?.createdByUserId && currentUserId === event.createdByUserId;
@@ -51,10 +56,25 @@ export default function EventDetailPage() {
       ]);
       setEvent(eventResult.data);
       setActivities(activitiesResult.data);
+      
+      // Initial tab set
+      if (eventResult.data) {
+        setActiveTab(eventResult.data.phase);
+        prevPhaseRef.current = eventResult.data.phase;
+      }
+      
       setLoading(false);
     };
     fetchData();
   }, [eventId]);
+
+  // Update active tab when event phase advances
+  useEffect(() => {
+    if (event?.phase && event.phase !== prevPhaseRef.current) {
+      setActiveTab(event.phase);
+      prevPhaseRef.current = event.phase;
+    }
+  }, [event?.phase]);
 
   const handleVote = async (activityId: string, vote: VoteType) => {
     if (!eventId) return;
@@ -167,6 +187,16 @@ export default function EventDetailPage() {
 
   const nextPhases = getNextPhases(event.phase);
   const canAdvance = nextPhases.length > 0;
+  
+  // Phase helper
+  const phases: EventPhase[] = ["proposal", "voting", "scheduling", "info"];
+  const isPhaseEnabled = (phase: EventPhase) => {
+    if (!event) return false;
+    const currentIdx = phases.indexOf(event.phase);
+    const targetIdx = phases.indexOf(phase);
+    if (currentIdx === -1) return true; // Fallback
+    return targetIdx <= currentIdx;
+  };
 
   return (
     <div className="space-y-6">
@@ -214,6 +244,7 @@ export default function EventDetailPage() {
       {/* Phase Header */}
       <EventPhaseHeader
         currentPhase={event.phase}
+        onPhaseClick={setActiveTab}
         canAdvance={canAdvance}
         onAdvance={handleAdvancePhase}
       />
@@ -224,18 +255,18 @@ export default function EventDetailPage() {
       </div>
 
       {/* Phase Content */}
-      <Tabs value={event.phase} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="bg-secondary/50 rounded-xl p-1">
-          <TabsTrigger value="proposal" className="rounded-lg" disabled={event.phase !== "proposal"}>
+          <TabsTrigger value="proposal" className="rounded-lg" disabled={!isPhaseEnabled("proposal")}>
             Vorschläge
           </TabsTrigger>
-          <TabsTrigger value="voting" className="rounded-lg" disabled={event.phase !== "voting"}>
+          <TabsTrigger value="voting" className="rounded-lg" disabled={!isPhaseEnabled("voting")}>
             Abstimmung
           </TabsTrigger>
-          <TabsTrigger value="scheduling" className="rounded-lg" disabled={event.phase !== "scheduling"}>
+          <TabsTrigger value="scheduling" className="rounded-lg" disabled={!isPhaseEnabled("scheduling")}>
             Terminfindung
           </TabsTrigger>
-          <TabsTrigger value="info" className="rounded-lg" disabled={event.phase !== "info"}>
+          <TabsTrigger value="info" className="rounded-lg" disabled={!isPhaseEnabled("info")}>
             Event-Info
           </TabsTrigger>
         </TabsList>
@@ -288,7 +319,7 @@ export default function EventDetailPage() {
                   </div>
                 );
               })}
-              {canAdvance && (
+              {canAdvance && event.phase === "proposal" && (
                 <Button
                   onClick={handleAdvancePhase}
                   className="w-full rounded-xl"
@@ -319,6 +350,7 @@ export default function EventDetailPage() {
                   currentUserId={currentUserId}
                   onVote={handleVote}
                   isLoading={actionLoading}
+                  disabled={event.phase !== "voting"} 
                 />
               </div>
             ))
@@ -329,7 +361,7 @@ export default function EventDetailPage() {
               description="Alle Aktivitäten wurden ausgeschlossen oder es wurden noch keine vorgeschlagen."
             />
           )}
-          {canAdvance && sortedActivities.length > 0 && (
+          {canAdvance && sortedActivities.length > 0 && event.phase === "voting" && (
             <Card className="bg-primary/10 border-primary/20 rounded-2xl">
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground mb-3">
@@ -352,7 +384,7 @@ export default function EventDetailPage() {
 
         {/* Scheduling Phase */}
         <TabsContent value="scheduling" className="space-y-4">
-          <SchedulingPhase event={event} onUpdate={setEvent} />
+          <SchedulingPhase event={event} onUpdate={setEvent} onFinalize={handleFinalizeDate} />
           
           {/* Finalize Button Area (Moved inside SchedulingPhase usually, but if we need finalize logic here...) 
               Actually, SchedulingPhase component handles voting and adding dates. 
@@ -367,7 +399,7 @@ export default function EventDetailPage() {
               Let's add it here for now to keep SchedulingPhase focused on the list.
           */}
           {canAdvance && event.dateOptions.length > 0 && isCreator && (
-             <Card className="bg-primary/10 border-primary/20 rounded-2xl mt-6">
+             <Card className="bg-primary/10 border-primary/20 rounded-2xl mt-6 hidden">
                 <CardContent className="p-4">
                   <p className="text-sm text-muted-foreground mb-3 font-medium">
                     Event-Termin final festlegen:
