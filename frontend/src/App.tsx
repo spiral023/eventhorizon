@@ -8,6 +8,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { AnimatePresence } from "framer-motion";
+import { GuestAccessNotice } from "@/components/auth/GuestAccessNotice";
+import { useAuthStore } from "@/stores/authStore";
 
 // Pages
 import HomePage from "@/pages/HomePage";
@@ -27,19 +29,55 @@ import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Keep layout and auth mounted across route changes
-function ProtectedAppLayout() {
+// Keep layout mounted across route changes
+function AppShell() {
   const location = useLocation();
 
   return (
+    <AppLayout>
+      <AnimatePresence mode="wait">
+        <Outlet key={location.pathname} />
+      </AnimatePresence>
+    </AppLayout>
+  );
+}
+
+function AuthenticatedSection() {
+  return (
     <RequireAuth>
-      <AppLayout>
-        <AnimatePresence mode="wait">
-          <Outlet key={location.pathname} />
-        </AnimatePresence>
-      </AppLayout>
+      <Outlet />
     </RequireAuth>
   );
+}
+
+function RestrictedSection({ title, description }: { title: string; description: string }) {
+  const { isAuthenticated, isLoading } = useAuthStore();
+  const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-primary/20 animate-pulse" />
+          <p className="text-muted-foreground">Laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <PageTransition>
+        <GuestAccessNotice
+          title={title}
+          description={description}
+          loginState={{ from: location }}
+        />
+      </PageTransition>
+    );
+  }
+
+  return <Outlet />;
 }
 
 function AppRoutes() {
@@ -49,19 +87,45 @@ function AppRoutes() {
       <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
       <Route path="/join/:inviteCode" element={<PageTransition><JoinRoomPage /></PageTransition>} />
 
-      {/* Protected routes share one persistent layout */}
-      <Route element={<ProtectedAppLayout />}>
+      {/* App layout for all in-app pages */}
+      <Route element={<AppShell />}>
         <Route index element={<PageTransition><HomePage /></PageTransition>} />
-        <Route path="rooms" element={<PageTransition><RoomsPage /></PageTransition>} />
-        <Route path="rooms/:roomId" element={<PageTransition><RoomDetailPage /></PageTransition>} />
-        <Route path="rooms/:roomId/events/new" element={<PageTransition><CreateEventPage /></PageTransition>} />
-        <Route path="rooms/:roomId/events/:eventId" element={<PageTransition><EventDetailPage /></PageTransition>} />
         <Route path="activities" element={<PageTransition><ActivitiesPage /></PageTransition>} />
         <Route path="activities/:activityId" element={<PageTransition><ActivityDetailPage /></PageTransition>} />
-        <Route path="team" element={<PageTransition><TeamPage /></PageTransition>} />
-        <Route path="profile" element={<PageTransition><ProfilePage /></PageTransition>} />
+
+        {/* Guest-visible but auth-gated sections show inline notice */}
+        <Route
+          element={
+            <RestrictedSection
+              title="Anmeldung erforderlich"
+              description="Räume sind nur für angemeldete Nutzer sichtbar. Bitte melde dich an oder registriere dich, um deine Räume zu öffnen."
+            />
+          }
+        >
+          <Route path="rooms" element={<PageTransition><RoomsPage /></PageTransition>} />
+          <Route path="rooms/:roomId" element={<PageTransition><RoomDetailPage /></PageTransition>} />
+          <Route path="rooms/:roomId/events/new" element={<PageTransition><CreateEventPage /></PageTransition>} />
+          <Route path="rooms/:roomId/events/:eventId" element={<PageTransition><EventDetailPage /></PageTransition>} />
+        </Route>
+
+        <Route
+          element={
+            <RestrictedSection
+              title="Anmeldung erforderlich"
+              description="Die Team-Analyse steht nur angemeldeten Nutzern zur Verfügung."
+            />
+          }
+        >
+          <Route path="team" element={<PageTransition><TeamPage /></PageTransition>} />
+        </Route>
+
+        {/* Strictly protected routes */}
+        <Route element={<AuthenticatedSection />}>
+          <Route path="profile" element={<PageTransition><ProfilePage /></PageTransition>} />
+          <Route path="settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+        </Route>
+
         <Route path="map" element={<PageTransition><MapPage /></PageTransition>} />
-        <Route path="settings" element={<PageTransition><SettingsPage /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Route>
     </Routes>
@@ -78,6 +142,11 @@ function useDarkMode() {
 
 const App = () => {
   useDarkMode();
+  const { refresh } = useAuthStore();
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   return (
     <QueryClientProvider client={queryClient}>

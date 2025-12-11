@@ -13,17 +13,19 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function ActivitiesPage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
+  const { isAuthenticated, isLoading: authLoading } = useAuthStore();
 
   const activeFilterCount =
     (filters.categories?.length || 0) +
@@ -44,16 +46,17 @@ export default function ActivitiesPage() {
     (filters.favoritesOnly ? 1 : 0);
 
   useEffect(() => {
+    if (authLoading) return;
     loadData();
-  }, []);
+  }, [isAuthenticated, authLoading]);
 
   const loadData = async () => {
-    setIsLoading(true);
+    setIsLoadingActivities(true);
     setError(null);
     try {
       const [activitiesResult, favoritesResult] = await Promise.all([
         getActivities(),
-        getFavoriteActivityIds(),
+        isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
       ]);
 
       if (activitiesResult.error) throw new Error(activitiesResult.error.message);
@@ -62,7 +65,7 @@ export default function ActivitiesPage() {
     } catch (err) {
       setError("Aktivitäten konnten nicht geladen werden.");
     } finally {
-      setIsLoading(false);
+      setIsLoadingActivities(false);
     }
   };
 
@@ -183,7 +186,7 @@ export default function ActivitiesPage() {
     (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
   );
 
-  if (isLoading) {
+  if (isLoadingActivities) {
     return (
       <div className="space-y-6">
         <PageHeader
@@ -275,6 +278,10 @@ export default function ActivitiesPage() {
               activity={activity}
               isFavorite={favoriteIds.includes(activity.id)}
               onFavoriteToggle={async (id) => {
+                if (!isAuthenticated) {
+                  toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
+                  return;
+                }
                 const result = await toggleFavorite(id);
                 if (result.error) {
                   toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");

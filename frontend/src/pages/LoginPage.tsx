@@ -25,6 +25,14 @@ export default function LoginPage() {
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const requestedMode = params.get("mode");
+    if (requestedMode === "register" || requestedMode === "login") {
+      setMode(requestedMode);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
     if (isAuthenticated) {
       navigate(from, { replace: true });
     }

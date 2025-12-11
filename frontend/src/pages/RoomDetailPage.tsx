@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Calendar, Users, Link2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,14 +61,14 @@ export default function RoomDetailPage() {
     try {
       const result = await deleteEvent(deleteDialogEvent.id);
       if (result.error) {
-        toast.error(result.error.message || "Fehler beim LÇôschen des Events");
+        toast.error(result.error.message || "Fehler beim LÃ‡Ã´schen des Events");
         return;
       }
       setEvents((prev) => prev.filter((e) => e.id !== deleteDialogEvent.id));
-      toast.success("Event erfolgreich gelÇôscht!");
+      toast.success("Event erfolgreich gelÃ‡Ã´scht!");
       setDeleteDialogEvent(null);
     } catch {
-      toast.error("Fehler beim LÇôschen des Events");
+      toast.error("Fehler beim LÃ‡Ã´schen des Events");
     } finally {
       setDeleteLoading(false);
     }
@@ -93,10 +93,10 @@ export default function RoomDetailPage() {
       <EmptyState
         icon={Users}
         title="Raum nicht gefunden"
-        description="Der gesuchte Raum existiert nicht oder wurde gelöscht."
+        description="Der gesuchte Raum existiert nicht oder wurde gelÃ¶scht."
         action={
           <Button onClick={() => navigate("/rooms")} className="rounded-xl">
-            Zurück zu Räumen
+            ZurÃ¼ck zu RÃ¤umen
           </Button>
         }
       />
@@ -116,7 +116,7 @@ export default function RoomDetailPage() {
         onClick={() => navigate("/rooms")}
       >
         <ArrowLeft className="h-4 w-4" />
-        Zurück zu Räumen
+        ZurÃ¼ck zu RÃ¤umen
       </Button>
 
       {/* Room Header */}
@@ -302,9 +302,9 @@ export default function RoomDetailPage() {
       <AlertDialog open={!!deleteDialogEvent} onOpenChange={(open) => !open && setDeleteDialogEvent(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Event lÇôschen?</AlertDialogTitle>
+            <AlertDialogTitle>Event lÃ‡Ã´schen?</AlertDialogTitle>
             <AlertDialogDescription>
-              Dieses Event und alle zugehÇôrigen Daten werden dauerhaft gelÇôscht. "{deleteDialogEvent?.name}" wirklich entfernen?
+              Dieses Event und alle zugehÃ‡Ã´rigen Daten werden dauerhaft gelÃ‡Ã´scht. "{deleteDialogEvent?.name}" wirklich entfernen?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -314,7 +314,7 @@ export default function RoomDetailPage() {
               onClick={handleDeleteEvent}
               disabled={deleteLoading}
             >
-              {deleteLoading ? "LÇôsche..." : "Event lÇôschen"}
+              {deleteLoading ? "LÃ‡Ã´sche..." : "Event lÃ‡Ã´schen"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

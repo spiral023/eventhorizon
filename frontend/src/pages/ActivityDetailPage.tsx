@@ -64,7 +64,7 @@ export default function ActivityDetailPage() {
   const [isFav, setIsFav] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
   
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [comments, setComments] = useState<ActivityComment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -74,21 +74,29 @@ export default function ActivityDetailPage() {
       if (!activityId) return;
       const [activityResult, favResult, commentsResult] = await Promise.all([
         getActivityById(activityId),
-        isFavorite(activityId),
+        isAuthenticated
+          ? isFavorite(activityId)
+          : Promise.resolve({ data: { isFavorite: false, favoritesCount: 0 } }),
         getActivityComments(activityId)
       ]);
       setActivity(activityResult.data);
-      setIsFav(favResult.data?.isFavorite ?? false);
+
+      const favoritesData = favResult.data || { isFavorite: false, favoritesCount: activityResult.data?.favoritesCount ?? 0 };
+      setIsFav(favoritesData.isFavorite ?? false);
       setFavoriteCount(
-        favResult.data?.favoritesCount ?? activityResult.data?.favoritesCount ?? 0
+        favoritesData.favoritesCount ?? activityResult.data?.favoritesCount ?? 0
       );
       setComments(commentsResult.data || []);
       setLoading(false);
     };
     fetchActivity();
-  }, [activityId]);
+  }, [activityId, isAuthenticated]);
 
   const handleFavoriteToggle = async () => {
+    if (!isAuthenticated) {
+      toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
+      return;
+    }
     if (!activityId) return;
     const result = await toggleFavorite(activityId);
     if (result.error) {

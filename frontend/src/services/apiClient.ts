@@ -924,7 +924,7 @@ export async function deleteEvent(eventId: string): Promise<ApiResult<void>> {
     if (event.createdByUserId !== currentUser.id) {
       return {
         data: null as any,
-        error: { code: "FORBIDDEN", message: "Nur der Ersteller kann das Event lÇôschen" },
+        error: { code: "FORBIDDEN", message: "Nur der Ersteller kann das Event löschen" },
       };
     }
     events.splice(index, 1);
@@ -1015,7 +1015,7 @@ export async function removeProposedActivity(eventId: string, activityId: string
     if (!event) return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
 
     if (event.createdByUserId !== currentUser.id) {
-      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann VorschlÇÏge entfernen" } };
+      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Vorschläge entfernen" } };
     }
 
     event.proposedActivityIds = event.proposedActivityIds.filter((id) => id !== activityId);
