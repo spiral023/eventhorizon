@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     STORAGE_BUCKET_BASE_URL: str = os.getenv("AWS_STORAGE_BUCKET_BASE_URL") or os.getenv("AVATAR_BUCKET_BASE_URL", "")
     AVATAR_MAX_SIZE_MB: int = int(os.getenv("AVATAR_MAX_SIZE_MB", "5"))
     AVATAR_ALLOWED_MIME: List[str] = ["image/png", "image/jpeg", "image/webp", "image/avif"]
+    AVATAR_PROCESSED_SIZE: int = int(os.getenv("AVATAR_PROCESSED_SIZE", "128"))
+    AVATAR_OUTPUT_FORMAT: str = os.getenv("AVATAR_OUTPUT_FORMAT", "webp")
     # Backwards compatibility for existing callers
     AVATAR_BUCKET: str = STORAGE_BUCKET
     AVATAR_BUCKET_BASE_URL: str = STORAGE_BUCKET_BASE_URL

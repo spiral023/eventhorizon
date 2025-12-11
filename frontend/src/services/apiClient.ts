@@ -5,6 +5,7 @@ import type { ApiResult } from "@/types/api";
 export interface AvatarUploadInfo {
   uploadUrl: string;
   publicUrl: string;
+  uploadKey: string;
 }
 
 // ============================================ 
@@ -245,7 +246,7 @@ const currentUser: User = {
   firstName: "Max",
   lastName: "Mustermann",
   email: "max.mustermann@firma.at",
-  avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+  avatarUrl: "",
   department: "Marketing",
   createdAt: "2024-01-01T00:00:00Z",
   isActive: true,
@@ -474,6 +475,7 @@ export async function getAvatarUploadUrl(
       data: {
         uploadUrl: "https://example.com/mock-upload",
         publicUrl: `https://picsum.photos/seed/${Date.now()}/200`,
+        uploadKey: "avatars/mock-user/orig.png",
       },
     };
   }
@@ -487,8 +489,30 @@ export async function getAvatarUploadUrl(
       data: {
         uploadUrl: (result.data as any).upload_url ?? (result.data as any).uploadUrl,
         publicUrl: (result.data as any).public_url ?? (result.data as any).publicUrl,
+        uploadKey: (result.data as any).upload_key ?? (result.data as any).uploadKey,
       },
     };
+  }
+  return { data: null as any, error: result.error };
+}
+
+export async function processAvatarUpload(
+  uploadKey: string,
+  outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"
+): Promise<ApiResult<User | null>> {
+  if (USE_MOCKS) {
+    await delay(80);
+    currentUser.avatarUrl = `https://picsum.photos/seed/${Date.now()}/128`;
+    return { data: currentUser };
+  }
+
+  const result = await request<any>("/users/me/avatar/process", {
+    method: "POST",
+    body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
+  });
+
+  if (result.data) {
+    return { data: mapUserFromApi(result.data) };
   }
   return { data: null as any, error: result.error };
 }
@@ -512,7 +536,11 @@ export async function uploadAvatar(file: File): Promise<ApiResult<User | null>> 
     return { data: null, error: { code: String(putRes.status), message: msg } };
   }
 
-  return await updateUser({ avatarUrl: presign.data.publicUrl });
+  if (!presign.data.uploadKey) {
+    return await updateUser({ avatarUrl: presign.data.publicUrl });
+  }
+
+  return await processAvatarUpload(presign.data.uploadKey, "webp");
 }
 
 export async function getUserStats(): Promise<ApiResult<UserStats>> {

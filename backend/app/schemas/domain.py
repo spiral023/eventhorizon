@@ -70,6 +70,11 @@ class AvatarUploadRequest(BaseSchema):
 class AvatarUploadResponse(BaseSchema):
     upload_url: str
     public_url: str
+    upload_key: str
+
+class AvatarProcessRequest(BaseSchema):
+    upload_key: str
+    output_format: Optional[str] = None
 
 # --- Room ---
 class RoomBase(BaseSchema):

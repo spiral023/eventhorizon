@@ -7,8 +7,15 @@ from typing import Any
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.domain import User, Event, EventParticipant, Vote, DateOption, DateResponse, EventPhase
-from app.schemas.domain import User as UserSchema, UserUpdate, UserStats, AvatarUploadRequest, AvatarUploadResponse
-from app.services.avatar_service import generate_avatar_upload_url
+from app.schemas.domain import (
+    User as UserSchema,
+    UserUpdate,
+    UserStats,
+    AvatarUploadRequest,
+    AvatarUploadResponse,
+    AvatarProcessRequest,
+)
+from app.services.avatar_service import generate_avatar_upload_url, process_avatar_upload
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -113,9 +120,27 @@ async def create_avatar_upload_url(
     payload: AvatarUploadRequest,
     current_user: User = Depends(get_current_user),
 ) -> AvatarUploadResponse:
-    upload_url, public_url = generate_avatar_upload_url(
+    upload_url, public_url, upload_key = generate_avatar_upload_url(
         user_id=current_user.id,
         content_type=payload.content_type,
         file_size=payload.file_size,
     )
-    return AvatarUploadResponse(upload_url=upload_url, public_url=public_url)
+    return AvatarUploadResponse(upload_url=upload_url, public_url=public_url, upload_key=upload_key)
+
+
+@router.post("/me/avatar/process", response_model=UserSchema)
+async def process_avatar(
+    payload: AvatarProcessRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserSchema:
+    processed_url = process_avatar_upload(
+        user_id=current_user.id,
+        upload_key=payload.upload_key,
+        desired_format=payload.output_format,
+    )
+    current_user.avatar_url = processed_url
+    db.add(current_user)
+    await db.commit()
+    await db.refresh(current_user)
+    return current_user

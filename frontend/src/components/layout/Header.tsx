@@ -21,6 +21,8 @@ export function Header() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const initials = (user?.firstName?.[0] ?? "") + (user?.lastName?.[0] ?? "");
+
   const handleLogout = async () => {
     await logout();
     navigate("/login");
@@ -82,9 +84,9 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="h-9 w-9 cursor-pointer ring-2 ring-transparent hover:ring-primary/50 transition-all">
-                  <AvatarImage src={user?.avatarUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"} />
-                  <AvatarFallback>
-                    <User className="h-4 w-4" />
+                  <AvatarImage src={user?.avatarUrl || undefined} />
+                  <AvatarFallback className="text-xs font-semibold uppercase">
+                    {initials || <User className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
@@ -127,8 +129,7 @@ export function Header() {
                 onClick={() => navigate("/login?mode=register")}
               >
                 <Avatar className="h-7 w-7 ring-2 ring-transparent">
-                  <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" />
-                  <AvatarFallback>
+                  <AvatarFallback className="text-[10px] font-semibold uppercase">
                     <UserPlus className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>

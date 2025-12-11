@@ -67,7 +67,7 @@ export default function ProfilePage() {
           position: result.data.position,
           location: result.data.location,
           birthday: result.data.birthday,
-          avatarUrl: result.data.avatarUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop",
+          avatarUrl: result.data.avatarUrl || "",
           bio: result.data.bio,
           hobbies: result.data.hobbies || [],
           dietaryRestrictions: result.data.dietaryRestrictions || [],
@@ -177,9 +177,9 @@ export default function ProfilePage() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 ring-4 ring-primary/20">
-                <AvatarImage src={user.avatarUrl} />
-                <AvatarFallback>
-                  <User className="h-10 w-10" />
+                <AvatarImage src={user.avatarUrl || undefined} />
+                <AvatarFallback className="text-xl font-semibold uppercase">
+                  {(user.firstName?.[0] || "") + (user.lastName?.[0] || "") || <User className="h-10 w-10" />}
                 </AvatarFallback>
               </Avatar>
               <h2 className="mt-4 text-xl font-semibold">{user.name}</h2>
