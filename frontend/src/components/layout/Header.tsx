@@ -44,7 +44,10 @@ export function Header() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-[85vw] max-w-sm overflow-y-auto">
+            <SheetContent
+              side="left"
+              className="p-0 w-[85vw] max-w-sm overflow-y-auto z-[120] bg-background/95 backdrop-blur-md"
+            >
               <SheetHeader className="px-4 pt-4 pb-2 text-left">
                 <SheetTitle>Menü</SheetTitle>
               </SheetHeader>

@@ -26,9 +26,9 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
       )}
       onClick={onClick}
     >
-      <CardContent className="p-5">
-        <div className="flex items-start gap-4">
-          <Avatar className="h-12 w-12 rounded-xl ring-2 ring-border/50 group-hover:ring-primary/30 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-11 w-11 rounded-xl ring-2 ring-border/40 group-hover:ring-primary/30 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
             <AvatarImage src={room.avatarUrl} className="object-cover" />
             <AvatarFallback className="rounded-xl bg-secondary text-lg font-semibold">
               {room.name.charAt(0)}
@@ -45,12 +45,12 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
               </p>
             )}
 
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
+            <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <Users className="h-3.5 w-3.5" />
                 <span>{room.memberCount} Mitglieder</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <Calendar className="h-3.5 w-3.5" />
                 <span>{formattedDate}</span>
               </div>

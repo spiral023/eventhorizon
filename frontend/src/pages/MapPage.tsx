@@ -267,12 +267,12 @@ export default function MapPage() {
         >
           <Card className="bg-card/60 border-border/50 rounded-2xl overflow-hidden">
             <CardContent className="p-0">
-              <div className="h-[600px] relative">
+              <div className="h-[600px] relative z-0">
                 <MapContainer
                   center={mapCenter}
                   zoom={7}
-                  className="h-full w-full rounded-2xl"
-                  style={{ background: "hsl(var(--secondary))" }}
+                  className="h-full w-full rounded-2xl relative z-0"
+                  style={{ background: "hsl(var(--secondary))", zIndex: 0 }}
                 >
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
