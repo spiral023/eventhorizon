@@ -129,6 +129,14 @@ class Activity(ActivityBase):
     created_at: datetime
     favorites_count: int = 0
 
+# --- EventParticipant ---
+class EventParticipant(BaseSchema):
+    event_id: UUID
+    user_id: UUID
+    is_organizer: bool = False
+    has_voted: bool = False
+    date_response: Optional[str] = None
+
 # --- Event ---
 class EventBase(BaseSchema):
     name: str
@@ -151,7 +159,7 @@ class Event(EventBase):
     created_by_user_id: Optional[UUID] = None
     created_at: datetime
     voting_deadline: Optional[datetime] = None
-    participants: List[Any] = [] # Simplified for now
+    participants: List[EventParticipant] = [] 
     activity_votes: List["Vote"] = Field(default=[], validation_alias="votes", serialization_alias="activity_votes")
     date_options: List[Any] = []
 

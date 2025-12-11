@@ -9,6 +9,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy import inspect
 
 # revision identifiers, used by Alembic.
 revision: str = 'f3g4h5i6j7k8'
@@ -17,17 +18,27 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
-    op.add_column('user', sa.Column('phone', sa.String(), nullable=True))
-    op.add_column('user', sa.Column('position', sa.String(), nullable=True))
-    op.add_column('user', sa.Column('location', sa.String(), nullable=True))
-    op.add_column('user', sa.Column('bio', sa.Text(), nullable=True))
-    op.add_column('user', sa.Column('hobbies', postgresql.ARRAY(sa.String()), nullable=True))
-    op.add_column('user', sa.Column('activity_preferences', sa.JSON(), nullable=True))
-    op.add_column('user', sa.Column('dietary_restrictions', postgresql.ARRAY(sa.String()), nullable=True))
-    op.add_column('user', sa.Column('allergies', postgresql.ARRAY(sa.String()), nullable=True))
-    op.add_column('user', sa.Column('preferred_group_size', sa.String(), nullable=True))
-    op.add_column('user', sa.Column('travel_willingness', sa.String(), nullable=True))
-    op.add_column('user', sa.Column('budget_preference', sa.String(), nullable=True))
+    conn = op.get_bind()
+    inspector = inspect(conn)
+    existing_columns = [c['name'] for c in inspector.get_columns('user')]
+
+    columns_to_add = [
+        ('phone', sa.String()),
+        ('position', sa.String()),
+        ('location', sa.String()),
+        ('bio', sa.Text()),
+        ('hobbies', postgresql.ARRAY(sa.String())),
+        ('activity_preferences', sa.JSON()),
+        ('dietary_restrictions', postgresql.ARRAY(sa.String())),
+        ('allergies', postgresql.ARRAY(sa.String())),
+        ('preferred_group_size', sa.String()),
+        ('travel_willingness', sa.String()),
+        ('budget_preference', sa.String()),
+    ]
+
+    for col_name, col_type in columns_to_add:
+        if col_name not in existing_columns:
+            op.add_column('user', sa.Column(col_name, col_type, nullable=True))
 
 def downgrade() -> None:
     op.drop_column('user', 'budget_preference')
