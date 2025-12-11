@@ -160,7 +160,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
             <Button
                 variant="outline"
                 className={cn(
-                    "h-auto py-3 flex flex-col gap-1 hover:border-green-500/50 hover:bg-green-500/5",
+                    "h-auto py-3 flex flex-col gap-1 text-foreground hover:border-green-500/50 hover:bg-green-500/5 hover:text-green-500",
                     myVote === "yes" && "border-green-500 bg-green-500/10 text-green-600 ring-1 ring-green-500"
                 )}
                 onClick={() => handleVote("yes")}
@@ -172,7 +172,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
             <Button
                 variant="outline"
                 className={cn(
-                    "h-auto py-3 flex flex-col gap-1 hover:border-yellow-500/50 hover:bg-yellow-500/5",
+                    "h-auto py-3 flex flex-col gap-1 text-foreground hover:border-yellow-500/50 hover:bg-yellow-500/5 hover:text-yellow-600",
                     myVote === "maybe" && "border-yellow-500 bg-yellow-500/10 text-yellow-600 ring-1 ring-yellow-500"
                 )}
                 onClick={() => handleVote("maybe")}
@@ -184,7 +184,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
             <Button
                 variant="outline"
                 className={cn(
-                    "h-auto py-3 flex flex-col gap-1 hover:border-red-500/50 hover:bg-red-500/5",
+                    "h-auto py-3 flex flex-col gap-1 text-foreground hover:border-red-500/50 hover:bg-red-500/5 hover:text-red-600",
                     myVote === "no" && "border-red-500 bg-red-500/10 text-red-600 ring-1 ring-red-500"
                 )}
                 onClick={() => handleVote("no")}
@@ -196,8 +196,8 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
             <Button
                 variant="outline"
                 className={cn(
-                    "h-auto py-3 flex flex-col gap-1",
-                    isPriority ? "border-yellow-500 bg-yellow-100 text-yellow-700" : "text-muted-foreground hover:text-yellow-600",
+                    "h-auto py-3 flex flex-col gap-1 text-foreground hover:border-yellow-500/50 hover:bg-yellow-500/5 hover:text-yellow-600",
+                    isPriority && "border-yellow-500 bg-yellow-500/10 text-yellow-700 ring-1 ring-yellow-500",
                     (myVote === "no" || !myVote) && "opacity-50 cursor-not-allowed"
                 )}
                 onClick={togglePriority}

@@ -50,7 +50,6 @@ export function VotingCard({
 
   const score = forVotes - againstVotes;
   const showProminentButton = isOwner && !disabled && score > 0 && rank !== undefined && rank <= 3;
-  const showIcon = isOwner && !disabled && onSelect && !showProminentButton;
 
   return (
     <Card className="bg-card/60 border-border/50 rounded-2xl overflow-hidden">
@@ -168,33 +167,6 @@ export function VotingCard({
                         </span>
                     </div>
                   </div>
-
-                  {/* Owner Selection (Icon Fallback) */}
-                  {showIcon && onSelect && (
-                    <>
-                        <div className="h-8 w-px bg-border/50" />
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="hover:text-yellow-500 hover:bg-yellow-500/10">
-                                    <Trophy className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Aktivität auswählen?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Möchtest du "{activity.title}" als finale Aktivität festlegen?
-                                        Das Event wechselt damit in die Terminfindungs-Phase.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                                    <AlertDialogAction onClick={onSelect}>Bestätigen</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </>
-                  )}
                 </div>
               </div>
 
