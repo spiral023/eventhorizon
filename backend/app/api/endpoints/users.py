@@ -7,7 +7,8 @@ from typing import Any
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.domain import User, Event, EventParticipant, Vote, DateOption, DateResponse, EventPhase
-from app.schemas.domain import User as UserSchema, UserUpdate, UserStats
+from app.schemas.domain import User as UserSchema, UserUpdate, UserStats, AvatarUploadRequest, AvatarUploadResponse
+from app.services.avatar_service import generate_avatar_upload_url
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -105,3 +106,16 @@ async def update_profile(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+
+@router.post("/me/avatar/upload-url", response_model=AvatarUploadResponse)
+async def create_avatar_upload_url(
+    payload: AvatarUploadRequest,
+    current_user: User = Depends(get_current_user),
+) -> AvatarUploadResponse:
+    upload_url, public_url = generate_avatar_upload_url(
+        user_id=current_user.id,
+        content_type=payload.content_type,
+        file_size=payload.file_size,
+    )
+    return AvatarUploadResponse(upload_url=upload_url, public_url=public_url)

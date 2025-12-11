@@ -1,4 +1,5 @@
 import os
+from typing import List
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -20,6 +21,13 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "eventhorizon")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
+
+    # S3 / Avatars
+    AWS_DEFAULT_REGION: str = os.getenv("AWS_DEFAULT_REGION", "eu-west-1")
+    AVATAR_BUCKET: str = os.getenv("AVATAR_BUCKET", "")
+    AVATAR_BUCKET_BASE_URL: str = os.getenv("AVATAR_BUCKET_BASE_URL", "")
+    AVATAR_MAX_SIZE_MB: int = int(os.getenv("AVATAR_MAX_SIZE_MB", "5"))
+    AVATAR_ALLOWED_MIME: List[str] = ["image/png", "image/jpeg", "image/webp"]
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

@@ -58,6 +58,14 @@ class Token(BaseModel):
     token_type: str
     user: User
 
+class AvatarUploadRequest(BaseSchema):
+    content_type: str
+    file_size: int
+
+class AvatarUploadResponse(BaseSchema):
+    upload_url: str
+    public_url: str
+
 # --- Room ---
 class RoomBase(BaseSchema):
     name: str

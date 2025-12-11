@@ -2,6 +2,11 @@ import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseTyp
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 
+export interface AvatarUploadInfo {
+  uploadUrl: string;
+  publicUrl: string;
+}
+
 // ============================================ 
 // CONFIG & HELPERS
 // ============================================ 
@@ -457,6 +462,57 @@ export async function updateUser(updates: {
     return { data: mapUserFromApi(result.data) };
   }
   return { data: null, error: result.error };
+}
+
+export async function getAvatarUploadUrl(
+  contentType: string,
+  fileSize: number
+): Promise<ApiResult<AvatarUploadInfo>> {
+  if (USE_MOCKS) {
+    await delay(50);
+    return {
+      data: {
+        uploadUrl: "https://example.com/mock-upload",
+        publicUrl: `https://picsum.photos/seed/${Date.now()}/200`,
+      },
+    };
+  }
+
+  const result = await request<any>("/users/me/avatar/upload-url", {
+    method: "POST",
+    body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
+  });
+  if (result.data) {
+    return {
+      data: {
+        uploadUrl: (result.data as any).upload_url ?? (result.data as any).uploadUrl,
+        publicUrl: (result.data as any).public_url ?? (result.data as any).publicUrl,
+      },
+    };
+  }
+  return { data: null as any, error: result.error };
+}
+
+export async function uploadAvatar(file: File): Promise<ApiResult<User | null>> {
+  const presign = await getAvatarUploadUrl(file.type, file.size);
+  if (presign.error || !presign.data) {
+    return { data: null, error: presign.error };
+  }
+
+  const putRes = await fetch(presign.data.uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type,
+    },
+    body: file,
+  });
+
+  if (!putRes.ok) {
+    const msg = `Upload fehlgeschlagen (HTTP ${putRes.status})`;
+    return { data: null, error: { code: String(putRes.status), message: msg } };
+  }
+
+  return await updateUser({ avatarUrl: presign.data.publicUrl });
 }
 
 export async function getUserStats(): Promise<ApiResult<UserStats>> {

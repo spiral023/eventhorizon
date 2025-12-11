@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Settings, CalendarIcon, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { Settings, CalendarIcon, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,8 +34,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format, parse, isValid } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { updateUser } from "@/services/apiClient";
+import { updateUser, uploadAvatar } from "@/services/apiClient";
 import type { UserProfile } from "@/pages/ProfilePage";
+import { useAuthStore } from "@/stores/authStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface EditProfileDialogProps {
   user: UserProfile;
@@ -70,8 +72,12 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [preferredGroupSize, setPreferredGroupSize] = useState(user.preferredGroupSize);
   const [travelWillingness, setTravelWillingness] = useState(user.travelWillingness);
   const [budgetPreference, setBudgetPreference] = useState(user.budgetPreference);
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || "");
 
   const [loading, setLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const refreshAuth = useAuthStore((state) => state.refresh);
 
   const handleBirthdayInputChange = (value: string) => {
     setBirthdayInput(value);
@@ -108,6 +114,48 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
     }
   };
 
+  const handleAvatarFile = async (file: File) => {
+    const maxMb = 5;
+    if (file.size > maxMb * 1024 * 1024) {
+      toast.error(`Datei ist zu groß. Max. ${maxMb}MB.`);
+      return;
+    }
+    setAvatarLoading(true);
+    const result = await uploadAvatar(file);
+    if (result.error || !result.data) {
+      toast.error(result.error?.message || "Upload fehlgeschlagen");
+      setAvatarLoading(false);
+      return;
+    }
+    setAvatarUrl(result.data.avatarUrl || "");
+    onProfileUpdated?.({
+      avatarUrl: result.data.avatarUrl || "",
+      name: result.data.name,
+      firstName: result.data.firstName,
+      lastName: result.data.lastName,
+    });
+    refreshAuth(); // Sync global user state
+    toast.success("Profilbild aktualisiert");
+    setAvatarLoading(false);
+  };
+
+  const handleRemoveAvatar = async () => {
+    setAvatarLoading(true);
+    const result = await updateUser({ avatarUrl: "" });
+    if (result.error) {
+      toast.error(result.error.message || "Profilbild konnte nicht entfernt werden");
+      setAvatarLoading(false);
+      return;
+    }
+    setAvatarUrl("");
+    onProfileUpdated?.({
+      avatarUrl: "",
+    });
+    refreshAuth();
+    toast.success("Profilbild entfernt");
+    setAvatarLoading(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName.trim() || !lastName.trim()) {
@@ -127,6 +175,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         location: location.trim() || undefined,
         birthday: birthday ? birthday.toISOString().split('T')[0] : undefined,
         bio: bio.trim() || undefined,
+        avatarUrl: avatarUrl || undefined,
         hobbies: hobbies,
         activityPreferences: {
           physical: physical[0],
@@ -162,6 +211,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
           social: social[0],
           creative: creative[0],
         },
+        avatarUrl: avatarUrl || undefined,
         preferredGroupSize,
         travelWillingness,
         budgetPreference,
@@ -203,6 +253,58 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
             <ScrollArea className="h-[400px] pr-4">
               {/* Basic Info */}
               <TabsContent value="basic" className="space-y-4 mt-0">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleAvatarFile(file);
+                    }
+                    // reset input to allow re-selecting same file
+                    e.target.value = "";
+                  }}
+                />
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border border-dashed border-border/70 p-4 bg-muted/40">
+                  <Avatar className="h-16 w-16 ring-2 ring-primary/20">
+                    <AvatarImage src={avatarUrl || user.avatarUrl} />
+                    <AvatarFallback>
+                      <User className="h-7 w-7" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">Profilbild</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="rounded-xl"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={avatarLoading}
+                      >
+                        {avatarLoading ? "Lädt..." : "Bild auswählen"}
+                      </Button>
+                      {avatarUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="rounded-xl"
+                          onClick={handleRemoveAvatar}
+                          disabled={avatarLoading}
+                        >
+                          Bild entfernen
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      PNG/JPG/WebP, max. 5 MB. Neues Bild wird sofort gespeichert.
+                    </p>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="profile-firstname">Vorname *</Label>
