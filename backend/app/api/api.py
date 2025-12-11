@@ -794,6 +794,10 @@ async def respond_to_date(
         db.add(new_resp)
         
     await db.commit()
+    
+    # Force reload to ensure latest state is returned
+    db.expire_all()
+    
     return await get_event(event_id, db)
 
 @router.post("/events/{event_id}/select-activity", response_model=EventSchema)
@@ -804,8 +808,7 @@ async def select_activity(event_id: UUID, selection: SelectActivity, db: AsyncSe
         event.chosen_activity_id = selection.activity_id
         event.phase = "scheduling"
         await db.commit()
-        await db.refresh(event)
-    return event
+    return await get_event(event_id, db)
 
 @router.post("/events/{event_id}/finalize-date", response_model=EventSchema)
 async def finalize_date(event_id: UUID, selection: FinalizeDate, db: AsyncSession = Depends(get_db)):
@@ -815,5 +818,4 @@ async def finalize_date(event_id: UUID, selection: FinalizeDate, db: AsyncSessio
         event.final_date_option_id = selection.date_option_id
         event.phase = "info"
         await db.commit()
-        await db.refresh(event)
-    return event
+    return await get_event(event_id, db)

@@ -1,7 +1,18 @@
-import { ThumbsUp, ThumbsDown, Minus, Check } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Minus, Check, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import type { Activity, ActivityVote, VoteType } from "@/types/domain";
 import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -12,25 +23,34 @@ interface VotingCardProps {
   currentUserId: string;
   onVote: (activityId: string, vote: VoteType) => void;
   isLoading?: boolean;
+  disabled?: boolean;
+  isOwner?: boolean;
+  onSelect?: () => void;
+  rank?: number;
 }
 
-export function VotingCard({ 
-  activity, 
-  votes, 
-  currentUserId, 
+export function VotingCard({
+  activity,
+  votes,
+  currentUserId,
   onVote,
-  isLoading 
+  isLoading,
+  disabled,
+  isOwner,
+  onSelect,
+  rank
 }: VotingCardProps) {
   const forVotes = votes?.votes.filter((v) => v.vote === "for").length || 0;
   const againstVotes = votes?.votes.filter((v) => v.vote === "against").length || 0;
   const abstainVotes = votes?.votes.filter((v) => v.vote === "abstain").length || 0;
-  const totalVotes = forVotes + againstVotes + abstainVotes;
   
   const userVote = votes?.votes.find((v) => v.userId === currentUserId)?.vote;
   const userIsFor = userVote === "for";
   const userIsAgainst = userVote === "against";
 
   const score = forVotes - againstVotes;
+  const showProminentButton = isOwner && !disabled && score > 0 && rank !== undefined && rank <= 3;
+  const showIcon = isOwner && !disabled && onSelect && !showProminentButton;
 
   return (
     <Card className="bg-card/60 border-border/50 rounded-2xl overflow-hidden">
@@ -51,6 +71,11 @@ export function VotingCard({
           >
             {CategoryLabels[activity.category]}
           </Badge>
+          {rank && rank <= 3 && (
+             <div className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500 text-white font-bold shadow-lg ring-2 ring-white/50">
+               #{rank}
+             </div>
+          )}
         </div>
 
         {/* Content */}
@@ -73,7 +98,7 @@ export function VotingCard({
 
             {/* Voting Section */}
             <div className="mt-4 pt-4 border-t border-border/50">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
                 {/* Vote Buttons */}
                 <div className="flex items-center gap-2">
                   <Button
@@ -84,7 +109,7 @@ export function VotingCard({
                       userVote === "for" && "bg-success hover:bg-success/90"
                     )}
                     onClick={() => onVote(activity.id, "for")}
-                    disabled={isLoading}
+                    disabled={isLoading || disabled}
                   >
                     <ThumbsUp className="h-4 w-4" />
                     Dafür
@@ -98,7 +123,7 @@ export function VotingCard({
                       userVote === "against" && "bg-destructive hover:bg-destructive/90"
                     )}
                     onClick={() => onVote(activity.id, "against")}
-                    disabled={isLoading}
+                    disabled={isLoading || disabled}
                   >
                     <ThumbsDown className="h-4 w-4" />
                     Dagegen
@@ -107,39 +132,98 @@ export function VotingCard({
                   <Button
                     variant={userVote === "abstain" ? "default" : "ghost"}
                     size="sm"
-                    className="gap-1.5 rounded-lg"
+                    className={cn(
+                      "gap-1.5 rounded-lg",
+                      userVote === "abstain" && "bg-secondary"
+                    )}
                     onClick={() => onVote(activity.id, "abstain")}
-                    disabled={isLoading}
+                    disabled={isLoading || disabled}
                   >
                     <Minus className="h-4 w-4" />
                     Enthaltung
                   </Button>
                 </div>
 
-                {/* Score */}
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <span className={cn("font-medium", userIsFor ? "text-success" : "text-muted-foreground")}>{forVotes}</span>
-                    <ThumbsUp className={cn("h-3.5 w-3.5", userIsFor ? "text-success" : "text-muted-foreground")}/>
+                <div className="flex items-center gap-4">
+                  {/* Score */}
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1.5">
+                        <span className={cn("font-medium", userIsFor ? "text-success" : "text-muted-foreground")}>{forVotes}</span>
+                        <ThumbsUp className={cn("h-3.5 w-3.5", userIsFor ? "text-success" : "text-muted-foreground")}/>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className={cn("font-medium", userIsAgainst ? "text-destructive" : "text-muted-foreground")}>{againstVotes}</span>
+                        <ThumbsDown className={cn("h-3.5 w-3.5", userIsAgainst ? "text-destructive" : "text-muted-foreground")}/>
+                    </div>
+                    <div className="px-2 py-1 rounded-lg bg-secondary">
+                        <span
+                        className={cn(
+                            "font-semibold",
+                            userIsFor && "text-success",
+                            userIsAgainst && "text-destructive",
+                            !userVote && "text-muted-foreground"
+                        )}
+                        >
+                        {score > 0 ? `+${score}` : score}
+                        </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={cn("font-medium", userIsAgainst ? "text-destructive" : "text-muted-foreground")}>{againstVotes}</span>
-                    <ThumbsDown className={cn("h-3.5 w-3.5", userIsAgainst ? "text-destructive" : "text-muted-foreground")}/>
-                  </div>
-                  <div className="px-2 py-1 rounded-lg bg-secondary">
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        userIsFor && "text-success",
-                        userIsAgainst && "text-destructive",
-                        !userVote && "text-muted-foreground"
-                      )}
-                    >
-                      {score > 0 ? `+${score}` : score}
-                    </span>
-                  </div>
+
+                  {/* Owner Selection (Icon Fallback) */}
+                  {showIcon && onSelect && (
+                    <>
+                        <div className="h-8 w-px bg-border/50" />
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="hover:text-yellow-500 hover:bg-yellow-500/10">
+                                    <Trophy className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Aktivität auswählen?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Möchtest du "{activity.title}" als finale Aktivität festlegen?
+                                        Das Event wechselt damit in die Terminfindungs-Phase.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                    <AlertDialogAction onClick={onSelect}>Bestätigen</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </>
+                  )}
                 </div>
               </div>
+
+              {/* Prominent Owner Selection Button */}
+              {showProminentButton && onSelect && (
+                <div className="mt-4 pt-4 border-t border-border/50">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button className="w-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
+                                <Trophy className="mr-2 h-4 w-4" />
+                                Diese Aktivität auswählen
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Aktivität auswählen?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Möchtest du "{activity.title}" als finale Aktivität festlegen?
+                                    Das Event wechselt damit in die Terminfindungs-Phase.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                <AlertDialogAction onClick={onSelect}>Bestätigen</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

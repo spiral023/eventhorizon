@@ -19,6 +19,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,6 +48,7 @@ interface SchedulingPhaseProps {
 export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdate, onFinalize }) => {
   const [sortByScore, setSortByScore] = useState(true);
   const [isFinalizeOpen, setIsFinalizeOpen] = useState(false);
+  const [dateToConfirm, setDateToConfirm] = useState<string | null>(null);
   const { user } = useAuthStore();
   const isOwner = user?.id === event.createdByUserId;
 
@@ -135,44 +146,64 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
         
         <div className="flex gap-2 w-full sm:w-auto">
             {isOwner && event.dateOptions.length > 0 && (
-                <Dialog open={isFinalizeOpen} onOpenChange={setIsFinalizeOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="secondary" className="w-full sm:w-auto">
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Termin fixieren
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Finalen Termin wählen</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
-                            {sortedDates.map((opt) => (
-                                <div key={opt.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
-                                    <div>
-                                        <div className="font-medium">
-                                            {format(new Date(opt.date), "EEE, d. MMM", { locale: de })}
+                <>
+                    <Dialog open={isFinalizeOpen} onOpenChange={setIsFinalizeOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="secondary" className="w-full sm:w-auto">
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Termin fixieren
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Finalen Termin wählen</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
+                                {sortedDates.map((opt) => (
+                                    <div key={opt.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                                        <div>
+                                            <div className="font-medium">
+                                                {format(new Date(opt.date), "EEE, d. MMM", { locale: de })}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {getScore(opt)} Punkte
+                                            </div>
                                         </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {getScore(opt)} Punkte
-                                        </div>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={() => setDateToConfirm(opt.id)}
+                                        >
+                                            Wählen
+                                        </Button>
                                     </div>
-                                    <Button 
-                                        size="sm" 
-                                        onClick={() => {
-                                            if(confirm("Diesen Termin final setzen? Das Event wechselt dann in die Info-Phase.")) {
-                                                onFinalize(opt.id);
-                                                setIsFinalizeOpen(false);
-                                            }
-                                        }}
-                                    >
-                                        Wählen
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                                ))}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+
+                    <AlertDialog open={!!dateToConfirm} onOpenChange={(open) => !open && setDateToConfirm(null)}>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Termin fixieren?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Möchtest du diesen Termin final setzen? Das Event wechselt dann in die Info-Phase und alle Teilnehmer werden benachrichtigt.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => {
+                                    if (dateToConfirm) {
+                                        onFinalize(dateToConfirm);
+                                        setDateToConfirm(null);
+                                        setIsFinalizeOpen(false);
+                                    }
+                                }}>
+                                    Bestätigen
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </>
             )}
             <div className="w-full sm:w-auto">
                 <DateProposal event={event} onUpdate={onUpdate} />

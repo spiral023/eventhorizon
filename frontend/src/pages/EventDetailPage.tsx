@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -256,21 +257,7 @@ export default function EventDetailPage() {
 
       {/* Phase Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-secondary/50 rounded-xl p-1">
-          <TabsTrigger value="proposal" className="rounded-lg" disabled={!isPhaseEnabled("proposal")}>
-            Vorschläge
-          </TabsTrigger>
-          <TabsTrigger value="voting" className="rounded-lg" disabled={!isPhaseEnabled("voting")}>
-            Abstimmung
-          </TabsTrigger>
-          <TabsTrigger value="scheduling" className="rounded-lg" disabled={!isPhaseEnabled("scheduling")}>
-            Terminfindung
-          </TabsTrigger>
-          <TabsTrigger value="info" className="rounded-lg" disabled={!isPhaseEnabled("info")}>
-            Event-Info
-          </TabsTrigger>
-        </TabsList>
-
+        
         {/* Proposal Phase */}
         <TabsContent value="proposal" className="space-y-4">
           <Card className="bg-card/60 border-border/50 rounded-2xl">
@@ -338,47 +325,36 @@ export default function EventDetailPage() {
             Stimme über die Aktivitäten ab – die beliebtesten rücken nach oben.
           </p>
           {sortedActivities.length > 0 ? (
-            sortedActivities.map((activity, index) => (
-              <div
-                key={activity.id}
-                className="animate-fade-in-up"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <VotingCard
-                  activity={activity}
-                  votes={event.activityVotes.find((v) => v.activityId === activity.id)}
-                  currentUserId={currentUserId}
-                  onVote={handleVote}
-                  isLoading={actionLoading}
-                  disabled={event.phase !== "voting"} 
-                />
-              </div>
-            ))
+            <AnimatePresence>
+              {sortedActivities.map((activity, index) => (
+                <motion.div
+                  key={activity.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <VotingCard
+                    activity={activity}
+                    votes={event.activityVotes.find((v) => v.activityId === activity.id)}
+                    currentUserId={currentUserId}
+                    onVote={handleVote}
+                    isLoading={actionLoading}
+                    disabled={event.phase !== "voting"}
+                    isOwner={isCreator}
+                    onSelect={() => handleSelectActivity(activity.id)}
+                    rank={index + 1}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           ) : (
             <EmptyState
               icon={Users}
               title="Keine Aktivitäten zur Abstimmung"
               description="Alle Aktivitäten wurden ausgeschlossen oder es wurden noch keine vorgeschlagen."
             />
-          )}
-          {canAdvance && sortedActivities.length > 0 && event.phase === "voting" && (
-            <Card className="bg-primary/10 border-primary/20 rounded-2xl">
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground mb-3">
-                  Gewinner auswählen und zur Terminfindung übergehen:
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleSelectActivity(sortedActivities[0].id)}
-                    className="flex-1 rounded-xl"
-                    disabled={actionLoading}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    "{sortedActivities[0].title}" auswählen
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           )}
         </TabsContent>
 
@@ -430,7 +406,7 @@ export default function EventDetailPage() {
               <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Event steht fest!</h3>
               <p className="text-muted-foreground">
-                Alle Details auf einen Blick
+                Hier sind die finalen Details.
               </p>
             </CardContent>
           </Card>
@@ -438,74 +414,99 @@ export default function EventDetailPage() {
           <div className="grid gap-6 md:grid-cols-2">
             {/* Activity */}
             {chosenActivity && (
-              <Card className="bg-card/60 border-border/50 rounded-2xl">
+              <Card className="rounded-2xl overflow-hidden h-full flex flex-col">
+                <div className="h-48 w-full relative">
+                  <img 
+                    src={chosenActivity.imageUrl} 
+                    alt={chosenActivity.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <Badge variant="secondary" className="backdrop-blur-md bg-background/80">
+                      {CategoryLabels[chosenActivity.category]}
+                    </Badge>
+                  </div>
+                </div>
                 <CardHeader>
-                  <CardTitle className="text-lg">Aktivität</CardTitle>
+                  <CardTitle className="text-xl">{chosenActivity.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex gap-4">
-                    <img 
-                      src={chosenActivity.imageUrl} 
-                      alt={chosenActivity.title}
-                      className="w-24 h-24 rounded-xl object-cover"
-                    />
-                    <div>
-                      <h4 className="font-semibold text-lg">{chosenActivity.title}</h4>
-                      <p className="text-sm text-muted-foreground">{chosenActivity.shortDescription}</p>
-                      <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                        <span>{chosenActivity.duration}</span>
-                        <span>·</span>
-                        <span>{chosenActivity.estPricePerPerson}€ p.P.</span>
-                      </div>
+                <CardContent className="space-y-4 flex-1">
+                  <p className="text-muted-foreground">{chosenActivity.shortDescription}</p>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Euro className="h-4 w-4" />
+                      <span>~{chosenActivity.estPricePerPerson}€ p.P.</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>{chosenActivity.duration}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>{RegionLabels[chosenActivity.locationRegion]} {chosenActivity.locationCity && `• ${chosenActivity.locationCity}`}</span>
                     </div>
                   </div>
+
+                  {chosenActivity.website && (
+                    <Button variant="outline" className="w-full mt-4" asChild>
+                      <a href={chosenActivity.website} target="_blank" rel="noopener noreferrer">
+                        Webseite besuchen
+                      </a>
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )}
 
             {/* Date */}
             {finalDateOption && (
-              <Card className="bg-card/60 border-border/50 rounded-2xl">
+              <Card className="rounded-2xl h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle className="text-lg">Termin</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Termin
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 flex-col items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                      <span className="text-2xl font-bold">
-                        {new Date(finalDateOption.date).getDate()}
-                      </span>
-                      <span className="text-xs">
-                        {new Date(finalDateOption.date).toLocaleDateString("de-DE", { month: "short" })}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium">
-                        {new Date(finalDateOption.date).toLocaleDateString("de-DE", { 
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric"
-                        })}
-                      </p>
-                      {finalDateOption.startTime && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          {finalDateOption.startTime}
-                          {finalDateOption.endTime && ` – ${finalDateOption.endTime}`} Uhr
-                        </p>
-                      )}
-                    </div>
+                <CardContent className="flex-1 flex flex-col justify-center items-center text-center p-8">
+                  <div className="mb-4 p-4 bg-primary/10 rounded-2xl text-primary">
+                    <span className="text-4xl font-bold block">
+                      {new Date(finalDateOption.date).getDate()}
+                    </span>
+                    <span className="text-lg uppercase font-medium tracking-wide">
+                      {new Date(finalDateOption.date).toLocaleDateString("de-DE", { month: "short" })}
+                    </span>
                   </div>
+                  
+                  <h4 className="text-2xl font-semibold mb-2">
+                    {new Date(finalDateOption.date).toLocaleDateString("de-DE", { weekday: "long" })}
+                  </h4>
+                  
+                  <p className="text-muted-foreground text-lg">
+                    {new Date(finalDateOption.date).toLocaleDateString("de-DE", { year: "numeric" })}
+                  </p>
+
+                  {(finalDateOption.startTime) && (
+                    <div className="mt-6 flex items-center gap-2 px-4 py-2 bg-secondary rounded-full">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">
+                        {finalDateOption.startTime}
+                        {finalDateOption.endTime && ` – ${finalDateOption.endTime}`} Uhr
+                      </span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
           </div>
 
           {/* Participants */}
-          <Card className="bg-card/60 border-border/50 rounded-2xl">
+          <Card className="rounded-2xl">
             <CardHeader>
-              <CardTitle className="text-lg">Teilnehmer ({event.participants.length})</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Teilnehmer ({event.participants.length})
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
@@ -513,16 +514,19 @@ export default function EventDetailPage() {
                   <div
                     key={participant.userId}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-xl",
-                      participant.dateResponse === "yes" && "bg-success/10",
-                      participant.dateResponse === "maybe" && "bg-warning/10",
-                      participant.dateResponse === "no" && "bg-destructive/10",
-                      !participant.dateResponse && "bg-secondary/50"
+                      "flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors",
+                      participant.dateResponse === "yes" 
+                        ? "bg-success/5 border-success/20 text-success-foreground"
+                        : participant.dateResponse === "maybe"
+                        ? "bg-warning/5 border-warning/20 text-warning-foreground"
+                        : participant.dateResponse === "no"
+                        ? "bg-destructive/5 border-destructive/20 text-muted-foreground opacity-50 line-through decoration-destructive/50"
+                        : "bg-secondary/50 border-transparent text-muted-foreground"
                     )}
                   >
                     <span className="text-sm font-medium">{participant.userName}</span>
                     {participant.isOrganizer && (
-                      <Badge variant="outline" className="text-xs">Organisator</Badge>
+                      <Badge variant="outline" className="text-[10px] h-5">Org</Badge>
                     )}
                   </div>
                 ))}

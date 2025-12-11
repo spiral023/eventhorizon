@@ -219,3 +219,5 @@ class Event(EventBase):
     participants: List[EventParticipant] = [] 
     activity_votes: List["Vote"] = Field(default=[], validation_alias="votes", serialization_alias="activity_votes")
     date_options: List[DateOption] = []
+    chosen_activity_id: Optional[UUID] = None
+    final_date_option_id: Optional[UUID] = None
