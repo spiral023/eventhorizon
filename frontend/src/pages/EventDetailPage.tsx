@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun, Link2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { EmailActions } from "@/components/events/EmailActions";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
 import { PhaseComments } from "@/components/events/PhaseComments";
+import { ShareEventDialog } from "@/components/shared/ShareEventDialog";
 import { 
   getEventById, 
   getActivities, 
@@ -178,6 +179,15 @@ export default function EventDetailPage() {
     ? event.dateOptions.find((d) => d.id === event.finalDateOptionId)
     : null;
 
+  const formatDuration = (activity: Activity | null) => {
+    if (!activity) return "–";
+    if (activity.duration) return activity.duration;
+    if (typeof activity.typicalDurationHours === "number") {
+      return `${activity.typicalDurationHours}h`;
+    }
+    return "–";
+  };
+
   const sortedActivities = [...nonExcludedProposedActivities].sort((a, b) => {
     const votesA = event.activityVotes.find((v) => v.activityId === a.id);
     const votesB = event.activityVotes.find((v) => v.activityId === b.id);
@@ -241,6 +251,19 @@ export default function EventDetailPage() {
             <Users className="h-4 w-4" />
             <span>{event.participants.length} Teilnehmer</span>
           </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-wrap gap-2">
+          <ShareEventDialog
+            event={event}
+            trigger={
+              <Button variant="outline" size="sm" className="gap-2 rounded-xl">
+                <Link2 className="h-4 w-4" />
+                Event teilen
+              </Button>
+            }
+          />
         </div>
       </div>
 
@@ -456,11 +479,15 @@ export default function EventDetailPage() {
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Euro className="h-4 w-4" />
-                      <span>~{chosenActivity.estPricePerPerson}€ p.P.</span>
+                      <span>
+                        {chosenActivity.estPricePerPerson !== undefined
+                          ? `~${chosenActivity.estPricePerPerson}€ p.P.`
+                          : "Preis auf Anfrage"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      <span>{chosenActivity.duration}</span>
+                      <span>{formatDuration(chosenActivity)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">
                       <MapPin className="h-4 w-4" />

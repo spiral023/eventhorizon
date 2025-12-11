@@ -253,7 +253,7 @@ class EventParticipant(Base):
     date_response = Column(SQLEnum(DateResponseType), nullable=True)
     
     event = relationship("Event", back_populates="participants")
-    user = relationship("User", back_populates="event_participations")
+    user = relationship("User", back_populates="event_participations", lazy="selectin")
 
 class Vote(Base):
     __tablename__ = "vote"

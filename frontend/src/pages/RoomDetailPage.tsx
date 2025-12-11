@@ -172,9 +172,6 @@ export default function RoomDetailPage() {
           <TabsTrigger value="past" className="rounded-lg flex-1 min-w-[160px]">
             Vergangene Events ({pastEvents.length})
           </TabsTrigger>
-          <TabsTrigger value="members" className="rounded-lg flex-1 min-w-[160px]">
-            Mitglieder
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-4">
@@ -259,45 +256,50 @@ export default function RoomDetailPage() {
             ))
           )}
         </TabsContent>
+      </Tabs>
 
-        <TabsContent value="members">
-          {members.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="Keine Mitglieder"
-              description="Lade Mitglieder ein, um gemeinsam Events zu planen."
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {members.map((member, index) => (
-                <div
-                  key={member.id}
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-card/60 border border-border/50 animate-fade-in-up hover:bg-card/80 transition-colors"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={member.avatarUrl} />
-                    <AvatarFallback className="text-lg font-semibold">
-                      {member.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{member.name}</p>
-                    <p className="text-sm text-muted-foreground truncate">
-                      @{member.username}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
-                        {member.role}
-                      </span>
-                    </div>
+      {/* Members list (moved outside tabs for mobile friendliness) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">Mitglieder</h2>
+          <span className="text-sm text-muted-foreground">{members.length}</span>
+        </div>
+        {members.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="Keine Mitglieder"
+            description="Lade Mitglieder ein, um gemeinsam Events zu planen."
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {members.map((member, index) => (
+              <div
+                key={member.id}
+                className="flex items-center gap-3 p-4 rounded-2xl bg-card/60 border border-border/50 animate-fade-in-up hover:bg-card/80 transition-colors"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={member.avatarUrl} />
+                  <AvatarFallback className="text-lg font-semibold">
+                    {member.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{member.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    @{member.username}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+                      {member.role}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <AlertDialog open={!!deleteDialogEvent} onOpenChange={(open) => !open && setDeleteDialogEvent(null)}>
         <AlertDialogContent>
