@@ -1,4 +1,4 @@
-import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats, EventComment, ActivityComment } from "@/types/domain";
+import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats, EventComment, ActivityComment, BudgetType } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 
@@ -225,12 +225,17 @@ let events: Event[] = [
     budgetAmount: 50,
     participantCountEstimate: 12,
     locationRegion: "OOE",
+    avatarUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&h=400&fit=crop",
+    unreadMessageCount: 4,
     proposedActivityIds: ["act-1"],
     excludedActivityIds: [],
     activityVotes: [],
     dateOptions: [],
     participants: [
       { userId: "user-current", userName: "Max Mustermann", isOrganizer: true, hasVoted: true },
+      { userId: "user-2", userName: "Anna Schmidt", isOrganizer: false, hasVoted: false },
+      { userId: "user-3", userName: "Tom Weber", isOrganizer: false, hasVoted: true },
+      { userId: "user-4", userName: "Lisa Novak", isOrganizer: false, hasVoted: false },
     ],
     createdAt: "2024-11-01T09:00:00Z",
     // Keep in sync with mock currentUser.id defined below to ensure owner checks work
@@ -969,6 +974,10 @@ function mapEventFromApi(apiEvent: any): Event {
     budgetAmount: apiEvent.budget_amount || apiEvent.budgetAmount,
     participantCountEstimate: apiEvent.participant_count_estimate || apiEvent.participantCountEstimate,
     locationRegion: apiEvent.location_region || apiEvent.locationRegion,
+    avatarUrl: apiEvent.avatar_url || apiEvent.avatarUrl,
+    inviteSentAt: apiEvent.invite_sent_at || apiEvent.inviteSentAt,
+    lastReminderAt: apiEvent.last_reminder_at || apiEvent.lastReminderAt,
+    unreadMessageCount: apiEvent.unread_message_count || apiEvent.unreadMessageCount,
 
     proposedActivityIds: apiEvent.proposed_activity_ids || apiEvent.proposedActivityIds,
     excludedActivityIds: apiEvent.excluded_activity_ids || apiEvent.excludedActivityIds || [],
@@ -1109,6 +1118,124 @@ export async function createEvent(roomId: string, input: CreateEventInput & { ti
     return { data: mapEventFromApi(result.data) };
   }
   return { data: null as any, error: result.error };
+}
+
+export async function updateEvent(eventId: string, updates: { name?: string; description?: string; budgetType?: BudgetType; budgetAmount?: number; avatarUrl?: string; inviteSentAt?: string; lastReminderAt?: string; unreadMessageCount?: number }): Promise<ApiResult<Event | null>> {
+  if (USE_MOCKS) {
+    await delay(200);
+    const event = events.find((e) => e.id === eventId);
+    if (!event) {
+      return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+    }
+    if (event.createdByUserId !== currentUser.id) {
+      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann das Event bearbeiten" } };
+    }
+    if (updates.name !== undefined) event.name = updates.name;
+    if (updates.description !== undefined) event.description = updates.description;
+    if (updates.budgetType !== undefined) event.budgetType = updates.budgetType;
+    if (updates.budgetAmount !== undefined) event.budgetAmount = updates.budgetAmount;
+    if (updates.avatarUrl !== undefined) event.avatarUrl = updates.avatarUrl;
+    if (updates.inviteSentAt !== undefined) event.inviteSentAt = updates.inviteSentAt;
+    if (updates.lastReminderAt !== undefined) event.lastReminderAt = updates.lastReminderAt;
+    if (updates.unreadMessageCount !== undefined) event.unreadMessageCount = updates.unreadMessageCount;
+    event.updatedAt = new Date().toISOString();
+    return { data: event };
+  }
+
+  const payload: Record<string, any> = {};
+  if (updates.name !== undefined) payload.name = updates.name;
+  if (updates.description !== undefined) payload.description = updates.description;
+  if (updates.budgetType !== undefined) payload.budget_type = updates.budgetType;
+  if (updates.budgetAmount !== undefined) payload.budget_amount = updates.budgetAmount;
+  if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
+  if (updates.inviteSentAt !== undefined) payload.invite_sent_at = updates.inviteSentAt;
+  if (updates.lastReminderAt !== undefined) payload.last_reminder_at = updates.lastReminderAt;
+  if (updates.unreadMessageCount !== undefined) payload.unread_message_count = updates.unreadMessageCount;
+
+  const result = await request<any>(`/events/${eventId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
+}
+
+export async function getEventAvatarUploadUrl(eventId: string, contentType: string, fileSize: number): Promise<ApiResult<AvatarUploadInfo>> {
+  if (USE_MOCKS) {
+    await delay(50);
+    return {
+      data: {
+        uploadUrl: "https://example.com/mock-upload",
+        publicUrl: `https://picsum.photos/seed/event-${eventId}-${Date.now()}/400`,
+        uploadKey: `events/mock/${eventId}/orig.png`,
+      },
+    };
+  }
+  const result = await request<any>(`/events/${eventId}/avatar/upload-url`, {
+    method: "POST",
+    body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
+  });
+  if (result.data) {
+    return {
+      data: {
+        uploadUrl: (result.data as any).upload_url ?? (result.data as any).uploadUrl,
+        publicUrl: (result.data as any).public_url ?? (result.data as any).publicUrl,
+        uploadKey: (result.data as any).upload_key ?? (result.data as any).uploadKey,
+      },
+    };
+  }
+  return { data: null as any, error: result.error };
+}
+
+export async function processEventAvatar(eventId: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Event | null>> {
+  if (USE_MOCKS) {
+    await delay(120);
+    const url = `https://picsum.photos/seed/event-${eventId}-${Date.now()}/400/240`;
+    const idx = events.findIndex((e) => e.id === eventId);
+    if (idx !== -1) {
+      events[idx].avatarUrl = url;
+      events[idx].updatedAt = new Date().toISOString();
+      return { data: events[idx] };
+    }
+    return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+  }
+
+  const result = await request<any>(`/events/${eventId}/avatar/process`, {
+    method: "POST",
+    body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
+  });
+  if (result.data) {
+    return { data: mapEventFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
+}
+
+export async function uploadEventAvatar(eventId: string, file: File): Promise<ApiResult<Event | null>> {
+  const presign = await getEventAvatarUploadUrl(eventId, file.type, file.size);
+  if (presign.error || !presign.data) {
+    return { data: null, error: presign.error };
+  }
+
+  const putRes = await fetch(presign.data.uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type,
+    },
+    body: file,
+  });
+
+  if (!putRes.ok) {
+    return { data: null, error: { code: String(putRes.status), message: "Upload fehlgeschlagen" } };
+  }
+
+  if (!presign.data.uploadKey) {
+    return await updateEvent(eventId, { avatarUrl: presign.data.publicUrl });
+  }
+
+  return await processEventAvatar(eventId, presign.data.uploadKey, "webp");
 }
 
 export async function updateEventPhase(eventId: string, newPhase: EventPhase): Promise<ApiResult<Event | null>> {
@@ -1633,11 +1760,45 @@ export async function getActivitySuggestionsForEvent(eventId: string): Promise<A
 }
 
 export async function sendEventInvites(eventId: string): Promise<ApiResult<{ sent: number }>> {
-  await delay(800);
-  return { data: { sent: 5 } };
+  if (USE_MOCKS) {
+    await delay(800);
+    const event = events.find((e) => e.id === eventId);
+    if (event) {
+      event.inviteSentAt = event.inviteSentAt || new Date().toISOString();
+      event.updatedAt = new Date().toISOString();
+      return { data: { sent: event.participants.length || 0 } };
+    }
+    return { data: { sent: 0 }, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+  }
+
+  const result = await request<any>(`/ai/events/${eventId}/invites`, {
+    method: "POST",
+  });
+  if (result.data) {
+    return { data: { sent: (result.data as any).sent ?? (result.data as any).count ?? 0 } };
+  }
+  return { data: { sent: 0 }, error: result.error };
 }
 
-export async function sendVotingReminder(eventId: string): Promise<ApiResult<{ sent: number }>> {
-  await delay(600);
-  return { data: { sent: 3 } };
+export async function sendVotingReminder(eventId: string, userId?: string): Promise<ApiResult<{ sent: number }>> {
+  if (USE_MOCKS) {
+    await delay(600);
+    const event = events.find((e) => e.id === eventId);
+    if (event) {
+      event.lastReminderAt = new Date().toISOString();
+      const targetCount = userId ? 1 : (event.participants.filter((p) => !p.hasVoted).length || 0);
+      return { data: { sent: targetCount } };
+    }
+    return { data: { sent: 0 }, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+  }
+
+  const body = userId ? { user_id: userId } : undefined;
+  const result = await request<any>(`/ai/events/${eventId}/voting-reminders`, {
+    method: "POST",
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (result.data) {
+    return { data: { sent: (result.data as any).sent ?? (result.data as any).count ?? 0 } };
+  }
+  return { data: { sent: 0 }, error: result.error };
 }

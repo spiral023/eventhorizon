@@ -173,6 +173,10 @@ export const EventSchema = z.object({
   budgetAmount: z.number(),
   participantCountEstimate: z.number().optional(),
   locationRegion: RegionSchema,
+  avatarUrl: z.string().optional(),
+  inviteSentAt: z.string().optional(),
+  lastReminderAt: z.string().optional(),
+  unreadMessageCount: z.number().optional(),
   // Voting
   proposedActivityIds: z.array(z.string()),
   excludedActivityIds: z.array(z.string()).optional(),

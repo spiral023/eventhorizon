@@ -419,7 +419,11 @@ async def send_voting_reminders(
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Nur Event-Ersteller können Erinnerungen senden")
 
-    # Calculate days until deadline
+        # Only allow reminders in voting or scheduling phase
+    if event.phase not in ("voting", "scheduling"):
+        raise HTTPException(status_code=400, detail="Voting-Reminder nur in Voting- oder Terminfindungs-Phase erlaubt")
+
+# Calculate days until deadline
     if not event.voting_deadline:
         raise HTTPException(status_code=400, detail="Event hat keine Voting-Deadline")
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun, Link2 } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,15 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventPhaseHeader } from "@/components/events/EventPhaseHeader";
 import { VotingCard } from "@/components/events/VotingCard";
-import { EmailActions } from "@/components/events/EmailActions";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
 import { PhaseComments } from "@/components/events/PhaseComments";
-import { ShareEventDialog } from "@/components/shared/ShareEventDialog";
-import { 
-  getEventById, 
-  getActivities, 
-  voteOnActivity, 
+import { EventActionsPanel } from "@/components/events/EventActionsPanel";
+import {
+  getEventById,
+  getActivities,
+  voteOnActivity,
   updateEventPhase,
   selectWinningActivity,
   finalizeDateOption,
@@ -32,7 +31,7 @@ import {
   PhaseLabels
 } from "@/types/domain";
 import { useAuthStore } from "@/stores/authStore";
-import { getNextPhases, getPhaseIndex } from "@/utils/phaseStateMachine";
+import { getNextPhases } from "@/utils/phaseStateMachine";
 import { cn } from "@/lib/utils";
 
 export default function EventDetailPage() {
@@ -49,7 +48,7 @@ export default function EventDetailPage() {
 
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = currentUser?.id ?? "";
-  const isCreator = event?.createdByUserId && currentUserId === event.createdByUserId;
+  const isCreator = !!(event?.createdByUserId && currentUserId === event.createdByUserId);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -210,6 +209,9 @@ export default function EventDetailPage() {
     if (currentIdx === -1) return true; // Fallback
     return targetIdx <= currentIdx;
   };
+  const handleEventUpdated = (updatedEvent: Event) => setEvent(updatedEvent);
+  const outstandingVotes = event.participants.filter((p) => !p.hasVoted).length;
+  const votedCount = event.participants.length - outstandingVotes;
 
   return (
     <div className="space-y-5">
@@ -225,46 +227,107 @@ export default function EventDetailPage() {
       </Button>
 
       {/* Event Header */}
-      <div className="space-y-3">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
-          {event.description && (
-            <p className="text-muted-foreground mt-1">{event.description}</p>
-          )}
+      <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-background via-background to-primary/5 p-5 sm:p-6 shadow-sm space-y-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="relative">
+              <div className="h-16 w-16 overflow-hidden rounded-2xl border border-border/60 bg-secondary/40">
+                {event.avatarUrl ? (
+                  <img src={event.avatarUrl} alt={event.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                    <Users className="h-6 w-6" />
+                  </div>
+                )}
+              </div>
+              {isCreator && (
+                <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-sm">
+                  Owner
+                </span>
+              )}
+            </div>
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="rounded-full">
+                  {PhaseLabels[event.phase]}
+                </Badge>
+                {isCreator && (
+                  <Badge variant="outline" className="rounded-full">
+                    Du verwaltest dieses Event
+                  </Badge>
+                )}
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight leading-tight">{event.name}</h1>
+              {event.description && (
+                <p className="text-muted-foreground max-w-3xl">{event.description}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Teilnehmer</p>
+                <p className="text-lg font-semibold leading-tight">{event.participants.length}</p>
+              </div>
+            </div>
+            <div className="h-10 w-px bg-border/70" />
+            <div>
+              <p className="text-xs text-muted-foreground">Abgestimmt</p>
+              <p className="text-lg font-semibold leading-tight">
+                {votedCount}/{event.participants.length}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Meta Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
-            <span>{formatTimeWindow(event.timeWindow)}</span>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Calendar className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Zeitraum</p>
+              <p className="text-sm font-semibold">{formatTimeWindow(event.timeWindow)}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-4 w-4" />
-            <span>{RegionLabels[event.locationRegion]}</span>
+          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Region</p>
+              <p className="text-sm font-semibold">{RegionLabels[event.locationRegion]}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Euro className="h-4 w-4" />
-            <span>{formatBudget(event.budgetAmount, event.budgetType)}</span>
+          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Euro className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Budget</p>
+              <p className="text-sm font-semibold">{formatBudget(event.budgetAmount, event.budgetType)}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" />
-            <span>{event.participants.length} Teilnehmer</span>
+          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Status</p>
+              <p className="text-sm font-semibold">
+                {outstandingVotes > 0 ? `${outstandingVotes} offen` : "Alle abgestimmt"}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-2">
-          <ShareEventDialog
-            event={event}
-            trigger={
-              <Button variant="outline" size="sm" className="gap-2 rounded-xl">
-                <Link2 className="h-4 w-4" />
-                Event teilen
-              </Button>
-            }
-          />
-        </div>
+        <EventActionsPanel
+          event={event}
+          isCreator={!!isCreator}
+          activePhase={activeTab as EventPhase}
+          onEventUpdated={handleEventUpdated}
+        />
       </div>
 
       {/* Phase Header */}
@@ -276,13 +339,6 @@ export default function EventDetailPage() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        {/* Communication & Actions */}
-        <div className="grid gap-6">
-          <EmailActions eventId={event.id}>
-            <PhaseComments eventId={event.id} phase={activeTab as EventPhase} />
-          </EmailActions>
-        </div>
-
         <TabsList className="w-full justify-start gap-2 overflow-x-auto rounded-2xl bg-muted/30 p-1">
           {phaseOrder.map((phase) => (
             <TabsTrigger

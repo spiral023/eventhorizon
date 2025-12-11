@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID, uuid4
 from datetime import datetime
+from pydantic import BaseModel
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
@@ -23,6 +24,10 @@ from app.services.room_avatar_service import (
     generate_room_avatar_upload_url,
     process_room_avatar_upload,
 )
+from app.services.event_avatar_service import (
+    generate_event_avatar_upload_url,
+    process_event_avatar_upload,
+)
 
 router = APIRouter()
 
@@ -31,6 +36,14 @@ router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(ai.router)
 router.include_router(emails.router)
+
+
+class EventUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    budget_type: Optional[str] = None
+    budget_amount: Optional[float] = None
+    avatar_url: Optional[str] = None
 
 # --- Activity Comments ---
 @router.get("/activities/{activity_id}/comments", response_model=List[ActivityCommentSchema])
@@ -491,6 +504,54 @@ async def process_room_avatar(
     await db.refresh(room)
     return room
 
+
+@router.post("/events/{event_id}/avatar/upload-url", response_model=AvatarUploadResponse)
+async def create_event_avatar_upload_url(
+    event_id: UUID,
+    payload: AvatarUploadRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event creator can upload an event image")
+
+    upload_url, public_url, upload_key = generate_event_avatar_upload_url(
+        event_id=event_id,
+        content_type=payload.content_type,
+        file_size=payload.file_size,
+    )
+    return AvatarUploadResponse(upload_url=upload_url, public_url=public_url, upload_key=upload_key)
+
+
+@router.post("/events/{event_id}/avatar/process", response_model=EventSchema)
+async def process_event_avatar(
+    event_id: UUID,
+    payload: AvatarProcessRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event creator can upload an event image")
+
+    processed_url = process_event_avatar_upload(
+        event_id=event_id,
+        upload_key=payload.upload_key,
+        desired_format=payload.output_format,
+    )
+    event.avatar_url = processed_url
+    db.add(event)
+    await db.commit()
+    await db.refresh(event)
+    return event
+
 @router.get("/rooms/{room_id}", response_model=RoomSchema)
 async def get_room(room_id: UUID, db: AsyncSession = Depends(get_db)):
     from app.models.domain import RoomMember
@@ -697,6 +758,31 @@ async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
+    return enhance_event_full(event)
+
+
+@router.patch("/events/{event_id}", response_model=EventSchema)
+async def update_event(
+    event_id: UUID,
+    payload: EventUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.created_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event creator can update this event")
+
+    data = payload.model_dump(exclude_none=True)
+    for field, value in data.items():
+        setattr(event, field, value)
+
+    event.updated_at = datetime.utcnow()
+    db.add(event)
+    await db.commit()
+    await db.refresh(event)
     return enhance_event_full(event)
 
 @router.delete("/events/{event_id}/proposed-activities/{activity_id}", response_model=EventSchema)
