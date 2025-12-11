@@ -11,6 +11,7 @@ import { VotingCard } from "@/components/events/VotingCard";
 import { EmailActions } from "@/components/events/EmailActions";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
+import { PhaseComments } from "@/components/events/PhaseComments";
 import { 
   getEventById, 
   getActivities, 
@@ -242,6 +243,12 @@ export default function EventDetailPage() {
         </div>
       </div>
 
+import { PhaseComments } from "@/components/events/PhaseComments";
+
+// ... existing imports ...
+
+// ... inside render ...
+
       {/* Phase Header */}
       <EventPhaseHeader
         currentPhase={event.phase}
@@ -250,9 +257,11 @@ export default function EventDetailPage() {
         onAdvance={handleAdvancePhase}
       />
 
-      {/* Admin Actions */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <EmailActions eventId={event.id} className="md:col-span-3" />
+      {/* Communication & Actions */}
+      <div className="grid gap-6">
+        <EmailActions eventId={event.id}>
+           <PhaseComments eventId={event.id} phase={activeTab as EventPhase} />
+        </EmailActions>
       </div>
 
       {/* Phase Content */}

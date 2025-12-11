@@ -287,3 +287,16 @@ class DateResponse(Base):
     
     date_option = relationship("DateOption", back_populates="responses")
     user = relationship("User")
+
+class EventComment(Base):
+    __tablename__ = "event_comment"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    event_id = Column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    phase = Column(SQLEnum(EventPhase), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    event = relationship("Event")

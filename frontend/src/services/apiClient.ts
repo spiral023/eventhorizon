@@ -1,4 +1,4 @@
-import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats } from "@/types/domain";
+import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats, EventComment } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 
@@ -1251,6 +1251,67 @@ async function mockLogout(): Promise<ApiResult<void>> {
   await delay(200);
   isLoggedIn = false;
   return { data: undefined };
+}
+
+// --- Comments ---
+
+function mapCommentFromApi(apiComment: any): EventComment {
+  return {
+    id: apiComment.id,
+    eventId: apiComment.event_id,
+    userId: apiComment.user_id,
+    content: apiComment.content,
+    phase: apiComment.phase,
+    createdAt: apiComment.created_at,
+    userName: apiComment.user_name,
+    userAvatar: apiComment.user_avatar,
+  } as EventComment;
+}
+
+export async function getEventComments(eventId: string, phase?: EventPhase, skip = 0, limit = 50): Promise<ApiResult<EventComment[]>> {
+  if (USE_MOCKS) {
+    await delay(300);
+    // Mock comments
+    const mockComments: EventComment[] = [
+      {
+        id: "c1", eventId, userId: "u2", content: "Super Idee!", phase: "proposal", createdAt: new Date().toISOString(), userName: "Anna", userAvatar: ""
+      },
+      {
+        id: "c2", eventId, userId: "u3", content: "Bin dabei.", phase: "voting", createdAt: new Date().toISOString(), userName: "Tom", userAvatar: ""
+      }
+    ].filter(c => !phase || c.phase === phase);
+    return { data: mockComments };
+  }
+  
+  let url = `/events/${eventId}/comments?skip=${skip}&limit=${limit}`;
+  if (phase) url += `&phase=${phase}`;
+  
+  const result = await request<any[]>(url);
+  if (result.data) {
+    return { data: result.data.map(mapCommentFromApi) };
+  }
+  return { data: [], error: result.error };
+}
+
+export async function createEventComment(eventId: string, content: string, phase: EventPhase): Promise<ApiResult<EventComment>> {
+  if (USE_MOCKS) {
+    await delay(300);
+    return { 
+      data: {
+        id: `c-${Date.now()}`, eventId, userId: currentUser.id, content, phase, createdAt: new Date().toISOString(), userName: currentUser.name, userAvatar: currentUser.avatarUrl
+      }
+    };
+  }
+  
+  const result = await request<any>(`/events/${eventId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content, phase }),
+  });
+  
+  if (result.data) {
+    return { data: mapCommentFromApi(result.data) };
+  }
+  return { data: null as any, error: result.error };
 }
 
 // --- AI / Extras ---

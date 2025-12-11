@@ -8,9 +8,10 @@ import { sendEventInvites, sendVotingReminder } from "@/services/apiClient";
 interface EmailActionsProps {
   eventId: string;
   className?: string;
+  children?: React.ReactNode;
 }
 
-export function EmailActions({ eventId, className }: EmailActionsProps) {
+export function EmailActions({ eventId, className, children }: EmailActionsProps) {
   const [invitesLoading, setInvitesLoading] = useState(false);
   const [reminderLoading, setReminderLoading] = useState(false);
 
@@ -61,46 +62,57 @@ export function EmailActions({ eventId, className }: EmailActionsProps) {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Mail className="h-5 w-5 text-primary" />
-          Benachrichtigungen
+          Kommunikation
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button 
-            onClick={handleSendInvites} 
-            disabled={invitesLoading}
-            className="flex-1 rounded-xl"
-            variant="outline"
-          >
-            {invitesLoading ? (
-              "Sende..."
-            ) : (
-              <>
-                <Mail className="h-4 w-4 mr-2" />
-                Einladungen senden
-              </>
-            )}
-          </Button>
-          
-          <Button 
-            onClick={handleSendReminder} 
-            disabled={reminderLoading}
-            className="flex-1 rounded-xl"
-            variant="outline"
-          >
-            {reminderLoading ? (
-              "Sende..."
-            ) : (
-              <>
-                <Bell className="h-4 w-4 mr-2" />
-                Voting-Erinnerung
-              </>
-            )}
-          </Button>
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              onClick={handleSendInvites} 
+              disabled={invitesLoading}
+              className="flex-1 rounded-xl"
+              variant="outline"
+            >
+              {invitesLoading ? (
+                "Sende..."
+              ) : (
+                <>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Einladungen senden
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              onClick={handleSendReminder} 
+              disabled={reminderLoading}
+              className="flex-1 rounded-xl"
+              variant="outline"
+            >
+              {reminderLoading ? (
+                "Sende..."
+              ) : (
+                <>
+                  <Bell className="h-4 w-4 mr-2" />
+                  Voting-Erinnerung
+                </>
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            E-Mails werden asynchron im Hintergrund verarbeitet.
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground text-center">
-          E-Mails werden asynchron im Hintergrund verarbeitet.
-        </p>
+        
+        {children && (
+          <>
+            <div className="h-px bg-border/50" />
+            <div className="pt-2">
+              {children}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

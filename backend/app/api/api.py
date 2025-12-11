@@ -1,20 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func, delete
+from sqlalchemy import func, delete, desc
 from sqlalchemy.orm import selectinload
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 from datetime import datetime
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.core.utils import generate_room_invite_code
-from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole
+from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate,
-    DateOptionCreate
+    DateOptionCreate, EventComment as EventCommentSchema, EventCommentCreate
 )
 from app.api.endpoints import auth, users, ai, emails
 
@@ -25,6 +25,66 @@ router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(ai.router)
 router.include_router(emails.router)
+
+# --- Comments ---
+@router.get("/events/{event_id}/comments", response_model=List[EventCommentSchema])
+async def get_event_comments(
+    event_id: UUID,
+    phase: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db)
+):
+    query = select(EventComment).where(EventComment.event_id == event_id)
+    
+    if phase:
+        query = query.where(EventComment.phase == phase)
+        
+    query = query.order_by(desc(EventComment.created_at)).offset(skip).limit(limit).options(selectinload(EventComment.user))
+    
+    result = await db.execute(query)
+    comments = result.scalars().all()
+    
+    # Hydrate user details
+    for comment in comments:
+        if comment.user:
+            comment.user_name = comment.user.name
+            comment.user_avatar = comment.user.avatar_url
+            
+    return comments
+
+@router.post("/events/{event_id}/comments", response_model=EventCommentSchema)
+async def create_event_comment(
+    event_id: UUID,
+    comment_in: EventCommentCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify event exists
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    comment = EventComment(
+        id=uuid4(),
+        event_id=event_id,
+        user_id=current_user.id,
+        content=comment_in.content,
+        phase=comment_in.phase,
+        created_at=datetime.utcnow()
+    )
+    db.add(comment)
+    await db.commit()
+    await db.refresh(comment)
+    
+    # Load user for response
+    await db.refresh(comment, attribute_names=['user'])
+    
+    comment.user_name = current_user.name
+    comment.user_avatar = current_user.avatar_url
+    
+    return comment
 
 @router.get("/health")
 async def health_check():

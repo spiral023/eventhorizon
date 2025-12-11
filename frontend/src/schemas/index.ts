@@ -250,3 +250,14 @@ export const UserStatsSchema = z.object({
   upcomingEventsCount: z.number(),
   openVotesCount: z.number(),
 });
+
+export const EventCommentSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  userId: z.string(),
+  content: z.string(),
+  phase: EventPhaseSchema,
+  createdAt: z.string(),
+  userName: z.string().optional(),
+  userAvatar: z.string().optional(),
+});

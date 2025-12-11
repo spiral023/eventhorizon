@@ -221,3 +221,18 @@ class Event(EventBase):
     date_options: List[DateOption] = []
     chosen_activity_id: Optional[UUID] = None
     final_date_option_id: Optional[UUID] = None
+
+# --- Comments ---
+class EventCommentCreate(BaseSchema):
+    content: str
+    phase: str
+
+class EventComment(BaseSchema):
+    id: UUID
+    event_id: UUID
+    user_id: UUID
+    content: str
+    phase: str
+    created_at: datetime
+    user_name: Optional[str] = None
+    user_avatar: Optional[str] = None
