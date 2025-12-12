@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, LogIn, Sparkles } from "lucide-react";
+import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -15,7 +16,9 @@ export default function LoginPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const { login, register, isAuthenticated } = useAuthStore();
@@ -40,6 +43,16 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (mode === "register" && password !== confirmPassword) {
+      toast({
+        title: "Passwörter stimmen nicht überein",
+        description: "Bitte stelle sicher, dass beide Passwörter identisch sind.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -180,6 +193,54 @@ export default function LoginPage() {
                   </Button>
                 </div>
               </div>
+
+              {mode === "register" && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="confirmPassword">Passwort wiederholen</Label>
+                    {password && confirmPassword && (
+                      password === confirmPassword ? (
+                        <span className="text-xs text-green-500 flex items-center gap-1 font-medium">
+                          <CheckCircle2 className="h-3 w-3" /> Stimmt überein
+                        </span>
+                      ) : (
+                        <span className="text-xs text-red-500 flex items-center gap-1 font-medium">
+                          <XCircle className="h-3 w-3" /> Stimmt nicht überein
+                        </span>
+                      )
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={cn(
+                        "rounded-xl pr-10 transition-colors duration-200",
+                        confirmPassword && password === confirmPassword ? "border-green-500 focus-visible:ring-green-500" : ""
+                      )}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? "Passwort verbergen" : "Passwort anzeigen"}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               <Button
                 type="submit"

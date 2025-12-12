@@ -612,6 +612,8 @@ async def join_room(
     if not invite_code:
         raise HTTPException(status_code=400, detail="invite_code is required")
 
+    invite_code = invite_code.strip()
+
     # Find room by invite code
     result = await db.execute(
         select(Room).where(Room.invite_code == invite_code)
