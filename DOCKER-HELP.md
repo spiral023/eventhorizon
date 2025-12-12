@@ -6,10 +6,10 @@ Kurze Sammlung der wichtigsten Docker- und Compose-Befehle fuer das lokale Backe
 
 ## Voraussetzungen
 
-* Docker und Docker Compose sind installiert.
-* `docker-compose.dev.yml` liegt im Projekt-Root.
-* Backend-Service in Compose heisst `backend`.
-* Optionaler Container-Name direkt ueber Docker: `eventhorizon-backend-1`.
+- Docker und Docker Compose sind installiert.
+- `docker-compose.dev.yml` liegt im Projekt-Root.
+- Backend-Service in Compose heisst `backend`.
+- Optionaler Container-Name direkt ueber Docker: `eventhorizon-backend-1`.
 
 ---
 
@@ -207,4 +207,14 @@ docker stats
 docker compose -f docker-compose.dev.yml config
 ```
 
-Damit solltest du im Alltag den groessten Teil deiner Docker-Dev-Tasks fuer das Backend schnell abdecken koennen.
+## 8. Datenbank-Migration erstellen - DEV
+
+```bash
+docker compose -f docker-compose.dev.yml exec backend alembic revision --autogenerate -m "description"
+```
+
+## 9. Datenbank-Migration erstellen - PROD
+
+```bash
+docker compose -f docker-compose.prod.yml exec backend alembic revision --autogenerate -m "description"
+```
