@@ -88,7 +88,7 @@ export default function RoomsPage() {
             >
               <RoomCard
                 room={room}
-                onClick={() => navigate(`/rooms/${room.id}`)}
+                onClick={() => navigate(`/rooms/${room.inviteCode}`)}
               />
             </div>
           ))}

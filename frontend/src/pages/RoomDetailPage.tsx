@@ -41,15 +41,31 @@ export default function RoomDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!roomId) return;
-      const [roomResult, eventsResult, membersResult] = await Promise.all([
-        getRoomById(roomId),
-        getEventsByRoom(roomId),
-        getRoomMembers(roomId),
-      ]);
-      setRoom(roomResult.data);
-      setEvents(eventsResult.data);
-      setMembers(membersResult.data || []);
-      setLoading(false);
+      
+      try {
+        // 1. Fetch Room (by ID or Invite Code)
+        const roomResult = await getRoomById(roomId);
+        if (roomResult.error || !roomResult.data) {
+          setLoading(false);
+          return; // or handle error state
+        }
+        
+        const roomData = roomResult.data;
+        setRoom(roomData);
+
+        // 2. Fetch details using the resolved real UUID
+        const [eventsResult, membersResult] = await Promise.all([
+          getEventsByRoom(roomData.id),
+          getRoomMembers(roomData.id),
+        ]);
+
+        setEvents(eventsResult.data || []);
+        setMembers(membersResult.data || []);
+      } catch (error) {
+        console.error("Failed to load room data", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, [roomId]);

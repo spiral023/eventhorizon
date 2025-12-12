@@ -552,12 +552,28 @@ async def process_event_avatar(
     await db.refresh(event)
     return event
 
-@router.get("/rooms/{room_id}", response_model=RoomSchema)
-async def get_room(room_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.get("/rooms/{room_identifier}", response_model=RoomSchema)
+async def get_room(room_identifier: str, db: AsyncSession = Depends(get_db)):
     from app.models.domain import RoomMember
 
-    result = await db.execute(select(Room).where(Room.id == room_id))
+    # Try to parse as UUID
+    is_uuid = False
+    try:
+        room_uuid = UUID(room_identifier)
+        is_uuid = True
+    except ValueError:
+        pass
+
+    query = select(Room)
+    if is_uuid:
+        query = query.where(Room.id == room_uuid)
+    else:
+        # Assume it's an invite code
+        query = query.where(Room.invite_code == room_identifier)
+
+    result = await db.execute(query)
     room = result.scalar_one_or_none()
+    
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
 
