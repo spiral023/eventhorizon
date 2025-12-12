@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Settings, CalendarIcon, X, User } from "lucide-react";
+import { Settings, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,17 +23,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format, parse, isValid } from "date-fns";
 import { de } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { updateUser, uploadAvatar } from "@/services/apiClient";
 import type { UserProfile } from "@/pages/ProfilePage";
 import { useAuthStore } from "@/stores/authStore";
@@ -375,42 +368,13 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="profile-birthday">Geburtstag (optional)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="profile-birthday"
-                        placeholder="TT.MM.JJJJ"
-                        value={birthdayInput}
-                        onChange={(e) => handleBirthdayInputChange(e.target.value)}
-                        className="rounded-xl"
-                      />
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="rounded-xl flex-shrink-0"
-                          >
-                            <CalendarIcon className="h-4 w-4" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                          <Calendar
-                            mode="single"
-                            selected={birthday}
-                            onSelect={handleBirthdayCalendarChange}
-                            initialFocus
-                            locale={de}
-                            captionLayout="dropdown-buttons"
-                            fromYear={1900}
-                            toYear={new Date().getFullYear()}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                    <Input
+                      id="profile-birthday"
+                      placeholder="TT.MM.JJJJ"
+                      value={birthdayInput}
+                      onChange={(e) => handleBirthdayInputChange(e.target.value)}
+                      className="rounded-xl"
+                    />
                   </div>
                   {/* Empty placeholder to keep grid balanced if needed, or just let it flow */}
                 </div>
@@ -513,7 +477,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="grid gap-2">
                     <Label>Gruppengröße</Label>
-                    <Select value={preferredGroupSize} onValueChange={(v: any) => setPreferredGroupSize(v)}>
+                    <Select value={preferredGroupSize} onValueChange={(v) => setPreferredGroupSize(v)}>
                       <SelectTrigger className="rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
@@ -528,7 +492,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                   
                   <div className="grid gap-2">
                     <Label>Reisebereitschaft</Label>
-                    <Select value={travelWillingness} onValueChange={(v: any) => setTravelWillingness(v)}>
+                    <Select value={travelWillingness} onValueChange={(v) => setTravelWillingness(v)}>
                       <SelectTrigger className="rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
@@ -542,7 +506,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                   
                   <div className="grid gap-2">
                     <Label>Budget-Präferenz</Label>
-                    <Select value={budgetPreference} onValueChange={(v: any) => setBudgetPreference(v)}>
+                    <Select value={budgetPreference} onValueChange={(v) => setBudgetPreference(v)}>
                       <SelectTrigger className="rounded-xl">
                         <SelectValue />
                       </SelectTrigger>

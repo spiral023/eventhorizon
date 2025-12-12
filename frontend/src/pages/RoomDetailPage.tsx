@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Link2, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Users, Link2, Trash2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,7 +18,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ShareRoomDialog } from "@/components/shared/ShareRoomDialog";
 import { EditRoomDialog } from "@/components/shared/EditRoomDialog";
-import { getRoomById, getEventsByRoom, deleteEvent, getRoomMembers, type RoomMember } from "@/services/apiClient";
+import { getRoomById, getEventsByRoom, deleteEvent, getRoomMembers, leaveRoom, type RoomMember } from "@/services/apiClient";
 import type { Room, Event } from "@/types/domain";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -32,6 +32,10 @@ export default function RoomDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleteDialogEvent, setDeleteDialogEvent] = useState<Event | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
+  
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -70,6 +74,24 @@ export default function RoomDetailPage() {
       toast.error("Fehler beim Löschen des Events");
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleLeaveRoom = async () => {
+    if (!room) return;
+    setLeaveLoading(true);
+    try {
+      const result = await leaveRoom(room.id);
+      if (result.error) {
+        toast.error(result.error.message || "Fehler beim Verlassen des Raums");
+        return;
+      }
+      toast.success("Raum verlassen");
+      navigate("/rooms");
+    } catch {
+      toast.error("Fehler beim Verlassen des Raums");
+    } finally {
+      setLeaveLoading(false);
     }
   };
 
@@ -152,6 +174,19 @@ export default function RoomDetailPage() {
             }
           />
           <EditRoomDialog room={room} onRoomUpdated={handleRoomUpdated} />
+          
+          {user && room.createdByUserId !== user.id && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="rounded-xl shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setLeaveDialogOpen(true)}
+              title="Raum verlassen"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          )}
+
           <Button 
             size="sm"
             className="gap-2 rounded-xl shrink-0 whitespace-nowrap"
@@ -317,6 +352,27 @@ export default function RoomDetailPage() {
               disabled={deleteLoading}
             >
               {deleteLoading ? "Lösche..." : "Event löschen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Raum verlassen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchtest du den Raum "{room.name}" wirklich verlassen? Du hast dann keinen Zugriff mehr auf Events und Diskussionen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleLeaveRoom}
+              disabled={leaveLoading}
+            >
+              {leaveLoading ? "Verlasse..." : "Raum verlassen"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

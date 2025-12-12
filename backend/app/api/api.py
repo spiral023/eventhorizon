@@ -649,6 +649,47 @@ async def join_room(
 
     return room
 
+@router.post("/rooms/{room_id}/leave")
+async def leave_room(
+    room_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Leave a room.
+    Removes the RoomMember entry.
+    Creators cannot leave their own room.
+    """
+    from app.models.domain import RoomMember
+
+    # Find room
+    result = await db.execute(select(Room).where(Room.id == room_id))
+    room = result.scalar_one_or_none()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    # Prevent creator from leaving
+    if room.created_by_user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Der Raumersteller kann den Raum nicht verlassen")
+
+    # Check if user is a member
+    result = await db.execute(
+        select(RoomMember).where(
+            RoomMember.room_id == room_id,
+            RoomMember.user_id == current_user.id
+        )
+    )
+    member = result.scalar_one_or_none()
+    
+    if not member:
+        raise HTTPException(status_code=400, detail="Du bist kein Mitglied dieses Raums")
+
+    # Remove member
+    await db.delete(member)
+    await db.commit()
+
+    return {"message": "Room left successfully"}
+
 @router.get("/rooms/{room_id}/members")
 async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
     """
@@ -720,6 +761,8 @@ async def create_event(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    from app.models.domain import RoomMember
+
     # Basic impl
     event = Event(
         **event_in.model_dump(),
@@ -730,13 +773,30 @@ async def create_event(
     )
     db.add(event)
     
-    # Add creator as participant/organizer
-    participant = EventParticipant(
-        event_id=event.id,
-        user_id=current_user.id,
-        is_organizer=True
+    # Add all room members as participants
+    members_result = await db.execute(
+        select(RoomMember).where(RoomMember.room_id == room_id)
     )
-    db.add(participant)
+    members = members_result.scalars().all()
+    
+    added_user_ids = set()
+    for member in members:
+        participant = EventParticipant(
+            event_id=event.id,
+            user_id=member.user_id,
+            is_organizer=(member.user_id == current_user.id)
+        )
+        db.add(participant)
+        added_user_ids.add(member.user_id)
+        
+    # Ensure creator is added if not in members
+    if current_user.id not in added_user_ids:
+        participant = EventParticipant(
+            event_id=event.id,
+            user_id=current_user.id,
+            is_organizer=True
+        )
+        db.add(participant)
     
     await db.commit()
     await db.refresh(event)
@@ -961,6 +1021,25 @@ async def vote_on_activity(
             voted_at=datetime.utcnow()
         )
         db.add(new_vote)
+
+    # Update participant status
+    participant_result = await db.execute(
+        select(EventParticipant).where(
+            EventParticipant.event_id == event_id,
+            EventParticipant.user_id == current_user.id
+        )
+    )
+    participant = participant_result.scalar_one_or_none()
+    if participant:
+        participant.has_voted = True
+    else:
+        # Auto-add as participant if they vote
+        new_participant = EventParticipant(
+            event_id=event_id,
+            user_id=current_user.id,
+            has_voted=True
+        )
+        db.add(new_participant)
 
     await db.commit()
 

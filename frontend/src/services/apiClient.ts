@@ -846,6 +846,44 @@ export async function joinRoom(inviteCode: string): Promise<ApiResult<Room>> {
   return { data: null as any, error: result.error };
 }
 
+export async function leaveRoom(roomId: string): Promise<ApiResult<void>> {
+  if (USE_MOCKS) {
+    await delay(300);
+    const room = mockRooms.find((r) => r.id === roomId);
+    if (!room) {
+      return {
+        data: null as any,
+        error: { code: "NOT_FOUND", message: "Raum nicht gefunden" }
+      };
+    }
+    if (room.createdByUserId === currentUser.id) {
+      return {
+        data: null as any,
+        error: { code: "FORBIDDEN", message: "Der Raumersteller kann den Raum nicht verlassen" }
+      };
+    }
+    
+    // Check if user is member
+    const memberIdx = room.members?.findIndex(m => m.userId === currentUser.id) ?? -1;
+    if (memberIdx === -1) {
+       return {
+        data: null as any,
+        error: { code: "BAD_REQUEST", message: "Du bist kein Mitglied dieses Raums" }
+      };
+    }
+
+    // Remove member
+    room.members?.splice(memberIdx, 1);
+    room.memberCount = Math.max(0, room.memberCount - 1);
+    
+    return { data: undefined };
+  }
+
+  return request<void>(`/rooms/${roomId}/leave`, {
+    method: 'POST',
+  });
+}
+
 export interface RoomMember {
   id: string;
   name: string;
