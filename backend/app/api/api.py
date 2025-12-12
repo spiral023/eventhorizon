@@ -37,6 +37,10 @@ router.include_router(users.router)
 router.include_router(ai.router)
 router.include_router(emails.router)
 
+@router.get("/version")
+async def get_version():
+    from app.core.config import settings
+    return {"version": settings.PROJECT_VERSION}
 
 class EventUpdateRequest(BaseModel):
     name: Optional[str] = None
@@ -569,7 +573,7 @@ async def get_room(room_identifier: str, db: AsyncSession = Depends(get_db)):
         query = query.where(Room.id == room_uuid)
     else:
         # Assume it's an invite code
-        query = query.where(Room.invite_code == room_identifier)
+        query = query.where(Room.invite_code == room_identifier.upper().strip())
 
     result = await db.execute(query)
     room = result.scalar_one_or_none()

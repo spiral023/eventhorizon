@@ -641,6 +641,10 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       </nav>
 
+      <div className="mt-auto px-4 py-2 text-[10px] text-muted-foreground/40 text-center font-mono">
+        v{import.meta.env.PACKAGE_VERSION}
+      </div>
+
     </div>
 
   );
