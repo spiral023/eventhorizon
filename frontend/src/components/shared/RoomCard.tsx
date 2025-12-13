@@ -21,14 +21,14 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
       className={cn(
         "group cursor-pointer overflow-hidden will-change-[transform,opacity]",
         "bg-card/60 hover:bg-card/80 border-border/50 hover:border-primary/30",
-        "transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5",
+        "transition duration-300 ease-fluid hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5",
         "rounded-2xl motion-reduce:transform-none motion-reduce:hover:shadow-none"
       )}
       onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <Avatar className="h-11 w-11 rounded-xl ring-2 ring-border/40 group-hover:ring-primary/30 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+          <Avatar className="h-11 w-11 rounded-xl ring-2 ring-border/40 group-hover:ring-primary/30 transition duration-300 ease-fluid">
             <AvatarImage src={room.avatarUrl} className="object-cover" />
             <AvatarFallback className="rounded-xl bg-secondary text-lg font-semibold">
               {room.name.charAt(0)}
@@ -57,7 +57,7 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
             </div>
           </div>
 
-          <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:translate-x-0" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition duration-300 ease-fluid motion-reduce:translate-x-0" />
         </div>
       </CardContent>
     </Card>

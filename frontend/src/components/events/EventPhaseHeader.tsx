@@ -95,7 +95,7 @@ export function EventPhaseHeader({
               onClick={onAdvance}
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto justify-center"
             >
-              Zur naechsten Phase
+              Zur nächsten Phase
               <ArrowRight className="h-4 w-4" />
             </button>
           )}
