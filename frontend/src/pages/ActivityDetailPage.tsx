@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ScaleBar } from "@/components/shared/ScaleBar";
+import { ActivityMiniMap } from "@/components/shared/ActivityMiniMap";
 import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
 import type { Activity, ActivityComment } from "@/types/domain";
 import {
@@ -552,6 +553,10 @@ export default function ActivityDetailPage() {
                       <p className="text-sm text-muted-foreground">{activity.locationAddress}</p>
                     )}
                   </div>
+                </div>
+                
+                <div className="rounded-lg overflow-hidden">
+                  <ActivityMiniMap activity={activity} className="h-[200px] w-full" />
                 </div>
 
                 {/* Travel Time */}
