@@ -2,6 +2,7 @@ import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseTyp
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 import type { ApiUser, ApiRoom, ApiActivity, ApiEvent, ApiEventComment, ApiActivityComment, ApiTokenResponse, ApiUserStats, ApiDateOption, ApiActivityVote, ApiEventParticipant } from "@/types/apiDomain";
+import { fetchJwtToken, signInWithEmail, signOutUser, signUpWithEmail } from "@/lib/authClient";
 
 export interface AvatarUploadInfo {
   uploadUrl: string;
@@ -15,38 +16,58 @@ export interface AvatarUploadInfo {
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 const API_BASE = '/api/v1';
-const AUTH_TOKEN_KEY = "eventhorizon_auth_token";
+type CachedBearer = { token: string; expiresAt: number };
+let cachedBearer: CachedBearer | null = null;
 
-const getStoredToken = () => {
+const decodeJwtExpiry = (token: string): number | null => {
   try {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
-  } catch {
-    return null;
-  }
-};
-
-const setStoredToken = (token: string | null) => {
-  try {
-    if (token) {
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    if (payload?.exp) {
+      return Number(payload.exp) * 1000;
     }
   } catch {
-    /* ignore storage errors */
+    /* ignore parse errors */
   }
+  return null;
+};
+
+const setCachedToken = (token: string | null) => {
+  if (!token) {
+    cachedBearer = null;
+    return;
+  }
+  const expiry = decodeJwtExpiry(token);
+  const fallbackExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+  cachedBearer = {
+    token,
+    expiresAt: expiry ? expiry - 5000 : fallbackExpiry,
+  };
+};
+
+const getAuthHeader = async (): Promise<HeadersInit> => {
+  if (USE_MOCKS) {
+    return {};
+  }
+  if (cachedBearer && cachedBearer.expiresAt > Date.now()) {
+    return { Authorization: `Bearer ${cachedBearer.token}` };
+  }
+  const token = await fetchJwtToken();
+  if (token) {
+    setCachedToken(token);
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {};
 };
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiResult<T>> {
-  const token = getStoredToken();
+  const authHeader = await getAuthHeader();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...options?.headers,
+    ...(options?.headers || {}),
+    ...authHeader,
   };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -318,32 +339,27 @@ export async function login(email: string, password: string): Promise<ApiResult<
   if (USE_MOCKS) {
     const result = await mockLogin(email, password);
     if (result.data) {
-      setStoredToken("mock-token");
+      setCachedToken("mock-token");
     }
     return result;
   }
 
   try {
-    const body = new URLSearchParams();
-    body.append("username", email);
-    body.append("password", password);
-
-    const response = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body,
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      return { data: undefined, error: { code: String(response.status), message: err.detail || "Login fehlgeschlagen" } };
+    await signInWithEmail(email, password);
+    setCachedToken(null); // force refresh from /api/auth/token
+    const profile = await getCurrentUser();
+    if (profile.data) {
+      return { data: profile.data };
     }
-
-    const data = await response.json();
-    setStoredToken(data.access_token);
-    return { data: mapUserFromApi(data.user) };
+    return {
+      data: undefined,
+      error: profile.error ?? { code: "AUTH_ERROR", message: "Login fehlgeschlagen" },
+    };
   } catch (e) {
-    return { data: undefined, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
+    return {
+      data: undefined,
+      error: { code: "AUTH_ERROR", message: e instanceof Error ? e.message : "Login fehlgeschlagen" },
+    };
   }
 }
 
@@ -360,39 +376,37 @@ export async function register(user: { email: string; firstName: string; lastNam
       createdAt: new Date().toISOString(),
       isActive: true,
     };
-    setStoredToken("mock-token");
+    setCachedToken("mock-token");
     return { data: mockUser };
   }
 
   try {
-    const payload = {
+    await signUpWithEmail({
       email: user.email,
       password: user.password,
-      first_name: user.firstName,
-      last_name: user.lastName,
-    };
-
-    const response = await fetch(`${API_BASE}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      name: `${user.firstName} ${user.lastName}`.trim(),
     });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      return { data: undefined, error: { code: String(response.status), message: err.detail || "Registrierung fehlgeschlagen" } };
+    setCachedToken(null);
+    const profile = await getCurrentUser();
+    if (profile.data) {
+      return { data: profile.data };
     }
-
-    const data = await response.json();
-    setStoredToken(data.access_token);
-    return { data: mapUserFromApi(data.user) };
+    return {
+      data: undefined,
+      error: profile.error ?? { code: "AUTH_ERROR", message: "Registrierung fehlgeschlagen" },
+    };
   } catch (e) {
     return { data: undefined, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
   }
 }
 
 export async function logout(): Promise<void> {
-  setStoredToken(null);
+  try {
+    await signOutUser();
+  } catch (e) {
+    console.warn("Better Auth sign out failed", e);
+  }
+  setCachedToken(null);
 }
 
 export async function getCurrentUser(): Promise<ApiResult<User | null>> {
@@ -1602,6 +1616,7 @@ async function mockLogin(email: string, password: string): Promise<ApiResult<Use
 async function mockLogout(): Promise<ApiResult<void>> {
   await delay(200);
   isLoggedIn = false;
+  setCachedToken(null);
   return { data: undefined };
 }
 

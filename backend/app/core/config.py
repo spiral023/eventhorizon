@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY", "changeme-secret-key")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
     ALGORITHM: str = "HS256"
+    # Better Auth (JWT resource server)
+    BETTER_AUTH_JWKS_URL: str = os.getenv("BETTER_AUTH_JWKS_URL", "http://localhost:3000/api/auth/jwks")
+    BETTER_AUTH_ISSUER: str = os.getenv("BETTER_AUTH_ISSUER", "eventhorizon-auth")
+    BETTER_AUTH_AUDIENCE: str = os.getenv("BETTER_AUTH_AUDIENCE", "eventhorizon-api")
+    BETTER_AUTH_JWKS_CACHE_SECONDS: int = int(os.getenv("BETTER_AUTH_JWKS_CACHE_SECONDS", "300"))
     
     # Email
     RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")

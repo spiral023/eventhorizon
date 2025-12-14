@@ -15,6 +15,7 @@ function Show-Menu {
     Write-Host "7. Start FULL Environment (Backend + Frontend)"
     Write-Host "8. View Backend Logs"
     Write-Host "9. Prune Docker System (Clean up)"
+    Write-Host "10. Fresh Start (Wipe DB & Restart)" -ForegroundColor Magenta
     Write-Host "q. Quit"
     Write-Host "========================================" -ForegroundColor Cyan
 }
@@ -95,6 +96,29 @@ while ($true) {
         "9" {
             Write-Host "Pruning docker system..." -ForegroundColor Yellow
             Run-Command "docker system prune -f"
+            Pause
+        }
+        "10" {
+            Write-Host "WARNING: This will delete all data in the database!" -ForegroundColor Red
+            $confirm = Read-Host "Are you sure? (y/n)"
+            if ($confirm -eq 'y') {
+                Write-Host "Wiping database and restarting containers..." -ForegroundColor Yellow
+                Run-Command "docker-compose -f docker-compose.dev.yml down -v" "Failed to wipe database"
+                Run-Command "docker-compose -f docker-compose.dev.yml up -d" "Failed to restart containers"
+                
+                Write-Host "Waiting for DB to be ready (5s)..." -ForegroundColor Yellow
+                Start-Sleep -Seconds 5
+                
+                Write-Host "Running Migrations manually to ensure schema..." -ForegroundColor Yellow
+                Run-Command "docker-compose -f docker-compose.dev.yml exec backend alembic upgrade head" "Migration failed"
+                
+                Write-Host "Seeding Activities..." -ForegroundColor Yellow
+                Run-Command "docker-compose -f docker-compose.dev.yml exec backend python scripts/seed_activities.py --force" "Seeding failed"
+                
+                Write-Host "Fresh start completed successfully!" -ForegroundColor Green
+            } else {
+                Write-Host "Aborted." -ForegroundColor Yellow
+            }
             Pause
         }
         "q" {

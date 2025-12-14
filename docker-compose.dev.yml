@@ -24,6 +24,9 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: eventhorizon
       SECRET_KEY: dgdjds2352!!sddfg
+      BETTER_AUTH_JWKS_URL: http://auth:3000/api/auth/jwks
+      BETTER_AUTH_ISSUER: eventhorizon-auth
+      BETTER_AUTH_AUDIENCE: eventhorizon-api
       # S3 Storage (avatars, assets)
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -44,5 +47,29 @@ services:
     depends_on:
       - db
 
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile.dev
+    command: npm run dev
+    volumes:
+      - ./auth:/app
+      - auth_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-secret-change-me}
+      BETTER_AUTH_BASE_URL: http://localhost:5173
+      BETTER_AUTH_BASE_PATH: /api/auth
+      DATABASE_URL: postgres://user:password@db:5432/eventhorizon
+      TRUSTED_ORIGINS: http://localhost:5173
+      BETTER_AUTH_JWT_ISSUER: eventhorizon-auth
+      BETTER_AUTH_JWT_AUDIENCE: eventhorizon-api
+      BETTER_AUTH_DB_SCHEMA: auth
+    depends_on:
+      - db
+
 volumes:
   postgres_data:
+  auth_node_modules:

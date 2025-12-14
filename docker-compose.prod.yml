@@ -32,6 +32,9 @@ services:
       MAIL_FROM_NAME: ${MAIL_FROM_NAME}
       FRONTEND_URL: ${FRONTEND_URL}
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
+      BETTER_AUTH_JWKS_URL: http://auth:3000/api/auth/jwks
+      BETTER_AUTH_ISSUER: ${BETTER_AUTH_JWT_ISSUER:-eventhorizon-auth}
+      BETTER_AUTH_AUDIENCE: ${BETTER_AUTH_JWT_AUDIENCE:-eventhorizon-api}
       # S3 Storage (avatars, assets)
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -73,6 +76,33 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+
+  auth:
+    build: ./auth
+    restart: always
+    environment:
+      NODE_ENV: production
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_BASE_URL: https://event-horizon.sp23.online
+      BETTER_AUTH_BASE_PATH: /api/auth
+      BETTER_AUTH_JWT_ISSUER: ${BETTER_AUTH_JWT_ISSUER:-eventhorizon-auth}
+      BETTER_AUTH_JWT_AUDIENCE: ${BETTER_AUTH_JWT_AUDIENCE:-eventhorizon-api}
+      DATABASE_URL: postgres://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-eventhorizon}
+      TRUSTED_ORIGINS: https://event-horizon.sp23.online
+      BETTER_AUTH_DB_SCHEMA: auth
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.eventhorizon-auth.rule=PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.eventhorizon-auth.entrypoints=websecure"
+      - "traefik.http.routers.eventhorizon-auth.tls.certresolver=le"
+      - "traefik.http.services.eventhorizon-auth.loadbalancer.server.port=3000"
 
 networks:
   traefik:
