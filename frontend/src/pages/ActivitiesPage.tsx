@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
@@ -45,29 +45,29 @@ export default function ActivitiesPage() {
     (filters.weatherIndependent ? 1 : 0) +
     (filters.favoritesOnly ? 1 : 0);
 
+  const loadData = useCallback(async () => {
+    setIsLoadingActivities(true);
+    setError(null);
+    try {
+      const [activitiesResult, favoritesResult] = await Promise.all([
+        getActivities(),
+        isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
+      ]);
+
+      if (activitiesResult.error) throw new Error(activitiesResult.error.message);
+      setActivities(activitiesResult.data);
+      setFavoriteIds(favoritesResult.data || []);
+    } catch (err) {
+      setError("Aktivitäten konnten nicht geladen werden.");
+    } finally {
+      setIsLoadingActivities(false);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (authLoading) return;
-
-    const loadData = async () => {
-      setIsLoadingActivities(true);
-      setError(null);
-      try {
-        const [activitiesResult, favoritesResult] = await Promise.all([
-          getActivities(),
-          isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
-        ]);
-
-        if (activitiesResult.error) throw new Error(activitiesResult.error.message);
-        setActivities(activitiesResult.data);
-        setFavoriteIds(favoritesResult.data || []);
-      } catch (err) {
-        setError("Aktivitäten konnten nicht geladen werden.");
-      } finally {
-        setIsLoadingActivities(false);
-      }
-    };
     loadData();
-  }, [isAuthenticated, authLoading]);
+  }, [authLoading, loadData]);
 
   const filteredActivities = activities.filter((activity) => {
     const durationMinutes = (() => {
