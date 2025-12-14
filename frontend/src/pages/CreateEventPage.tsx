@@ -60,6 +60,8 @@ export default function CreateEventPage() {
       proposedActivityIds: [],
       votingDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
       timeWindow: { type: "month", value: defaultMonth },
+      fromWeek: 1, // Default value
+      toWeek: 4, // Default value
     },
   });
 
@@ -92,8 +94,8 @@ export default function CreateEventPage() {
       case "weekRange":
         return { 
           type: "weekRange", 
-          fromWeek: (values as any).fromWeek || 1, 
-          toWeek: (values as any).toWeek || 4 
+          fromWeek: values.fromWeek || 1, 
+          toWeek: values.toWeek || 4 
         };
       case "freeText":
         return { type: "freeText", value: freeTextValue || "" };

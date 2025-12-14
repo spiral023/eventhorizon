@@ -1,6 +1,7 @@
 import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseType, EventTimeWindow, EventCategory, PrimaryGoal, UserStats, EventComment, ActivityComment, BudgetType } from "@/types/domain";
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
+import type { ApiUser, ApiRoom, ApiActivity, ApiEvent, ApiEventComment, ApiActivityComment, ApiTokenResponse, ApiUserStats, ApiDateOption, ApiActivityVote, ApiEventParticipant } from "@/types/apiDomain";
 
 export interface AvatarUploadInfo {
   uploadUrl: string;
@@ -68,23 +69,23 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiR
     if (!response.ok) {
       let errorMessage = `HTTP Error ${response.status}`;
       if (data && typeof data === 'object' && 'detail' in data) {
-        errorMessage = (data as any).detail;
+        errorMessage = (data as ApiError).detail;
       } else if (typeof data === 'string' && data.length > 0) {
         errorMessage = data;
       }
 
       return { 
-        data: null as any, 
+        data: undefined, 
         error: { code: String(response.status), message: errorMessage } 
       };
     }
     
     // Return data, ensuring it's not the string "null"
     if (data === "null") data = null;
-    return { data };
+    return { data: data as T };
   } catch (e) {
     return { 
-      data: null as any, 
+      data: undefined, 
       error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } 
     };
   }
@@ -206,7 +207,7 @@ const mockActivities: Activity[] = [
   // ... (more activities would be here)
 ];
 
-let mockFavoriteCounts: Record<string, number> = {
+const mockFavoriteCounts: Record<string, number> = {
   "act-1": 5,
 };
 mockActivities.forEach((a) => {
@@ -243,7 +244,7 @@ let events: Event[] = [
   }
 ];
 
-let favoriteActivityIds: string[] = ["act-1"];
+const favoriteActivityIds: string[] = ["act-1"];
 
 const currentUser: User = {
   id: "046b1c94-83c7-45bb-a6b9-9d02b3b6a8a1", // Backend Mock User ID
@@ -264,8 +265,8 @@ const currentUser: User = {
 
 // --- Auth ---
 
-function mapUserFromApi(apiUser: any): User {
-  if (!apiUser) return apiUser;
+function mapUserFromApi(apiUser: ApiUser): User {
+  if (!apiUser) return undefined as unknown as User;
   return {
     id: apiUser.id,
     email: apiUser.email,
@@ -292,8 +293,8 @@ function mapUserFromApi(apiUser: any): User {
   } as unknown as User;
 }
 
-function mapRoomFromApi(apiRoom: any): Room {
-  if (!apiRoom) return apiRoom;
+function mapRoomFromApi(apiRoom: ApiRoom): Room {
+  if (!apiRoom) return apiRoom as unknown as Room;
   return {
     id: apiRoom.id,
     name: apiRoom.name,
@@ -303,14 +304,14 @@ function mapRoomFromApi(apiRoom: any): Room {
     createdAt: apiRoom.created_at ?? apiRoom.createdAt,
     createdByUserId: apiRoom.created_by_user_id ?? apiRoom.createdByUserId,
     avatarUrl: apiRoom.avatar_url ?? apiRoom.avatarUrl,
-    members: (apiRoom.members || []).map((member: any) => ({
+    members: (apiRoom.members || []).map((member) => ({
       userId: member.user_id ?? member.userId,
       userName: member.user_name ?? member.userName ?? member.name,
       avatarUrl: member.avatar_url ?? member.avatarUrl,
       role: member.role,
       joinedAt: member.joined_at ?? member.joinedAt,
     })),
-  } as Room;
+  };
 }
 
 export async function login(email: string, password: string): Promise<ApiResult<User>> {
@@ -335,20 +336,20 @@ export async function login(email: string, password: string): Promise<ApiResult<
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      return { data: null as any, error: { code: String(response.status), message: err.detail || "Login fehlgeschlagen" } };
+      return { data: undefined, error: { code: String(response.status), message: err.detail || "Login fehlgeschlagen" } };
     }
 
     const data = await response.json();
     setStoredToken(data.access_token);
     return { data: mapUserFromApi(data.user) };
   } catch (e) {
-    return { data: null as any, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
+    return { data: undefined, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
   }
 }
 
 export async function register(user: { email: string; firstName: string; lastName: string; password: string }): Promise<ApiResult<User>> {
   if (USE_MOCKS) {
-    const mockUser: User = {
+    const mockUser: Partial<User> = {
       id: `user-${Date.now()}`,
       email: user.email,
       firstName: user.firstName,
@@ -358,7 +359,7 @@ export async function register(user: { email: string; firstName: string; lastNam
       department: "",
       createdAt: new Date().toISOString(),
       isActive: true,
-    } as any;
+    };
     setStoredToken("mock-token");
     return { data: mockUser };
   }
@@ -379,14 +380,14 @@ export async function register(user: { email: string; firstName: string; lastNam
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      return { data: null as any, error: { code: String(response.status), message: err.detail || "Registrierung fehlgeschlagen" } };
+      return { data: undefined, error: { code: String(response.status), message: err.detail || "Registrierung fehlgeschlagen" } };
     }
 
     const data = await response.json();
     setStoredToken(data.access_token);
     return { data: mapUserFromApi(data.user) };
   } catch (e) {
-    return { data: null as any, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
+    return { data: undefined, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
   }
 }
 
@@ -399,7 +400,7 @@ export async function getCurrentUser(): Promise<ApiResult<User | null>> {
     await delay(100);
     return { data: isLoggedIn ? currentUser : null };
   }
-  const result = await request<any>('/users/me');
+  const result = await request<ApiUser>('/users/me');
   if (result.data) {
     return { data: mapUserFromApi(result.data) };
   }
@@ -416,7 +417,7 @@ export async function updateUser(updates: {
   birthday?: string;
   bio?: string;
   hobbies?: string[];
-  activityPreferences?: any;
+  activityPreferences?: unknown;
   dietaryRestrictions?: string[];
   allergies?: string[];
   preferredGroupSize?: string;
@@ -441,7 +442,7 @@ export async function updateUser(updates: {
   }
 
   // Convert camelCase to snake_case for API
-  const apiUpdates: any = {};
+  const apiUpdates: ApiUserUpdate = {};
   if (updates.firstName !== undefined) apiUpdates.first_name = updates.firstName;
   if (updates.lastName !== undefined) apiUpdates.last_name = updates.lastName;
   if (updates.phone !== undefined) apiUpdates.phone = updates.phone;
@@ -459,7 +460,7 @@ export async function updateUser(updates: {
   if (updates.budgetPreference !== undefined) apiUpdates.budget_preference = updates.budgetPreference;
   if (updates.avatarUrl !== undefined) apiUpdates.avatar_url = updates.avatarUrl;
 
-  const result = await request<any>('/users/me', {
+  const result = await request<ApiUser>('/users/me', {
     method: 'PATCH',
     body: JSON.stringify(apiUpdates),
   });
@@ -485,20 +486,20 @@ export async function getAvatarUploadUrl(
     };
   }
 
-  const result = await request<any>("/users/me/avatar/upload-url", {
+  const result = await request<ApiAvatarUploadInfo>("/users/me/avatar/upload-url", {
     method: "POST",
     body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
   });
   if (result.data) {
     return {
       data: {
-        uploadUrl: (result.data as any).upload_url ?? (result.data as any).uploadUrl,
-        publicUrl: (result.data as any).public_url ?? (result.data as any).publicUrl,
-        uploadKey: (result.data as any).upload_key ?? (result.data as any).uploadKey,
+        uploadUrl: result.data.upload_url ?? result.data.uploadUrl,
+        publicUrl: result.data.public_url ?? result.data.publicUrl,
+        uploadKey: result.data.upload_key ?? result.data.uploadKey,
       },
     };
   }
-  return { data: null as any, error: result.error };
+  return { data: null, error: result.error };
 }
 
 export async function processAvatarUpload(
@@ -511,7 +512,7 @@ export async function processAvatarUpload(
     return { data: currentUser };
   }
 
-  const result = await request<any>("/users/me/avatar/process", {
+  const result = await request<ApiUser>("/users/me/avatar/process", {
     method: "POST",
     body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
   });
@@ -519,7 +520,7 @@ export async function processAvatarUpload(
   if (result.data) {
     return { data: mapUserFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: null, error: result.error };
 }
 
 export async function uploadAvatar(file: File): Promise<ApiResult<User | null>> {
@@ -558,7 +559,7 @@ export async function getUserStats(): Promise<ApiResult<UserStats>> {
       }
     };
   }
-  const result = await request<any>('/users/me/stats');
+  const result = await request<ApiUserStats>('/users/me/stats');
   if (result.data) {
     return { 
       data: {
@@ -567,56 +568,46 @@ export async function getUserStats(): Promise<ApiResult<UserStats>> {
       }
     };
   }
-  return { data: { upcomingEventsCount: 0, openVotesCount: 0 }, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 // --- Activities ---
 
-function mapActivityFromApi(apiActivity: any): Activity {
+function mapActivityFromApi(apiActivity: ApiActivity): Activity {
   return {
-    ...apiActivity,
     // Map snake_case to camelCase
     id: apiActivity.id,
-    createdAt: apiActivity.created_at,
-
-    locationRegion: apiActivity.location_region,
+    title: apiActivity.title,
+    category: apiActivity.category as EventCategory,
+    tags: apiActivity.tags || [],
+    locationRegion: apiActivity.location_region as Region,
     locationCity: apiActivity.location_city,
     locationAddress: apiActivity.address || apiActivity.location_address, // support both aliases
     coordinates: apiActivity.coordinates,
-
     estPricePerPerson: apiActivity.est_price_pp || apiActivity.est_price_per_person,
     priceComment: apiActivity.price_comment,
     shortDescription: apiActivity.short_description,
     longDescription: apiActivity.long_description,
     imageUrl: apiActivity.image_url,
     galleryUrls: apiActivity.gallery_urls || [],
-    season: apiActivity.season,
-    riskLevel: apiActivity.risk_level,
-
+    season: apiActivity.season as Season,
+    riskLevel: apiActivity.risk_level as RiskLevel,
     typicalDurationHours: apiActivity.typical_duration_hours,
-    recommendedGroupSizeMin: apiActivity.recommended_group_size_min,
-    recommendedGroupSizeMax: apiActivity.recommended_group_size_max,
     groupSizeMin: apiActivity.recommended_group_size_min, // Fallback/Alias
     groupSizeMax: apiActivity.recommended_group_size_max, // Fallback/Alias
     minParticipants: apiActivity.recommended_group_size_min, // Fallback
     maxCapacity: apiActivity.max_capacity,
-
     physicalIntensity: apiActivity.physical_intensity,
     mentalChallenge: apiActivity.mental_challenge,
     socialInteractionLevel: apiActivity.social_interaction_level,
     competitionLevel: apiActivity.competition_level,
-
     accessibilityFlags: apiActivity.accessibility_flags || [],
     weatherDependent: apiActivity.weather_dependent,
-
     externalRating: apiActivity.external_rating,
     favoritesCount: apiActivity.favorites_count || apiActivity.favoritesCount || 0,
-    primaryGoal: apiActivity.primary_goal,
-    tags: apiActivity.tags || [],
-
+    primaryGoal: apiActivity.primary_goal as PrimaryGoal,
     travelTimeMinutes: apiActivity.travel_time_from_office_minutes,
     travelTimeMinutesWalking: apiActivity.travel_time_from_office_minutes_walking,
-
     provider: apiActivity.provider,
     website: apiActivity.website,
     reservationUrl: apiActivity.reservation_url,
@@ -626,7 +617,9 @@ function mapActivityFromApi(apiActivity: any): Activity {
     outdoorSeating: apiActivity.outdoor_seating,
     contactPhone: apiActivity.phone || apiActivity.contact_phone,
     contactEmail: apiActivity.email || apiActivity.contact_email,
-  } as Activity;
+    createdAt: apiActivity.created_at,
+    updatedAt: apiActivity.updated_at,
+  };
 }
 
 export async function getActivities(): Promise<ApiResult<Activity[]>> {
@@ -634,11 +627,11 @@ export async function getActivities(): Promise<ApiResult<Activity[]>> {
     await delay(400);
     return { data: mockActivities };
   }
-  const result = await request<any[]>('/activities');
+  const result = await request<ApiActivity[]>('/activities');
   if (result.data) {
     return { data: result.data.map(mapActivityFromApi) };
   }
-  return { data: [], error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function getActivityById(id: string): Promise<ApiResult<Activity | null>> {
@@ -647,7 +640,7 @@ export async function getActivityById(id: string): Promise<ApiResult<Activity | 
     const activity = mockActivities.find((a) => a.id === id) || null;
     return { data: activity };
   }
-  const result = await request<any>(`/activities/${id}`);
+  const result = await request<ApiActivity>(`/activities/${id}`);
   if (result.data) {
     return { data: mapActivityFromApi(result.data) };
   }
@@ -661,11 +654,11 @@ export async function getRooms(): Promise<ApiResult<Room[]>> {
     await delay(300);
     return { data: mockRooms };
   }
-  const result = await request<any[]>('/rooms');
+  const result = await request<ApiRoom[]>('/rooms');
   if (result.data) {
     return { data: result.data.map(mapRoomFromApi) };
   }
-  return { data: [], error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function getRoomById(id: string): Promise<ApiResult<Room | null>> {
@@ -674,7 +667,7 @@ export async function getRoomById(id: string): Promise<ApiResult<Room | null>> {
     const room = mockRooms.find((r) => r.id === id) || null;
     return { data: room };
   }
-  const result = await request<any>(`/rooms/${id}`);
+  const result = await request<ApiRoom>(`/rooms/${id}`);
   if (result.data) {
     return { data: mapRoomFromApi(result.data) };
   }
@@ -690,12 +683,12 @@ export async function updateRoom(roomId: string, updates: { name?: string; descr
     return { data: mockRooms[idx] };
   }
 
-  const apiPayload: any = {};
+  const apiPayload: ApiRoomUpdate = {};
   if (updates.name !== undefined) apiPayload.name = updates.name;
   if (updates.description !== undefined) apiPayload.description = updates.description;
   if (updates.avatarUrl !== undefined) apiPayload.avatar_url = updates.avatarUrl;
 
-  const result = await request<any>(`/rooms/${roomId}`, {
+  const result = await request<ApiRoom>(`/rooms/${roomId}`, {
     method: "PATCH",
     body: JSON.stringify(apiPayload),
   });
@@ -717,20 +710,20 @@ export async function getRoomAvatarUploadUrl(roomId: string, contentType: string
     };
   }
 
-  const result = await request<any>(`/rooms/${roomId}/avatar/upload-url`, {
+  const result = await request<ApiAvatarUploadInfo>(`/rooms/${roomId}/avatar/upload-url`, {
     method: "POST",
     body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
   });
   if (result.data) {
     return {
       data: {
-        uploadUrl: (result.data as any).upload_url ?? (result.data as any).uploadUrl,
-        publicUrl: (result.data as any).public_url ?? (result.data as any).publicUrl,
-        uploadKey: (result.data as any).upload_key ?? (result.data as any).uploadKey,
+        uploadUrl: result.data.upload_url ?? result.data.uploadUrl,
+        publicUrl: result.data.public_url ?? result.data.publicUrl,
+        uploadKey: result.data.upload_key ?? result.data.uploadKey,
       },
     };
   }
-  return { data: null as any, error: result.error };
+  return { data: null, error: result.error };
 }
 
 export async function processRoomAvatar(roomId: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Room | null>> {
@@ -742,14 +735,14 @@ export async function processRoomAvatar(roomId: string, uploadKey: string, outpu
     return { data: idx !== -1 ? mockRooms[idx] : null };
   }
 
-  const result = await request<any>(`/rooms/${roomId}/avatar/process`, {
+  const result = await request<ApiRoom>(`/rooms/${roomId}/avatar/process`, {
     method: "POST",
     body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
   });
   if (result.data) {
     return { data: mapRoomFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: null, error: result.error };
 }
 
 export async function uploadRoomAvatar(roomId: string, file: File): Promise<ApiResult<Room | null>> {
@@ -770,7 +763,7 @@ export async function uploadRoomAvatar(roomId: string, file: File): Promise<ApiR
   }
 
   if (!presign.data.uploadKey) {
-    return { data: null as any, error: { code: "UPLOAD_KEY_MISSING", message: "Upload key fehlt" } };
+    return { data: null, error: { code: "UPLOAD_KEY_MISSING", message: "Upload key fehlt" } };
   }
 
   return await processRoomAvatar(roomId, presign.data.uploadKey, "webp");
@@ -792,27 +785,24 @@ export async function createRoom(input: { name: string; description?: string }):
     mockRooms.push(newRoom);
     return { data: newRoom };
   }
-  const result = await request<any>('/rooms', {
+  const result = await request<ApiRoom>('/rooms', {
     method: 'POST',
     body: JSON.stringify(input),
   });
   if (result.data) {
     return { data: mapRoomFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function deleteRoom(roomId: string): Promise<ApiResult<void>> {
   if (USE_MOCKS) {
     await delay(300);
     const index = mockRooms.findIndex((r) => r.id === roomId);
-    if (index === -1) {
-      return {
-        data: null as any,
-        error: { code: "NOT_FOUND", message: "Raum nicht gefunden" }
-      };
-    }
-    mockRooms.splice(index, 1);
+          return {
+            data: undefined,
+            error: { code: "NOT_FOUND", message: "Raum nicht gefunden" }
+          };    mockRooms.splice(index, 1);
     // Also delete all events associated with this room
     events = events.filter((e) => e.roomId !== roomId);
     return { data: undefined };
@@ -828,7 +818,7 @@ export async function joinRoom(inviteCode: string): Promise<ApiResult<Room>> {
     const room = mockRooms.find((r) => r.inviteCode === inviteCode);
     if (!room) {
       return {
-        data: null as any,
+        data: undefined,
         error: { code: "NOT_FOUND", message: "Raum mit diesem Code nicht gefunden" }
       };
     }
@@ -836,14 +826,14 @@ export async function joinRoom(inviteCode: string): Promise<ApiResult<Room>> {
     room.memberCount += 1;
     return { data: room };
   }
-  const result = await request<any>('/rooms/join', {
+  const result = await request<ApiRoom>('/rooms/join', {
     method: 'POST',
     body: JSON.stringify({ invite_code: inviteCode }),
   });
   if (result.data) {
     return { data: mapRoomFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function leaveRoom(roomId: string): Promise<ApiResult<void>> {
@@ -852,13 +842,13 @@ export async function leaveRoom(roomId: string): Promise<ApiResult<void>> {
     const room = mockRooms.find((r) => r.id === roomId);
     if (!room) {
       return {
-        data: null as any,
+        data: undefined,
         error: { code: "NOT_FOUND", message: "Raum nicht gefunden" }
       };
     }
     if (room.createdByUserId === currentUser.id) {
       return {
-        data: null as any,
+        data: undefined,
         error: { code: "FORBIDDEN", message: "Der Raumersteller kann den Raum nicht verlassen" }
       };
     }
@@ -867,7 +857,7 @@ export async function leaveRoom(roomId: string): Promise<ApiResult<void>> {
     const memberIdx = room.members?.findIndex(m => m.userId === currentUser.id) ?? -1;
     if (memberIdx === -1) {
        return {
-        data: null as any,
+        data: undefined,
         error: { code: "BAD_REQUEST", message: "Du bist kein Mitglied dieses Raums" }
       };
     }
@@ -929,52 +919,52 @@ export async function getRoomMembers(roomId: string): Promise<ApiResult<RoomMemb
     ];
     return { data: mockMembers };
   }
-  const result = await request<any[]>(`/rooms/${roomId}/members`);
+  const result = await request<ApiRoomMember[]>(`/rooms/${roomId}/members`);
   if (result.data) {
-    const members = result.data.map((m: any) => ({
-      id: m.id,
-      name: m.name,
-      email: m.email,
-      username: m.name,
+    const members = result.data.map((m: ApiRoomMember) => ({
+      id: m.user_id,
+      name: m.user_name || m.name || "",
+      email: "", // Assuming email is not returned here, or needs to be fetched separately
+      username: m.user_name || m.name || "",
       avatarUrl: m.avatar_url,
-      role: m.role,
+      role: m.role as RoomRole,
       joinedAt: m.joined_at,
     }));
     return { data: members };
   }
-  return { data: [], error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 // --- Events ---
 
-function mapEventFromApi(apiEvent: any): Event {
-  if (!apiEvent) return apiEvent;
+function mapEventFromApi(apiEvent: ApiEvent): Event {
+  if (!apiEvent) return apiEvent as unknown as Event;
 
   // Transform activity_votes from backend format to frontend format
   // Backend: Array of { event_id, activity_id, user_id, vote, voted_at }
   // Frontend: Array of { activityId, votes: [{userId, userName, vote, votedAt}] }
-  let activityVotes: any[] = [];
-  const rawVotes = apiEvent.activity_votes || apiEvent.activityVotes || [];
+  let activityVotes: ActivityVote[] = [];
+  const rawVotes = apiEvent.activity_votes || [];
 
   // Check if already in frontend format (has "votes" property)
-  if (rawVotes.length > 0 && rawVotes[0].votes !== undefined) {
+  if (rawVotes.length > 0 && (rawVotes[0] as ApiActivityVote).votes !== undefined) {
     // Already in frontend format
-    activityVotes = rawVotes.map((av: any) => ({
+    activityVotes = rawVotes.map((av: ApiActivityVote) => ({
       ...av,
       activityId: av.activity_id || av.activityId,
-      votes: (av.votes || []).map((v: any) => ({
+      votes: (av.votes || []).map((v: ApiActivityVoteInner) => ({
         ...v,
-        userId: v.user_id || v.userId,
-        userName: v.user_name || v.userName,
-        votedAt: v.voted_at || v.votedAt,
+        userId: v.user_id,
+        userName: v.user_name,
+        votedAt: v.voted_at,
       })),
     }));
   } else {
     // Backend format - group votes by activity_id
-    const votesByActivity = new Map<string, any[]>();
+    const votesByActivity = new Map<string, ApiActivityVoteInner[]>();
 
     // Get all proposed activities
-    const proposedIds = apiEvent.proposed_activity_ids || apiEvent.proposedActivityIds || [];
+    const proposedIds = apiEvent.proposed_activity_ids || [];
 
     // Initialize with empty votes for all proposed activities
     proposedIds.forEach((activityId: string) => {
@@ -982,7 +972,7 @@ function mapEventFromApi(apiEvent: any): Event {
     });
 
     // Group votes by activity
-    rawVotes.forEach((vote: any) => {
+    (rawVotes as unknown as { activity_id: string }[]).forEach((vote: ApiActivityVoteInner) => { // Cast to any because the structure is uncertain
       const activityId = vote.activity_id || vote.activityId;
       if (!votesByActivity.has(activityId)) {
         votesByActivity.set(activityId, []);
@@ -998,61 +988,66 @@ function mapEventFromApi(apiEvent: any): Event {
     // Convert map to array
     activityVotes = Array.from(votesByActivity.entries()).map(([activityId, votes]) => ({
       activityId,
-      votes,
+      votes: votes.map(v => ({
+        userId: v.user_id,
+        userName: v.user_name,
+        vote: v.vote as VoteType,
+        votedAt: v.voted_at,
+      })),
     }));
   }
 
   return {
-    ...apiEvent,
-    // Map snake_case to camelCase
-    roomId: apiEvent.room_id || apiEvent.roomId,
-    timeWindow: apiEvent.time_window || apiEvent.timeWindow,
-    votingDeadline: apiEvent.voting_deadline || apiEvent.votingDeadline,
-    budgetType: apiEvent.budget_type || apiEvent.budgetType,
-    budgetAmount: apiEvent.budget_amount || apiEvent.budgetAmount,
-    participantCountEstimate: apiEvent.participant_count_estimate || apiEvent.participantCountEstimate,
-    locationRegion: apiEvent.location_region || apiEvent.locationRegion,
-    avatarUrl: apiEvent.avatar_url || apiEvent.avatarUrl,
-    inviteSentAt: apiEvent.invite_sent_at || apiEvent.inviteSentAt,
-    lastReminderAt: apiEvent.last_reminder_at || apiEvent.lastReminderAt,
-    unreadMessageCount: apiEvent.unread_message_count || apiEvent.unreadMessageCount,
+    id: apiEvent.id,
+    roomId: apiEvent.room_id,
+    name: apiEvent.name,
+    description: apiEvent.description,
+    phase: apiEvent.phase as EventPhase,
+    timeWindow: apiEvent.time_window,
+    votingDeadline: apiEvent.voting_deadline,
+    budgetType: apiEvent.budget_type as BudgetType,
+    budgetAmount: apiEvent.budget_amount,
+    participantCountEstimate: apiEvent.participant_count_estimate,
+    locationRegion: apiEvent.location_region as Region,
+    avatarUrl: apiEvent.avatar_url,
+    inviteSentAt: apiEvent.invite_sent_at,
+    lastReminderAt: apiEvent.last_reminder_at,
+    unreadMessageCount: apiEvent.unread_message_count,
 
-    proposedActivityIds: apiEvent.proposed_activity_ids || apiEvent.proposedActivityIds,
-    excludedActivityIds: apiEvent.excluded_activity_ids || apiEvent.excludedActivityIds || [],
+    proposedActivityIds: apiEvent.proposed_activity_ids,
+    excludedActivityIds: apiEvent.excluded_activity_ids || [],
     activityVotes: activityVotes,
-    chosenActivityId: apiEvent.chosen_activity_id || apiEvent.chosenActivityId,
+    chosenActivityId: apiEvent.chosen_activity_id,
     
-    dateOptions: (apiEvent.date_options || apiEvent.dateOptions || []).map((do_: any) => ({
-      ...do_,
-      startTime: do_.start_time || do_.startTime,
-      endTime: do_.end_time || do_.endTime,
-      responses: (do_.responses || []).map((r: any) => ({
-        ...r,
-        userId: r.user_id || r.userId,
-        userName: r.user_name || r.userName,
-        avatarUrl: r.user_avatar || r.avatarUrl,
-        isPriority: r.is_priority !== undefined ? r.is_priority : r.isPriority,
+    dateOptions: (apiEvent.date_options || []).map((do_: ApiDateOption) => ({
+      id: do_.id,
+      date: do_.date,
+      startTime: do_.start_time,
+      endTime: do_.end_time,
+      responses: (do_.responses || []).map((r: ApiDateResponse) => ({
+        userId: r.user_id,
+        userName: r.user_name,
+        avatarUrl: r.user_avatar || r.avatar_url,
+        response: r.response as DateResponseType,
+        isPriority: r.is_priority,
+        contribution: r.contribution,
       })),
     })),
-    finalDateOptionId: apiEvent.final_date_option_id || apiEvent.finalDateOptionId,
+    finalDateOptionId: apiEvent.final_date_option_id,
     
-    participants: (apiEvent.participants || []).map((p: any) => ({
-      ...p,
-      userId: p.user_id || p.userId,
-      userName: p.user_name || p.userName,
-      avatarUrl: p.avatar_url || p.avatarUrl,
-      isOrganizer: p.is_organizer !== undefined ? p.is_organizer : p.isOrganizer,
-      hasVoted: p.has_voted !== undefined ? p.has_voted : p.hasVoted,
-      dateResponse: p.date_response || p.dateResponse,
+    participants: (apiEvent.participants || []).map((p: ApiEventParticipant) => ({
+      userId: p.user_id,
+      userName: p.user_name,
+      avatarUrl: p.avatar_url,
+      isOrganizer: p.is_organizer,
+      hasVoted: p.has_voted,
+      dateResponse: p.date_response as DateResponseType,
     })),
     
-    createdAt: apiEvent.created_at || apiEvent.createdAt,
-    createdByUserId: apiEvent.created_by_user_id || apiEvent.createdByUserId,
-    updatedAt: apiEvent.updated_at || apiEvent.updatedAt,
-    
-    // Ensure ID is present
-    id: apiEvent.id,
-  } as Event;
+    createdAt: apiEvent.created_at,
+    createdByUserId: apiEvent.created_by_user_id,
+    updatedAt: apiEvent.updated_at,
+  };
 }
 
 export async function getEventsByRoom(roomId: string): Promise<ApiResult<Event[]>> {
@@ -1061,11 +1056,11 @@ export async function getEventsByRoom(roomId: string): Promise<ApiResult<Event[]
     const roomEvents = events.filter((e) => e.roomId === roomId);
     return { data: roomEvents };
   }
-  const result = await request<any[]>(`/rooms/${roomId}/events`);
+  const result = await request<ApiEvent[]>(`/rooms/${roomId}/events`);
   if (result.data) {
     return { data: result.data.map(mapEventFromApi) };
   }
-  return { data: [], error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function getEventById(eventId: string): Promise<ApiResult<Event | null>> {
@@ -1074,7 +1069,7 @@ export async function getEventById(eventId: string): Promise<ApiResult<Event | n
     const event = events.find((e) => e.id === eventId) || null;
     return { data: event };
   }
-  const result = await request<any>(`/events/${eventId}`);
+  const result = await request<ApiEvent>(`/events/${eventId}`);
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
@@ -1087,14 +1082,14 @@ export async function deleteEvent(eventId: string): Promise<ApiResult<void>> {
     const index = events.findIndex((e) => e.id === eventId);
     if (index === -1) {
       return {
-        data: null as any,
+        data: undefined,
         error: { code: "NOT_FOUND", message: "Event nicht gefunden" },
       };
     }
     const event = events[index];
     if (event.createdByUserId !== currentUser.id) {
       return {
-        data: null as any,
+        data: undefined,
         error: { code: "FORBIDDEN", message: "Nur der Ersteller kann das Event löschen" },
       };
     }
@@ -1135,7 +1130,7 @@ export async function createEvent(roomId: string, input: CreateEventInput & { ti
   }
 
   // Convert camelCase to snake_case for backend API
-  const apiPayload = {
+  const apiPayload: ApiCreateEvent = {
     name: input.name,
     description: input.description,
     time_window: input.timeWindow,
@@ -1148,14 +1143,14 @@ export async function createEvent(roomId: string, input: CreateEventInput & { ti
   };
 
   console.log(`Making API call to create event for room ${roomId}`, apiPayload);
-  const result = await request<any>(`/rooms/${roomId}/events`, {
+  const result = await request<ApiEvent>(`/rooms/${roomId}/events`, {
     method: 'POST',
     body: JSON.stringify(apiPayload),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function updateEvent(eventId: string, updates: { name?: string; description?: string; budgetType?: BudgetType; budgetAmount?: number; avatarUrl?: string; inviteSentAt?: string; lastReminderAt?: string; unreadMessageCount?: number }): Promise<ApiResult<Event | null>> {
@@ -1180,7 +1175,7 @@ export async function updateEvent(eventId: string, updates: { name?: string; des
     return { data: event };
   }
 
-  const payload: Record<string, any> = {};
+  const payload: ApiEventUpdate = {};
   if (updates.name !== undefined) payload.name = updates.name;
   if (updates.description !== undefined) payload.description = updates.description;
   if (updates.budgetType !== undefined) payload.budget_type = updates.budgetType;
@@ -1190,7 +1185,7 @@ export async function updateEvent(eventId: string, updates: { name?: string; des
   if (updates.lastReminderAt !== undefined) payload.last_reminder_at = updates.lastReminderAt;
   if (updates.unreadMessageCount !== undefined) payload.unread_message_count = updates.unreadMessageCount;
 
-  const result = await request<any>(`/events/${eventId}`, {
+  const result = await request<ApiEvent>(`/events/${eventId}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
@@ -1198,7 +1193,7 @@ export async function updateEvent(eventId: string, updates: { name?: string; des
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: null, error: result.error };
 }
 
 export async function getEventAvatarUploadUrl(eventId: string, contentType: string, fileSize: number): Promise<ApiResult<AvatarUploadInfo>> {
@@ -1212,20 +1207,20 @@ export async function getEventAvatarUploadUrl(eventId: string, contentType: stri
       },
     };
   }
-  const result = await request<any>(`/events/${eventId}/avatar/upload-url`, {
+  const result = await request<ApiAvatarUploadInfo>(`/events/${eventId}/avatar/upload-url`, {
     method: "POST",
     body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
   });
   if (result.data) {
     return {
       data: {
-        uploadUrl: (result.data as any).upload_url ?? (result.data as any).uploadUrl,
-        publicUrl: (result.data as any).public_url ?? (result.data as any).publicUrl,
-        uploadKey: (result.data as any).upload_key ?? (result.data as any).uploadKey,
+        uploadUrl: result.data.upload_url ?? result.data.uploadUrl,
+        publicUrl: result.data.public_url ?? result.data.publicUrl,
+        uploadKey: result.data.upload_key ?? result.data.uploadKey,
       },
     };
   }
-  return { data: null as any, error: result.error };
+  return { data: null, error: result.error };
 }
 
 export async function processEventAvatar(eventId: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Event | null>> {
@@ -1241,14 +1236,14 @@ export async function processEventAvatar(eventId: string, uploadKey: string, out
     return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
   }
 
-  const result = await request<any>(`/events/${eventId}/avatar/process`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/avatar/process`, {
     method: "POST",
     body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: null, error: result.error };
 }
 
 export async function uploadEventAvatar(eventId: string, file: File): Promise<ApiResult<Event | null>> {
@@ -1287,24 +1282,24 @@ export async function updateEventPhase(eventId: string, newPhase: EventPhase): P
     }
     return { data: null };
   }
-  const result = await request<any>(`/events/${eventId}/phase`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/phase`, {
     method: 'PATCH',
     body: JSON.stringify({ phase: newPhase }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function removeProposedActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(150);
     const event = events.find((e) => e.id === eventId);
-    if (!event) return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+    if (!event) return { data: undefined, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
 
     if (event.createdByUserId !== currentUser.id) {
-      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Vorschläge entfernen" } };
+      return { data: undefined, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Vorschläge entfernen" } };
     }
 
     event.proposedActivityIds = event.proposedActivityIds.filter((id) => id !== activityId);
@@ -1314,7 +1309,7 @@ export async function removeProposedActivity(eventId: string, activityId: string
     return { data: event };
   }
 
-  const result = await request<any>(`/events/${eventId}/proposed-activities/${activityId}`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/proposed-activities/${activityId}`, {
     method: 'DELETE',
   });
   if (result.data) {
@@ -1327,10 +1322,10 @@ export async function excludeActivity(eventId: string, activityId: string): Prom
   if (USE_MOCKS) {
     await delay(150);
     const event = events.find((e) => e.id === eventId);
-    if (!event) return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+    if (!event) return { data: undefined, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
 
     if (event.createdByUserId !== currentUser.id) {
-      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Aktivitäten ausschließen" } };
+      return { data: undefined, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Aktivitäten ausschließen" } };
     }
 
     if (!event.excludedActivityIds) {
@@ -1343,7 +1338,7 @@ export async function excludeActivity(eventId: string, activityId: string): Prom
     return { data: event };
   }
 
-  const result = await request<any>(`/events/${eventId}/activities/${activityId}/exclude`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/activities/${activityId}/exclude`, {
     method: 'PATCH',
   });
   if (result.data) {
@@ -1356,10 +1351,10 @@ export async function includeActivity(eventId: string, activityId: string): Prom
   if (USE_MOCKS) {
     await delay(150);
     const event = events.find((e) => e.id === eventId);
-    if (!event) return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
+    if (!event) return { data: undefined, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
 
     if (event.createdByUserId !== currentUser.id) {
-      return { data: null, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Aktivitäten wieder aufnehmen" } };
+      return { data: undefined, error: { code: "FORBIDDEN", message: "Nur der Ersteller kann Aktivitäten wieder aufnehmen" } };
     }
 
     if (event.excludedActivityIds) {
@@ -1369,7 +1364,7 @@ export async function includeActivity(eventId: string, activityId: string): Prom
     return { data: event };
   }
 
-  const result = await request<any>(`/events/${eventId}/activities/${activityId}/include`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/activities/${activityId}/include`, {
     method: 'PATCH',
   });
   if (result.data) {
@@ -1400,14 +1395,14 @@ export async function voteOnActivity(eventId: string, activityId: string, vote: 
     }
     return { data: null };
   }
-  const result = await request<any>(`/events/${eventId}/votes`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/votes`, {
     method: 'POST',
     body: JSON.stringify({ activity_id: activityId, vote }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function addDateOption(eventId: string, date: string, startTime?: string, endTime?: string): Promise<ApiResult<Event | null>> {
@@ -1426,14 +1421,14 @@ export async function addDateOption(eventId: string, date: string, startTime?: s
     }
     return { data: null };
   }
-  const result = await request<any>(`/events/${eventId}/date-options`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/date-options`, {
     method: 'POST',
     body: JSON.stringify({ date, start_time: startTime, end_time: endTime }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function deleteDateOption(eventId: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
@@ -1446,13 +1441,13 @@ export async function deleteDateOption(eventId: string, dateOptionId: string): P
     }
     return { data: null };
   }
-  const result = await request<any>(`/events/${eventId}/date-options/${dateOptionId}`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/date-options/${dateOptionId}`, {
     method: 'DELETE',
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function respondToDateOption(eventId: string, dateOptionId: string, response: DateResponseType, isPriority: boolean = false, contribution?: number): Promise<ApiResult<Event | null>> {
@@ -1483,14 +1478,14 @@ export async function respondToDateOption(eventId: string, dateOptionId: string,
     }
     return { data: null };
   }
-  const result = await request<any>(`/events/${eventId}/date-options/${dateOptionId}/response`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/date-options/${dateOptionId}/response`, {
     method: 'POST',
     body: JSON.stringify({ response, is_priority: isPriority, contribution }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function selectWinningActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
@@ -1504,14 +1499,14 @@ export async function selectWinningActivity(eventId: string, activityId: string)
     }
     return { data: null };
   }
-  const result = await request<any>(`/events/${eventId}/select-activity`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/select-activity`, {
     method: 'POST',
     body: JSON.stringify({ activity_id: activityId }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function finalizeDateOption(eventId: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
@@ -1525,14 +1520,14 @@ export async function finalizeDateOption(eventId: string, dateOptionId: string):
     }
     return { data: null };
   }
-  const result = await request<any>(`/events/${eventId}/finalize-date`, {
+  const result = await request<ApiEvent>(`/events/${eventId}/finalize-date`, {
     method: 'POST',
     body: JSON.stringify({ date_option_id: dateOptionId }),
   });
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
-  return { data: null, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 // --- Favorites & Auth (Mock Only for now) ---
@@ -1576,12 +1571,12 @@ export async function toggleFavorite(activityId: string): Promise<ApiResult<{ is
   if (res.data) {
     return {
       data: {
-        isFavorite: (res.data as any).is_favorite ?? (res.data as any).isFavorite,
-        favoritesCount: (res.data as any).favorites_count ?? (res.data as any).favoritesCount,
+        isFavorite: res.data.is_favorite ?? res.data.isFavorite,
+        favoritesCount: res.data.favorites_count ?? res.data.favoritesCount,
       },
     };
   }
-  return { data: null as any, error: res.error };
+  return { data: undefined, error: res.error };
 }
 
 export async function isFavorite(activityId: string): Promise<ApiResult<{ isFavorite: boolean; favoritesCount: number }>> {
@@ -1591,9 +1586,9 @@ export async function isFavorite(activityId: string): Promise<ApiResult<{ isFavo
   }
   const res = await request<{ is_favorite: boolean; favorites_count: number }>(`/activities/${activityId}/favorite`);
   if (res.data) {
-    return { data: { isFavorite: (res.data as any).is_favorite ?? (res.data as any).isFavorite, favoritesCount: (res.data as any).favorites_count ?? (res.data as any).favoritesCount } };
+    return { data: { isFavorite: res.data.is_favorite ?? res.data.isFavorite, favoritesCount: res.data.favorites_count ?? res.data.favoritesCount } };
   }
-  return { data: { isFavorite: false, favoritesCount: 0 }, error: res.error };
+  return { data: undefined, error: res.error };
 }
 
 let isLoggedIn = true;
@@ -1612,17 +1607,17 @@ async function mockLogout(): Promise<ApiResult<void>> {
 
 // --- Comments ---
 
-function mapCommentFromApi(apiComment: any): EventComment {
+function mapCommentFromApi(apiComment: ApiEventComment): EventComment {
   return {
     id: apiComment.id,
     eventId: apiComment.event_id,
     userId: apiComment.user_id,
     content: apiComment.content,
-    phase: apiComment.phase,
+    phase: apiComment.phase as EventPhase,
     createdAt: apiComment.created_at,
     userName: apiComment.user_name,
     userAvatar: apiComment.user_avatar,
-  } as EventComment;
+  };
 }
 
 export async function getEventComments(eventId: string, phase?: EventPhase, skip = 0, limit = 50): Promise<ApiResult<EventComment[]>> {
@@ -1643,11 +1638,11 @@ export async function getEventComments(eventId: string, phase?: EventPhase, skip
   let url = `/events/${eventId}/comments?skip=${skip}&limit=${limit}`;
   if (phase) url += `&phase=${phase}`;
   
-  const result = await request<any[]>(url);
+  const result = await request<ApiEventComment[]>(url);
   if (result.data) {
     return { data: result.data.map(mapCommentFromApi) };
   }
-  return { data: [], error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function createEventComment(eventId: string, content: string, phase: EventPhase): Promise<ApiResult<EventComment>> {
@@ -1660,7 +1655,7 @@ export async function createEventComment(eventId: string, content: string, phase
     };
   }
   
-  const result = await request<any>(`/events/${eventId}/comments`, {
+  const result = await request<ApiEventComment>(`/events/${eventId}/comments`, {
     method: 'POST',
     body: JSON.stringify({ content, phase }),
   });
@@ -1668,7 +1663,7 @@ export async function createEventComment(eventId: string, content: string, phase
   if (result.data) {
     return { data: mapCommentFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function deleteEventComment(eventId: string, commentId: string): Promise<ApiResult<void>> {
@@ -1681,12 +1676,12 @@ export async function deleteEventComment(eventId: string, commentId: string): Pr
     method: 'DELETE',
   });
   if (result.error) {
-    return { data: undefined as any, error: result.error };
+    return { data: undefined, error: result.error };
   }
-  return { data: undefined as any };
+  return { data: undefined };
 }
 
-function mapActivityCommentFromApi(apiComment: any): ActivityComment {
+function mapActivityCommentFromApi(apiComment: ApiActivityComment): ActivityComment {
   return {
     id: apiComment.id,
     activityId: apiComment.activity_id || apiComment.activityId,
@@ -1695,7 +1690,7 @@ function mapActivityCommentFromApi(apiComment: any): ActivityComment {
     createdAt: apiComment.created_at || apiComment.createdAt,
     userName: apiComment.user_name || apiComment.userName,
     userAvatar: apiComment.user_avatar || apiComment.userAvatar,
-  } as ActivityComment;
+  };
 }
 
 export async function getActivityComments(activityId: string, skip = 0, limit = 50): Promise<ApiResult<ActivityComment[]>> {
@@ -1713,11 +1708,11 @@ export async function getActivityComments(activityId: string, skip = 0, limit = 
     return { data: mockComments };
   }
   
-  const result = await request<any[]>(`/activities/${activityId}/comments?skip=${skip}&limit=${limit}`);
+  const result = await request<ApiActivityComment[]>(`/activities/${activityId}/comments?skip=${skip}&limit=${limit}`);
   if (result.data) {
     return { data: result.data.map(mapActivityCommentFromApi) };
   }
-  return { data: [], error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function createActivityComment(activityId: string, content: string): Promise<ApiResult<ActivityComment>> {
@@ -1730,7 +1725,7 @@ export async function createActivityComment(activityId: string, content: string)
     };
   }
   
-  const result = await request<any>(`/activities/${activityId}/comments`, {
+  const result = await request<ApiActivityComment>(`/activities/${activityId}/comments`, {
     method: 'POST',
     body: JSON.stringify({ content }),
   });
@@ -1738,7 +1733,7 @@ export async function createActivityComment(activityId: string, content: string)
   if (result.data) {
     return { data: mapActivityCommentFromApi(result.data) };
   }
-  return { data: null as any, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function deleteActivityComment(activityId: string, commentId: string): Promise<ApiResult<void>> {
@@ -1751,9 +1746,9 @@ export async function deleteActivityComment(activityId: string, commentId: strin
     method: 'DELETE',
   });
   if (result.error) {
-    return { data: undefined as any, error: result.error };
+    return { data: undefined, error: result.error };
   }
-  return { data: undefined as any };
+  return { data: undefined };
 }
 
 // --- AI / Extras ---
@@ -1809,13 +1804,13 @@ export async function sendEventInvites(eventId: string): Promise<ApiResult<{ sen
     return { data: { sent: 0 }, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
   }
 
-  const result = await request<any>(`/ai/events/${eventId}/invites`, {
+  const result = await request<ApiSentCount>(`/ai/events/${eventId}/invites`, {
     method: "POST",
   });
   if (result.data) {
-    return { data: { sent: (result.data as any).sent ?? (result.data as any).count ?? 0 } };
+    return { data: { sent: result.data.sent ?? result.data.count ?? 0 } };
   }
-  return { data: { sent: 0 }, error: result.error };
+  return { data: undefined, error: result.error };
 }
 
 export async function sendVotingReminder(eventId: string, userId?: string): Promise<ApiResult<{ sent: number }>> {
@@ -1831,12 +1826,12 @@ export async function sendVotingReminder(eventId: string, userId?: string): Prom
   }
 
   const body = userId ? { user_id: userId } : undefined;
-  const result = await request<any>(`/ai/events/${eventId}/voting-reminders`, {
+  const result = await request<ApiSentCount>(`/ai/events/${eventId}/voting-reminders`, {
     method: "POST",
     body: body ? JSON.stringify(body) : undefined,
   });
   if (result.data) {
-    return { data: { sent: (result.data as any).sent ?? (result.data as any).count ?? 0 } };
+    return { data: { sent: result.data.sent ?? result.data.count ?? 0 } };
   }
-  return { data: { sent: 0 }, error: result.error };
+  return { data: undefined, error: result.error };
 }

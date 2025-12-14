@@ -9,8 +9,8 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-// @ts-ignore
-delete (Icon.Default.prototype as any)._getIconUrl;
+// @ts-expect-error: Leaflet's default icon needs to be reset due to webpack issues.
+(L.Icon.Default.prototype as { _getIconUrl: string | undefined })._getIconUrl = undefined;
 Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   iconRetinaUrl: markerIcon2x,
@@ -53,8 +53,9 @@ export function ActivityMiniMap({ activity, className }: ActivityMiniMapProps) {
       "lat" in coords &&
       "lng" in coords
     ) {
-      const lat = parseFloat(String((coords as any).lat));
-      const lng = parseFloat(String((coords as any).lng));
+      const coordsObj = coords as Record<string, unknown>;
+      const lat = parseFloat(String(coordsObj.lat));
+      const lng = parseFloat(String(coordsObj.lng));
       if (Number.isFinite(lat) && Number.isFinite(lng)) {
         return [lat, lng];
       }
@@ -70,7 +71,7 @@ export function ActivityMiniMap({ activity, className }: ActivityMiniMapProps) {
       // 1. Prioritize explicit coordinates from the API (accept number or string inputs)
       const apiPosition =
         normalizeCoordinates(activity.coordinates) ||
-        normalizeCoordinates((activity as any).locationCoordinates);
+        normalizeCoordinates(activity.locationCoordinates);
 
       if (apiPosition && isMounted) {
         setPosition(apiPosition);

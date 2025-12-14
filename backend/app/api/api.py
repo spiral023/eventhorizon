@@ -776,14 +776,36 @@ async def get_room_events(room_id: UUID, db: AsyncSession = Depends(get_db)):
     events = result.scalars().all()
     return [enhance_event_full(e) for e in events]
 
-@router.post("/rooms/{room_id}/events", response_model=EventSchema)
+@router.post("/rooms/{room_identifier}/events", response_model=EventSchema)
 async def create_event(
-    room_id: UUID,
+    room_identifier: str,
     event_in: EventCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     from app.models.domain import RoomMember
+
+    # Resolve room_identifier to room
+    is_uuid = False
+    try:
+        room_uuid = UUID(room_identifier)
+        is_uuid = True
+    except ValueError:
+        pass
+
+    query = select(Room)
+    if is_uuid:
+        query = query.where(Room.id == room_uuid)
+    else:
+        query = query.where(Room.invite_code == room_identifier.upper().strip())
+
+    result = await db.execute(query)
+    room = result.scalar_one_or_none()
+    
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+        
+    room_id = room.id
 
     # Basic impl
     event = Event(

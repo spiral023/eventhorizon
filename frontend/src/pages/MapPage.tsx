@@ -18,8 +18,8 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-// @ts-ignore
-delete (Icon.Default.prototype as any)._getIconUrl;
+// @ts-expect-error: Leaflet's default icon needs to be reset due to webpack issues.
+(L.Icon.Default.prototype as { _getIconUrl: string | undefined })._getIconUrl = undefined;
 Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   iconRetinaUrl: markerIcon2x,

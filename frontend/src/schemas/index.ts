@@ -228,6 +228,8 @@ export const CreateEventSchema = z.object({
     .max(100, "Name darf maximal 100 Zeichen haben"),
   description: z.string().max(500).optional(),
   timeWindow: EventTimeWindowSchema,
+  fromWeek: z.number().min(1).max(53).optional(),
+  toWeek: z.number().min(1).max(53).optional(),
   votingDeadline: z.string().refine(
     (val) => new Date(val) > new Date(),
     "Deadline muss in der Zukunft liegen"

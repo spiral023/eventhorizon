@@ -52,9 +52,9 @@ export function QrScanner({ onScanSuccess, onScanError }: QrScannerProps) {
 
       setIsScanning(true);
       setIsInitializing(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error starting QR scanner:", err);
-      const errorMsg = err?.message || "Kamera konnte nicht gestartet werden";
+      const errorMsg = (err instanceof Error) ? err.message : "Kamera konnte nicht gestartet werden";
       setError(errorMsg);
       onScanError?.(errorMsg);
       setIsInitializing(false);

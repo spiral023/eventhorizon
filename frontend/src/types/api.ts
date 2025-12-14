@@ -1,7 +1,7 @@
 export interface ApiError {
   code: string;
   message: string;
-  details?: unknown;
+  detail?: string | object;
 }
 
 export interface ApiResult<T> {

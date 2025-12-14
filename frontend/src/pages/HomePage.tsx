@@ -412,17 +412,19 @@ export default function HomePage() {
 
               >
 
-                <ActivityCard 
+                                <ActivityCard 
 
-                  activity={activity} 
+                                  activity={activity} 
 
-                  isFavorite={favoriteIds.includes(activity.id)}
+                                  isFavorite={favoriteIds.includes(activity.id)}
 
-                  onFavoriteToggle={handleFavoriteToggle}
+                                  onFavoriteToggle={handleFavoriteToggle}
 
-                  onClick={() => navigate(`/activities/${activity.id}`)}
+                                  onClick={() => navigate(`/activities/${activity.id}`)}
 
-                />
+                                  showTags={false}
+
+                                />
 
               </div>
 

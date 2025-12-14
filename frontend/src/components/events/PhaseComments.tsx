@@ -31,16 +31,15 @@ export const PhaseComments: React.FC<PhaseCommentsProps> = ({ eventId, phase }) 
   const { toast } = useToast();
   const currentUserId = useAuthStore((state) => state.user?.id);
 
-  const fetchComments = async () => {
-    setIsLoading(true);
-    const { data, error } = await getEventComments(eventId, phase, 0, 50);
-    if (data) {
-      setComments(data);
-    }
-    setIsLoading(false);
-  };
-
   useEffect(() => {
+    const fetchComments = async () => {
+      setIsLoading(true);
+      const { data, error } = await getEventComments(eventId, phase, 0, 50);
+      if (data) {
+        setComments(data);
+      }
+      setIsLoading(false);
+    };
     fetchComments();
   }, [eventId, phase]);
 

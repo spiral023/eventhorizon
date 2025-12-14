@@ -47,27 +47,27 @@ export default function ActivitiesPage() {
 
   useEffect(() => {
     if (authLoading) return;
+
+    const loadData = async () => {
+      setIsLoadingActivities(true);
+      setError(null);
+      try {
+        const [activitiesResult, favoritesResult] = await Promise.all([
+          getActivities(),
+          isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
+        ]);
+
+        if (activitiesResult.error) throw new Error(activitiesResult.error.message);
+        setActivities(activitiesResult.data);
+        setFavoriteIds(favoritesResult.data || []);
+      } catch (err) {
+        setError("Aktivitäten konnten nicht geladen werden.");
+      } finally {
+        setIsLoadingActivities(false);
+      }
+    };
     loadData();
   }, [isAuthenticated, authLoading]);
-
-  const loadData = async () => {
-    setIsLoadingActivities(true);
-    setError(null);
-    try {
-      const [activitiesResult, favoritesResult] = await Promise.all([
-        getActivities(),
-        isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
-      ]);
-
-      if (activitiesResult.error) throw new Error(activitiesResult.error.message);
-      setActivities(activitiesResult.data);
-      setFavoriteIds(favoritesResult.data || []);
-    } catch (err) {
-      setError("Aktivitäten konnten nicht geladen werden.");
-    } finally {
-      setIsLoadingActivities(false);
-    }
-  };
 
   const filteredActivities = activities.filter((activity) => {
     const durationMinutes = (() => {

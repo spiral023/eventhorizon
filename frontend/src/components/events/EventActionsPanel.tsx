@@ -260,7 +260,7 @@ const ManageEventDialog = ({ event, isCreator, trigger, onEventUpdated }: Manage
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label className="text-sm">Budget-Typ</Label>
-              <Select value={budgetType} onValueChange={(v) => setBudgetType(v as any)} disabled={!isCreator}>
+              <Select value={budgetType} onValueChange={(v: BudgetType) => setBudgetType(v)} disabled={!isCreator}>
                 <SelectTrigger className="rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
@@ -324,28 +324,27 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
 
   const reminderPhaseAllowed = event.phase === "voting" || event.phase === "scheduling";
 
-  const refreshUnread = async () => {
-    try {
-      const lastSeenKey = `event:${event.id}:chat:last_seen`;
-      const lastSeenValue = typeof window !== "undefined" ? window.localStorage.getItem(lastSeenKey) : null;
-      const lastSeenDate = lastSeenValue ? new Date(lastSeenValue) : null;
-
-      const results = await Promise.all(
-        phaseOrder.map((phase) => getEventComments(event.id, phase, 0, 30))
-      );
-      const comments = results.flatMap((r) => r.data || []);
-      const unread = lastSeenDate
-        ? comments.filter((c) => new Date(c.createdAt) > lastSeenDate).length
-        : comments.length;
-      setUnreadCount(unread);
-    } catch (error) {
-      setUnreadCount(event.unreadMessageCount ?? 0);
-    }
-  };
-
   useEffect(() => {
+    const refreshUnread = async () => {
+      try {
+        const lastSeenKey = `event:${event.id}:chat:last_seen`;
+        const lastSeenValue = typeof window !== "undefined" ? window.localStorage.getItem(lastSeenKey) : null;
+        const lastSeenDate = lastSeenValue ? new Date(lastSeenValue) : null;
+
+        const results = await Promise.all(
+          phaseOrder.map((phase) => getEventComments(event.id, phase, 0, 30))
+        );
+        const comments = results.flatMap((r) => r.data || []);
+        const unread = lastSeenDate
+          ? comments.filter((c) => new Date(c.createdAt) > lastSeenDate).length
+          : comments.length;
+        setUnreadCount(unread);
+      } catch (error) {
+        setUnreadCount(event.unreadMessageCount ?? 0);
+      }
+    };
     void refreshUnread();
-  }, [event.id]);
+  }, [event.id, event.unreadMessageCount]);
 
   const handleInviteSend = async () => {
     if (!isCreator) {
