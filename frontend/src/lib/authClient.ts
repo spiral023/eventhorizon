@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/react";
+import { emailOTPClient } from "better-auth/client/plugins";
 
 const AUTH_BASE_PATH = "/api/auth";
 const defaultBaseUrl = typeof window !== "undefined" ? window.location.origin : "";
@@ -6,6 +7,7 @@ const defaultBaseUrl = typeof window !== "undefined" ? window.location.origin : 
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_AUTH_BASE_URL ?? defaultBaseUrl,
   basePath: AUTH_BASE_PATH,
+  plugins: [emailOTPClient()],
 });
 
 async function authRequest<T>(path: string, init?: RequestInit): Promise<T> {

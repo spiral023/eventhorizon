@@ -1,9 +1,11 @@
 import { betterAuth } from "better-auth";
-import { jwt } from "better-auth/plugins";
+import { jwt, emailOTP } from "better-auth/plugins";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
 import { Pool } from "pg";
+import { Resend } from "resend";
+import { renderOtpEmail } from "./templates/otpEmail";
 
 const {
   BETTER_AUTH_SECRET,
@@ -16,6 +18,8 @@ const {
   BETTER_AUTH_JWT_EXP = "15m",
   PORT = "3000",
   BETTER_AUTH_DB_SCHEMA = "auth",
+  RESEND_API_KEY,
+  MAIL_FROM_EMAIL = "noreply@eventhorizon.app",
 } = process.env;
 
 if (!BETTER_AUTH_SECRET) {
@@ -38,6 +42,8 @@ pool.query(`CREATE SCHEMA IF NOT EXISTS "${BETTER_AUTH_DB_SCHEMA}"`).catch((err)
   process.exit(1);
 });
 
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
 const auth = betterAuth({
   appName: "EventHorizon Auth",
   baseURL: BETTER_AUTH_BASE_URL,
@@ -58,6 +64,35 @@ const auth = betterAuth({
     },
   },
   plugins: [
+    emailOTP({
+      overrideDefaultEmailVerification: true,
+      otpLength: 6,
+      expiresIn: 300,
+      allowedAttempts: 3,
+      async sendVerificationOTP({ email, otp, type }) {
+        const { subject, text, html } = renderOtpEmail({
+          otp: String(otp),
+          type,
+          frontendUrl: BETTER_AUTH_BASE_URL,
+        });
+        if (!resend) {
+          console.warn("[auth] RESEND_API_KEY not set; OTP:", { email, otp, type });
+          return;
+        }
+        try {
+          await resend.emails.send({
+            from: MAIL_FROM_EMAIL,
+            to: email,
+            subject,
+            text,
+            html,
+          });
+        } catch (error) {
+          console.error("[auth] Failed to send OTP email", error);
+          // Do not leak timing; continue without throwing
+        }
+      },
+    }),
     jwt({
       jwt: {
         issuer: BETTER_AUTH_JWT_ISSUER,
@@ -97,8 +132,18 @@ const auth = betterAuth({
 auth.$context
   .then(async (ctx) => {
     if (typeof ctx.runMigrations === "function") {
-      await ctx.runMigrations();
-      console.log("[auth] migrations applied");
+      try {
+        await ctx.runMigrations();
+        console.log("[auth] migrations applied");
+      } catch (err: any) {
+        const msg = typeof err?.message === "string" ? err.message.toLowerCase() : "";
+        if (err?.code === "42P07" || msg.includes("already exists")) {
+          console.warn("[auth] migrations skipped: tables already exist");
+        } else {
+          console.error("[auth] failed to run migrations", err);
+          process.exit(1);
+        }
+      }
     }
   })
   .catch((err) => {

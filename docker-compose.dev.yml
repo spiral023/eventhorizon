@@ -67,6 +67,8 @@ services:
       BETTER_AUTH_JWT_ISSUER: eventhorizon-auth
       BETTER_AUTH_JWT_AUDIENCE: eventhorizon-api
       BETTER_AUTH_DB_SCHEMA: auth
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-event-horizon@notifications.sp23.online}
     depends_on:
       - db
 

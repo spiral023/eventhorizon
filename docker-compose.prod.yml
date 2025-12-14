@@ -90,6 +90,8 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-eventhorizon}
       TRUSTED_ORIGINS: https://event-horizon.sp23.online
       BETTER_AUTH_DB_SCHEMA: auth
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-event-horizon@notifications.sp23.online}
     depends_on:
       db:
         condition: service_healthy

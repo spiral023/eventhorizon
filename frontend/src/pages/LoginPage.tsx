@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle } from "lucide-react";
+import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
+  const [authVariant, setAuthVariant] = useState<"password" | "otp">("password");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -20,8 +21,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
-  const { login, register, isAuthenticated } = useAuthStore();
+  const { login, register, loginWithOtp, sendOtp, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,6 +36,11 @@ export default function LoginPage() {
     const requestedMode = params.get("mode");
     if (requestedMode === "register" || requestedMode === "login") {
       setMode(requestedMode);
+      if (requestedMode === "register") {
+        setAuthVariant("password");
+        setOtp("");
+        setOtpSent(false);
+      }
     }
   }, [location.search]);
 
@@ -44,6 +53,26 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (mode === "login" && authVariant === "otp") {
+      setIsLoading(true);
+      const success = await loginWithOtp(email, otp);
+      setIsLoading(false);
+      if (success) {
+        toast({
+          title: "Erfolgreich angemeldet",
+          description: "Du bist jetzt eingeloggt.",
+        });
+        navigate(from, { replace: true });
+      } else {
+        toast({
+          title: "Login fehlgeschlagen",
+          description: "Bitte Code und E-Mail prüfen.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
     if (mode === "register" && password !== confirmPassword) {
       toast({
         title: "Passwörter stimmen nicht überein",
@@ -111,13 +140,61 @@ export default function LoginPage() {
             <CardTitle className="text-2xl">
               {mode === "login" ? "Anmelden" : "Registrieren"}
             </CardTitle>
-            <CardDescription>
-              {mode === "login"
-                ? "Melde dich an, um deine Team-Events zu planen"
-                : "Erstelle deinen Account, um loszulegen"}
-            </CardDescription>
+          <CardDescription>
+            {mode === "login"
+              ? "Melde dich an, um deine Team-Events zu planen"
+              : "Erstelle deinen Account, um loszulegen"}
+          </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
+            <div className="mb-4 flex rounded-full bg-muted p-1 text-sm font-medium">
+              <button
+                type="button"
+                className={cn(
+                  "flex-1 rounded-full px-3 py-2 transition-colors",
+                  mode === "login" && "bg-background shadow-sm"
+                )}
+                onClick={() => setMode("login")}
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "flex-1 rounded-full px-3 py-2 transition-colors",
+                  mode === "register" && "bg-background shadow-sm"
+                )}
+                onClick={() => setMode("register")}
+              >
+                Registrieren
+              </button>
+            </div>
+
+            {mode === "login" && (
+              <div className="mb-3 flex gap-2 text-sm font-medium">
+                <button
+                  type="button"
+                  className={cn(
+                    "flex-1 rounded-xl border px-3 py-2 transition-colors",
+                    authVariant === "password" ? "border-primary bg-primary/10 text-primary" : "border-border"
+                  )}
+                  onClick={() => setAuthVariant("password")}
+                >
+                  Passwort
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex-1 rounded-xl border px-3 py-2 transition-colors",
+                    authVariant === "otp" ? "border-primary bg-primary/10 text-primary" : "border-border"
+                  )}
+                  onClick={() => setAuthVariant("otp")}
+                >
+                  Code (OTP)
+                </button>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "register" && (
                 <div className="grid grid-cols-2 gap-4">
@@ -164,35 +241,92 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Passwort</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="rounded-xl pr-10"
-                    required
-                    autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
+              {mode === "login" && authVariant === "otp" ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="otp">Einmal-Code</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="otp"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={6}
+                        placeholder="6-stelliger Code"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="rounded-xl"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          if (!email) {
+                            toast({
+                              title: "E-Mail fehlt",
+                              description: "Bitte gib zuerst deine E-Mail an.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          setIsSendingOtp(true);
+                          const ok = await sendOtp(email, "sign-in");
+                          setIsSendingOtp(false);
+                          if (ok) {
+                            setOtpSent(true);
+                            toast({
+                              title: "Code gesendet",
+                              description: "Bitte prüfe dein Postfach.",
+                            });
+                          } else {
+                            toast({
+                              title: "Code konnte nicht gesendet werden",
+                              description: "Versuche es erneut.",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        disabled={isSendingOtp}
+                        className="rounded-xl gap-2 whitespace-nowrap"
+                      >
+                        {isSendingOtp ? "Sende..." : <><Send className="h-4 w-4" /> Code senden</>}
+                      </Button>
+                    </div>
+                    {otpSent && <p className="text-xs text-muted-foreground">Code gesendet. Gültig für wenige Minuten.</p>}
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Passwort</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="rounded-xl pr-10"
+                      required
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {mode === "register" && (
                 <div className="space-y-2">
@@ -248,11 +382,19 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  mode === "login" ? "Anmelden..." : "Registrieren..."
+                  mode === "login"
+                    ? authVariant === "otp"
+                      ? "Einloggen..."
+                      : "Anmelden..."
+                    : "Registrieren..."
                 ) : (
                   <>
                     <LogIn className="h-4 w-4" />
-                    {mode === "login" ? "Anmelden" : "Registrieren"}
+                    {mode === "login"
+                      ? authVariant === "otp"
+                        ? "Mit Code einloggen"
+                        : "Anmelden"
+                      : "Registrieren"}
                   </>
                 )}
               </Button>
