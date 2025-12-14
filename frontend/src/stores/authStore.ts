@@ -9,18 +9,23 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  pendingVerificationEmail: string | null;
   roomRoles: Record<string, RoomRole>; // roomId -> role
   
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
   loginWithOtp: (email: string, otp: string) => Promise<boolean>;
   sendOtp: (email: string, type: "sign-in" | "email-verification" | "forget-password") => Promise<boolean>;
-  register: (input: { email: string; firstName: string; lastName: string; password: string }) => Promise<boolean>;
+  register: (input: { email: string; firstName: string; lastName: string; password: string }) => Promise<{
+    success: boolean;
+    email?: string;
+  }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setRoomRole: (roomId: string, role: RoomRole) => void;
   getRoomRole: (roomId: string) => RoomRole;
   clearError: () => void;
+  clearPendingVerification: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,6 +35,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
       error: null,
+      pendingVerificationEmail: null,
       roomRoles: {
         "room-1": "admin",
         "room-2": "member",
@@ -42,13 +48,21 @@ export const useAuthStore = create<AuthState>()(
         try {
           const result = await apiLogin(email, password);
           if (result.error) {
-            set({ error: result.error.message, isLoading: false });
+            const needsVerification = result.error.code === "EMAIL_NOT_VERIFIED";
+            set({
+              error: result.error.message,
+              isLoading: false,
+              pendingVerificationEmail: needsVerification ? email : null,
+              user: null,
+              isAuthenticated: false,
+            });
             return false;
           }
           set({
             user: result.data,
             isAuthenticated: true,
             isLoading: false,
+            pendingVerificationEmail: null,
           });
           return true;
         } catch (e) {
@@ -67,6 +81,7 @@ export const useAuthStore = create<AuthState>()(
               user: result.data,
               isAuthenticated: true,
               isLoading: false,
+              pendingVerificationEmail: null,
             });
             return true;
           }
@@ -94,17 +109,18 @@ export const useAuthStore = create<AuthState>()(
           const result = await apiRegister(input);
           if (result.error) {
             set({ error: result.error.message, isLoading: false });
-            return false;
+            return { success: false };
           }
           set({
-            user: result.data,
-            isAuthenticated: true,
+            user: null,
+            isAuthenticated: false,
             isLoading: false,
+            pendingVerificationEmail: result.data?.email ?? input.email,
           });
-          return true;
+          return { success: true, email: result.data?.email ?? input.email };
         } catch (e) {
           set({ error: "Registrierung fehlgeschlagen", isLoading: false });
-          return false;
+          return { success: false };
         }
       },
 
@@ -114,7 +130,8 @@ export const useAuthStore = create<AuthState>()(
         set({ 
           user: null, 
           isAuthenticated: false, 
-          isLoading: false 
+          isLoading: false,
+          pendingVerificationEmail: null,
         });
       },
 
@@ -126,20 +143,21 @@ export const useAuthStore = create<AuthState>()(
             set({ 
               user: result.data, 
               isAuthenticated: true, 
-              isLoading: false 
+              isLoading: false,
+              pendingVerificationEmail: null,
             });
           } else {
             set({ 
               user: null, 
               isAuthenticated: false, 
-              isLoading: false 
+              isLoading: false,
             });
           }
         } catch {
           set({ 
             user: null, 
             isAuthenticated: false, 
-            isLoading: false 
+            isLoading: false,
           });
         }
       },
@@ -155,6 +173,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearError: () => set({ error: null }),
+      clearPendingVerification: () => set({ pendingVerificationEmail: null }),
     }),
     {
       name: "eventhorizon-auth",

@@ -4,6 +4,15 @@ import { emailOTPClient } from "better-auth/client/plugins";
 const AUTH_BASE_PATH = "/api/auth";
 const defaultBaseUrl = typeof window !== "undefined" ? window.location.origin : "";
 
+export class AuthError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_AUTH_BASE_URL ?? defaultBaseUrl,
   basePath: AUTH_BASE_PATH,
@@ -28,7 +37,7 @@ async function authRequest<T>(path: string, init?: RequestInit): Promise<T> {
     const message =
       (typeof data === "object" && data && "message" in data && (data as any).message) ||
       (typeof data === "string" ? data : "Authentifizierung fehlgeschlagen");
-    throw new Error(message as string);
+    throw new AuthError(message as string, response.status);
   }
 
   return data as T;

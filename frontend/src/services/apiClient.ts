@@ -2,7 +2,7 @@ import type { Room, Activity, Event, User, EventPhase, VoteType, DateResponseTyp
 import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 import type { ApiUser, ApiRoom, ApiActivity, ApiEvent, ApiEventComment, ApiActivityComment, ApiTokenResponse, ApiUserStats, ApiDateOption, ApiActivityVote, ApiEventParticipant } from "@/types/apiDomain";
-import { fetchJwtToken, signInWithEmail, signOutUser, signUpWithEmail } from "@/lib/authClient";
+import { AuthError, fetchJwtToken, signInWithEmail, signOutUser, signUpWithEmail } from "@/lib/authClient";
 
 export interface AvatarUploadInfo {
   uploadUrl: string;
@@ -356,6 +356,16 @@ export async function login(email: string, password: string): Promise<ApiResult<
       error: profile.error ?? { code: "AUTH_ERROR", message: "Login fehlgeschlagen" },
     };
   } catch (e) {
+    if (e instanceof AuthError) {
+      const requiresVerification = e.status === 403;
+      const message = requiresVerification
+        ? "Bitte bestätige deine E-Mail-Adresse über den Link, den wir dir geschickt haben."
+        : e.message || "Login fehlgeschlagen";
+      return {
+        data: undefined,
+        error: { code: requiresVerification ? "EMAIL_NOT_VERIFIED" : "AUTH_ERROR", message },
+      };
+    }
     return {
       data: undefined,
       error: { code: "AUTH_ERROR", message: e instanceof Error ? e.message : "Login fehlgeschlagen" },
@@ -363,21 +373,15 @@ export async function login(email: string, password: string): Promise<ApiResult<
   }
 }
 
-export async function register(user: { email: string; firstName: string; lastName: string; password: string }): Promise<ApiResult<User>> {
+export async function register(user: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+}): Promise<ApiResult<{ email: string }>> {
   if (USE_MOCKS) {
-    const mockUser: Partial<User> = {
-      id: `user-${Date.now()}`,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      name: `${user.firstName} ${user.lastName}`.trim(),
-      avatarUrl: "",
-      department: "",
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    };
     setCachedToken("mock-token");
-    return { data: mockUser };
+    return { data: { email: user.email } };
   }
 
   try {
@@ -387,16 +391,10 @@ export async function register(user: { email: string; firstName: string; lastNam
       name: `${user.firstName} ${user.lastName}`.trim(),
     });
     setCachedToken(null);
-    const profile = await getCurrentUser();
-    if (profile.data) {
-      return { data: profile.data };
-    }
-    return {
-      data: undefined,
-      error: profile.error ?? { code: "AUTH_ERROR", message: "Registrierung fehlgeschlagen" },
-    };
+    return { data: { email: user.email } };
   } catch (e) {
-    return { data: undefined, error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" } };
+    const message = e instanceof Error ? e.message : "Netzwerkfehler";
+    return { data: undefined, error: { code: "NETWORK_ERROR", message } };
   }
 }
 

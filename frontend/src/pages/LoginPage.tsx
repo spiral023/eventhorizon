@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle, Send } from "lucide-react";
+import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle, Send, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -24,8 +25,18 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
-  const { login, register, loginWithOtp, sendOtp, isAuthenticated } = useAuthStore();
+  const {
+    login,
+    register,
+    loginWithOtp,
+    sendOtp,
+    isAuthenticated,
+    error,
+    pendingVerificationEmail,
+    clearPendingVerification,
+  } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,6 +60,13 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, from]);
+
+  useEffect(() => {
+    if (pendingVerificationEmail) {
+      setVerificationEmail(pendingVerificationEmail);
+      clearPendingVerification();
+    }
+  }, [pendingVerificationEmail, clearPendingVerification]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,26 +103,43 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const success =
-        mode === "login"
-          ? await login(email, password)
-          : await register({ email, firstName, lastName, password });
-
-      if (success) {
-        toast({
-          title: mode === "login" ? "Willkommen zurück!" : "Account erstellt",
-          description:
-            mode === "login"
-              ? "Du wurdest erfolgreich angemeldet."
-              : "Dein Account wurde erstellt und du bist jetzt angemeldet.",
-        });
-        navigate(from, { replace: true });
+      if (mode === "login") {
+        const success = await login(email, password);
+        if (success) {
+          toast({
+            title: "Willkommen zurück!",
+            description: "Du wurdest erfolgreich angemeldet.",
+          });
+          navigate(from, { replace: true });
+        } else {
+          toast({
+            title: "Login fehlgeschlagen",
+            description: error || "Bitte überprüfe deine Angaben.",
+            variant: "destructive",
+          });
+        }
       } else {
-        toast({
-          title: mode === "login" ? "Login fehlgeschlagen" : "Registrierung fehlgeschlagen",
-          description: "Bitte überprüfe deine Angaben.",
-          variant: "destructive",
-        });
+        const result = await register({ email, firstName, lastName, password });
+        if (result.success) {
+          const targetEmail = result.email ?? email;
+          setVerificationEmail(targetEmail);
+          toast({
+            title: "E-Mail bestätigen",
+            description: `Wir haben dir einen Bestätigungslink an ${targetEmail} gesendet. Bitte bestätige deine Adresse und melde dich danach an.`,
+          });
+          setMode("login");
+          setAuthVariant("password");
+          setOtp("");
+          setOtpSent(false);
+          setPassword("");
+          setConfirmPassword("");
+        } else {
+          toast({
+            title: "Registrierung fehlgeschlagen",
+            description: "Bitte überprüfe deine Angaben.",
+            variant: "destructive",
+          });
+        }
       }
     } catch {
       toast({
@@ -147,6 +182,16 @@ export default function LoginPage() {
           </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
+            {verificationEmail && (
+              <Alert className="mb-4 rounded-2xl">
+                <MailCheck className="h-4 w-4" />
+                <AlertTitle>E-Mail-Bestätigung erforderlich</AlertTitle>
+                <AlertDescription>
+                  Wir haben dir einen Bestätigungslink an {verificationEmail} gesendet. Bitte bestätige deine Adresse und melde dich danach an.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="mb-4 flex rounded-full bg-muted p-1 text-sm font-medium">
               <button
                 type="button"
@@ -303,7 +348,7 @@ export default function LoginPage() {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder="********"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="rounded-xl pr-10"
@@ -348,7 +393,7 @@ export default function LoginPage() {
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder="********"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className={cn(

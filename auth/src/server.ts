@@ -6,6 +6,7 @@ import { serve } from "@hono/node-server";
 import { Pool } from "pg";
 import { Resend } from "resend";
 import { renderOtpEmail } from "./templates/otpEmail";
+import { renderVerificationEmail } from "./templates/verificationEmail";
 
 const {
   BETTER_AUTH_SECRET,
@@ -53,19 +54,41 @@ const auth = betterAuth({
   trustedOrigins,
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
   },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7,
-    cookieCache: {
-      enabled: true,
-      maxAge: 60 * 5,
-      strategy: "compact",
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      const { subject, text, html } = renderVerificationEmail({
+        verificationUrl: url,
+        userName: user.name,
+        frontendUrl: BETTER_AUTH_BASE_URL,
+      });
+
+      if (!resend) {
+        console.warn("[auth] RESEND_API_KEY not set; verification URL:", url);
+        return;
+      }
+
+      // Do not block the request on mail delivery; log on failure.
+      void resend.emails
+        .send({
+          from: MAIL_FROM_EMAIL,
+          to: user.email,
+          subject,
+          text,
+          html,
+        })
+        .catch((error) => {
+          console.error("[auth] Failed to send verification email", error);
+        });
     },
   },
   plugins: [
     emailOTP({
-      overrideDefaultEmailVerification: true,
+      overrideDefaultEmailVerification: false,
       otpLength: 6,
       expiresIn: 300,
       allowedAttempts: 3,
