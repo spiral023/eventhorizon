@@ -1,16 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun, Check, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EventPhaseHeader } from "@/components/events/EventPhaseHeader";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { VotingCard } from "@/components/events/VotingCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
-import { PhaseComments } from "@/components/events/PhaseComments";
 import { EventActionsPanel } from "@/components/events/EventActionsPanel";
 import {
   getEventById,
@@ -28,10 +26,11 @@ import {
   formatTimeWindow, 
   formatBudget,
   CategoryLabels,
-  PhaseLabels
+  PhaseLabels,
+  PhaseDescriptions
 } from "@/types/domain";
 import { useAuthStore } from "@/stores/authStore";
-import { getNextPhases } from "@/utils/phaseStateMachine";
+import { getNextPhases, isPhaseCompleted, isPhaseCurrent } from "@/utils/phaseStateMachine";
 import { cn } from "@/lib/utils";
 
 export default function EventDetailPage() {
@@ -202,154 +201,153 @@ export default function EventDetailPage() {
   
   // Phase helper
   const phaseOrder: EventPhase[] = ["proposal", "voting", "scheduling", "info"];
-  const isPhaseEnabled = (phase: EventPhase) => {
-    if (!event) return false;
-    const currentIdx = phaseOrder.indexOf(event.phase);
-    const targetIdx = phaseOrder.indexOf(phase);
-    if (currentIdx === -1) return true; // Fallback
-    return targetIdx <= currentIdx;
-  };
+  
+  // Helper to determine if we should allow clicking a tab
+  // We generally allow navigation to any past or current phase.
+  // Future phases are disabled unless they are the "next" logical step (though usually we block them until advanced).
+  // Ideally, users can see where they are going, but not interact with future phases yet.
+  
   const handleEventUpdated = (updatedEvent: Event) => setEvent(updatedEvent);
   const outstandingVotes = event.participants.filter((p) => !p.hasVoted).length;
   const votedCount = event.participants.length - outstandingVotes;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Back Button */}
       <Button
         variant="ghost"
         size="sm"
-        className="gap-2 -ml-2"
+        className="gap-2 -ml-2 text-muted-foreground hover:text-foreground"
         onClick={() => navigate(`/rooms/${roomId}`)}
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück zum Raum
       </Button>
 
-      {/* Event Header */}
-      <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-background via-background to-primary/5 p-5 sm:p-6 shadow-sm space-y-5">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="relative">
-              <div className="h-16 w-16 overflow-hidden rounded-2xl border border-border/60 bg-secondary/40">
-                {event.avatarUrl ? (
-                  <img src={event.avatarUrl} alt={event.name} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                    <Calendar className="h-6 w-6" />
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="rounded-full">
-                  {PhaseLabels[event.phase]}
-                </Badge>
-                {isCreator && (
-                  <Badge variant="outline" className="rounded-full">
-                    Du verwaltest dieses Event
-                  </Badge>
-                )}
-              </div>
-              <h1 className="text-3xl font-bold tracking-tight leading-tight">{event.name}</h1>
-              {event.description && (
-                <p className="text-muted-foreground max-w-3xl">{event.description}</p>
+      {/* Modern Header Layout */}
+      <div className="grid gap-6">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div className="flex items-start gap-5">
+            <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-secondary/20 shadow-sm">
+              {event.avatarUrl ? (
+                <img src={event.avatarUrl} alt={event.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                  <Calendar className="h-8 w-8 opacity-50" />
+                </div>
               )}
             </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Teilnehmer</p>
-                <p className="text-lg font-semibold leading-tight">{event.participants.length}</p>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                 {isCreator && (
+                  <Badge variant="outline" className="h-5 px-1.5 text-[10px] uppercase font-bold tracking-wider">
+                    Admin
+                  </Badge>
+                )}
+                <span>{RegionLabels[event.locationRegion]}</span>
+                <span>•</span>
+                <span>{formatTimeWindow(event.timeWindow)}</span>
               </div>
             </div>
-            <div className="h-10 w-px bg-border/70" />
-            <div>
-              <p className="text-xs text-muted-foreground">Abgestimmt</p>
-              <p className="text-lg font-semibold leading-tight">
-                {votedCount}/{event.participants.length}
-              </p>
-            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+             {/* Stats */}
+             <div className="flex items-center gap-4 px-4 py-2 rounded-2xl bg-secondary/30 border border-border/40">
+                <div className="text-center">
+                  <div className="text-lg font-bold leading-none">{event.participants.length}</div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-medium mt-0.5">Dabei</div>
+                </div>
+                <div className="h-8 w-px bg-border/40" />
+                <div className="text-center">
+                   <div className="text-lg font-bold leading-none">{votedCount}</div>
+                   <div className="text-[10px] uppercase text-muted-foreground font-medium mt-0.5">Voted</div>
+                </div>
+             </div>
+
+             {/* Actions */}
+             <EventActionsPanel
+              event={event}
+              isCreator={!!isCreator}
+              activePhase={activeTab as EventPhase}
+              onEventUpdated={handleEventUpdated}
+              className="bg-background rounded-full border shadow-sm p-1"
+            />
           </div>
         </div>
-
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Calendar className="h-5 w-5" />
+        
+        {/* Unified Navigation (Stepper + Tabs) */}
+        <div className="border-b">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4">
+            <div className="w-full overflow-hidden">
+              <div className="flex overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 gap-1 hide-scrollbar touch-pan-x">
+                {phaseOrder.map((phase, index) => {
+                  const isCompleted = isPhaseCompleted(phase, event.phase);
+                  const isCurrent = isPhaseCurrent(phase, event.phase);
+                  const isActive = activeTab === phase;
+                  const isFuture = !isCompleted && !isCurrent;
+                  
+                  return (
+                    <button
+                      key={phase}
+                      onClick={() => setActiveTab(phase)}
+                      disabled={isFuture && !isCompleted && !isCurrent} // Allow navigation if past or current
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl transition-all whitespace-nowrap min-w-fit",
+                        isActive 
+                          ? "bg-primary text-primary-foreground shadow-sm" 
+                          : isCurrent
+                          ? "bg-secondary text-foreground ring-1 ring-inset ring-border"
+                          : "text-muted-foreground hover:bg-secondary/50",
+                        (isFuture && !isCompleted && !isCurrent) && "opacity-50 cursor-not-allowed hover:bg-transparent"
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-bold",
+                        isActive 
+                          ? "border-primary-foreground/30 bg-primary-foreground/20" 
+                          : isCompleted
+                          ? "border-primary bg-primary text-primary-foreground border-transparent"
+                          : "border-muted-foreground/30"
+                      )}>
+                        {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold leading-none">{PhaseLabels[phase]}</span>
+                        {isActive && (
+                          <span className="text-[10px] font-medium opacity-80 leading-none mt-1">
+                            {PhaseDescriptions[phase]}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Zeitraum</p>
-              <p className="text-sm font-semibold">{formatTimeWindow(event.timeWindow)}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <MapPin className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Region</p>
-              <p className="text-sm font-semibold">{RegionLabels[event.locationRegion]}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Euro className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Budget</p>
-              <p className="text-sm font-semibold">{formatBudget(event.budgetAmount, event.budgetType)}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Status</p>
-              <p className="text-sm font-semibold">
-                {outstandingVotes > 0 ? `${outstandingVotes} offen` : "Alle abgestimmt"}
-              </p>
-            </div>
+            
+             {canAdvance && activeTab === event.phase && (
+                <Button 
+                  size="sm" 
+                  onClick={handleAdvancePhase} 
+                  disabled={actionLoading}
+                  className="w-full md:w-auto shrink-0 rounded-xl gap-2 shadow-sm"
+                >
+                  Nächste Phase
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
           </div>
         </div>
-
-        <EventActionsPanel
-          event={event}
-          isCreator={!!isCreator}
-          activePhase={activeTab as EventPhase}
-          onEventUpdated={handleEventUpdated}
-        />
       </div>
 
-      {/* Phase Header */}
-      <EventPhaseHeader
-        currentPhase={event.phase}
-        onPhaseClick={setActiveTab}
-        canAdvance={canAdvance}
-        onAdvance={handleAdvancePhase}
-      />
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="w-full justify-start gap-2 overflow-x-auto rounded-2xl bg-muted/30 p-1">
-          {phaseOrder.map((phase) => (
-            <TabsTrigger
-              key={phase}
-              value={phase}
-              disabled={!isPhaseEnabled(phase)}
-              className="min-w-[130px] whitespace-nowrap rounded-xl text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              {PhaseLabels[phase]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
+        {/* Note: TabsList is removed, handled by custom stepper above */}
+        
         {/* Phase Content */}
-        <TabsContent value="proposal" className="space-y-4">
-          <Card className="bg-card/60 border-border/50 rounded-2xl">
+        <TabsContent value="proposal" className="space-y-4 focus-visible:outline-none focus-visible:ring-0">
+          <Card className="bg-card/60 border-border/50 rounded-2xl shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg">Vorgeschlagene Aktivitäten</CardTitle>
             </CardHeader>
@@ -360,63 +358,59 @@ export default function EventDetailPage() {
                   <div 
                     key={activity.id} 
                     className={cn(
-                      "p-4 rounded-xl bg-secondary/30 flex flex-col sm:flex-row gap-3 sm:gap-4",
-                      isExcluded && "opacity-50"
+                      "p-4 rounded-xl bg-secondary/30 flex flex-col sm:flex-row gap-3 sm:gap-4 transition-all hover:bg-secondary/40",
+                      isExcluded && "opacity-50 grayscale"
                     )}
                   >
                     <img
                       src={activity.imageUrl}
                       alt={activity.title}
-                      className="w-full sm:w-16 h-32 sm:h-16 rounded-lg object-cover"
+                      className="w-full sm:w-20 h-32 sm:h-20 rounded-lg object-cover bg-muted"
                     />
                     <div className="flex-1 min-w-0 space-y-1">
-                      <h4 className="font-medium line-clamp-2">{activity.title}</h4>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{activity.shortDescription}</p>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge>{CategoryLabels[activity.category]}</Badge>
-                        {isExcluded && (
-                          <Badge variant="destructive">Ausgeschlossen</Badge>
-                        )}
+                      <div className="flex items-start justify-between gap-2">
+                         <h4 className="font-semibold line-clamp-1">{activity.title}</h4>
+                         <Badge variant="secondary" className="text-[10px] h-5">{CategoryLabels[activity.category]}</Badge>
                       </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{activity.shortDescription}</p>
+                      {isExcluded && <Badge variant="destructive" className="h-5 text-[10px]">Ausgeschlossen</Badge>}
                     </div>
-                    <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:ml-auto w-full sm:w-auto">
                       {isCreator && event.phase === "proposal" && (
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="ghost"
                           className={cn(
-                            "w-full sm:w-auto border-border/60 hover:bg-secondary/50 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-primary/40",
+                            "w-full sm:w-auto h-8 text-xs",
                             isExcluded
-                              ? "text-success border-success/50 hover:text-success"
-                              : "text-destructive border-destructive/50 hover:text-destructive"
+                              ? "text-success hover:text-success hover:bg-success/10"
+                              : "text-destructive hover:text-destructive hover:bg-destructive/10"
                           )}
                           onClick={() => handleToggleExclusion(activity.id, isExcluded)}
                           disabled={actionLoading}
                         >
-                          {isExcluded ? "Wieder aufnehmen" : "Ausschließen"}
+                          {isExcluded ? "Aufnehmen" : "Ausschließen"}
                         </Button>
                       )}
                     </div>
                   </div>
                 );
               })}
-              {canAdvance && event.phase === "proposal" && (
-                <Button
-                  onClick={handleAdvancePhase}
-                  className="w-full rounded-xl"
-                  disabled={actionLoading}
-                >
-                  Zur Abstimmung übergehen
-                </Button>
+              {proposedActivities.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  Noch keine Aktivitäten.
+                </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
-        {/* Voting Phase */}
-        <TabsContent value="voting" className="space-y-4">
-          <p className="text-muted-foreground">
-            Stimme über die Aktivitäten ab – die beliebtesten rücken nach oben.
-          </p>
+
+        <TabsContent value="voting" className="space-y-4 focus-visible:outline-none focus-visible:ring-0">
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-sm">
+              Stimme für deine Favoriten. Die beliebtesten Aktivitäten steigen auf.
+            </p>
+          </div>
           {sortedActivities.length > 0 ? (
             <AnimatePresence>
               {sortedActivities.map((activity, index) => (
@@ -446,161 +440,126 @@ export default function EventDetailPage() {
           ) : (
             <EmptyState
               icon={Users}
-              title="Keine Aktivitäten zur Abstimmung"
-              description="Alle Aktivitäten wurden ausgeschlossen oder es wurden noch keine vorgeschlagen."
+              title="Keine Aktivitäten"
+              description="Es gibt nichts zum Abstimmen."
             />
           )}
         </TabsContent>
 
-        {/* Scheduling Phase */}
-        <TabsContent value="scheduling" className="space-y-4">
+        <TabsContent value="scheduling" className="space-y-4 focus-visible:outline-none focus-visible:ring-0">
           <SchedulingPhase event={event} onUpdate={setEvent} onFinalize={handleFinalizeDate} />
           
-          {/* Finalize Button Area (Moved inside SchedulingPhase usually, but if we need finalize logic here...) 
-              Actually, SchedulingPhase component handles voting and adding dates. 
-              The 'finalize' logic (choosing the final date) is typically an owner action.
-              My SchedulingPhase implementation doesn't have a 'finalize' button for the owner yet.
-              I should add it there or here. 
-              
-              Looking at my SchedulingPhase code, it doesn't have Finalize buttons.
-              I should probably add the "Finalize" button logic *here* below the SchedulingPhase component 
-              or pass `onFinalize` to `SchedulingPhase`.
-              
-              Let's add it here for now to keep SchedulingPhase focused on the list.
-          */}
-          {canAdvance && event.dateOptions.length > 0 && isCreator && (
-             <Card className="bg-primary/10 border-primary/20 rounded-2xl mt-6 hidden">
+           {canAdvance && event.dateOptions.length > 0 && isCreator && (
+             <Card className="bg-primary/5 border-primary/20 rounded-2xl mt-6">
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground mb-3 font-medium">
-                    Event-Termin final festlegen:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {event.dateOptions.map((opt) => (
-                      <Button 
-                        key={opt.id}
-                        variant="secondary"
-                        onClick={() => handleFinalizeDate(opt.id)}
-                        className="rounded-xl"
-                        disabled={actionLoading}
-                      >
-                        {new Date(opt.date).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
-                        {opt.startTime && ` (${opt.startTime})`}
-                      </Button>
-                    ))}
-                  </div>
+                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div>
+                        <h4 className="font-semibold text-primary">Termin festlegen</h4>
+                        <p className="text-sm text-muted-foreground">Wähle den finalen Termin um das Event abzuschließen.</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+                        {event.dateOptions.map((opt) => (
+                          <Button 
+                            key={opt.id}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleFinalizeDate(opt.id)}
+                            className="rounded-xl border-primary/30 hover:bg-primary/10 hover:text-primary"
+                            disabled={actionLoading}
+                          >
+                            {new Date(opt.date).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
+                            {opt.startTime && ` • ${opt.startTime}`}
+                          </Button>
+                        ))}
+                      </div>
+                   </div>
                 </CardContent>
               </Card>
           )}
         </TabsContent>
 
-        {/* Info Phase */}
-        <TabsContent value="info" className="space-y-6">
-          <Card className="bg-success/10 border-success/20 rounded-2xl">
-            <CardContent className="p-6 text-center">
-              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Event steht fest!</h3>
-              <p className="text-muted-foreground">
-                Hier sind die finalen Details.
-              </p>
+        <TabsContent value="info" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+          <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 rounded-3xl overflow-hidden">
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                 <CheckCircle className="h-8 w-8" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-foreground">Event finalisiert!</h3>
+                <p className="text-muted-foreground max-w-md mx-auto mt-2">
+                  Alle Details stehen fest. Wir wünschen euch viel Spaß!
+                </p>
+              </div>
             </CardContent>
           </Card>
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* Activity */}
             {chosenActivity && (
-              <Card className="rounded-2xl overflow-hidden h-full flex flex-col">
-                <div className="h-48 w-full relative">
+              <Card className="rounded-3xl overflow-hidden h-full flex flex-col border-border/60 shadow-sm">
+                <div className="h-56 w-full relative">
                   <img 
                     src={chosenActivity.imageUrl} 
                     alt={chosenActivity.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="secondary" className="backdrop-blur-md bg-background/80">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                     <Badge variant="secondary" className="mb-2 backdrop-blur-md bg-white/20 text-white border-white/20">
                       {CategoryLabels[chosenActivity.category]}
                     </Badge>
+                    <h3 className="text-2xl font-bold leading-tight">{chosenActivity.title}</h3>
                   </div>
                 </div>
-                <CardHeader>
-                  <CardTitle className="text-xl">{chosenActivity.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 flex-1">
-                  <p className="text-muted-foreground">{chosenActivity.shortDescription}</p>
+                <CardContent className="space-y-5 flex-1 p-6">
+                  <p className="text-muted-foreground leading-relaxed">{chosenActivity.shortDescription}</p>
                   
-                  <div className="grid grid-cols-2 gap-4 pt-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Euro className="h-4 w-4" />
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                         <Euro className="h-4 w-4" />
+                      </div>
                       <span>
                         {chosenActivity.estPricePerPerson !== undefined
                           ? `~${chosenActivity.estPricePerPerson}€ p.P.`
                           : "Preis auf Anfrage"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                         <Clock className="h-4 w-4" />
+                      </div>
                       <span>{formatDuration(chosenActivity)}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">
-                      <MapPin className="h-4 w-4" />
+                    <div className="flex items-center gap-3 text-sm col-span-2">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                         <MapPin className="h-4 w-4" />
+                      </div>
                       <span>{RegionLabels[chosenActivity.locationRegion]} {chosenActivity.locationCity && `• ${chosenActivity.locationCity}`}</span>
                     </div>
                     {typeof chosenActivity.maxCapacity === "number" && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">
-                        <Users className="h-4 w-4" />
-                        <span>Max. {chosenActivity.maxCapacity} Personen</span>
-                      </div>
-                    )}
-                    {chosenActivity.outdoorSeating !== undefined && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">
-                        <CloudSun className="h-4 w-4" />
-                        <span>{chosenActivity.outdoorSeating ? "Sitzplätze im Freien verfügbar" : "Keine Sitzplätze im Freien"}</span>
+                      <div className="flex items-center gap-3 text-sm col-span-2">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                           <Users className="h-4 w-4" />
+                        </div>
+                        <span>Geeignet für bis zu {chosenActivity.maxCapacity} Personen</span>
                       </div>
                     )}
                   </div>
-
-                  {(chosenActivity.website || chosenActivity.reservationUrl || chosenActivity.menuUrl || chosenActivity.facebook || chosenActivity.instagram) && (
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {chosenActivity.website && (
-                        <Button variant="outline" className="rounded-xl gap-2" asChild>
-                          <a href={chosenActivity.website} target="_blank" rel="noopener noreferrer">
-                            <Globe className="h-4 w-4" />
-                            Webseite
-                          </a>
-                        </Button>
-                      )}
-                      {chosenActivity.reservationUrl && (
-                        <Button variant="outline" className="rounded-xl gap-2" asChild>
-                          <a href={chosenActivity.reservationUrl} target="_blank" rel="noopener noreferrer">
-                            <Calendar className="h-4 w-4" />
-                            Reservierung
-                          </a>
-                        </Button>
-                      )}
-                      {chosenActivity.menuUrl && (
-                        <Button variant="outline" className="rounded-xl gap-2" asChild>
-                          <a href={chosenActivity.menuUrl} target="_blank" rel="noopener noreferrer">
-                            <BookOpen className="h-4 w-4" />
-                            Speisekarte
-                          </a>
-                        </Button>
-                      )}
-                      {chosenActivity.facebook && (
-                        <Button variant="outline" className="rounded-xl gap-2" asChild>
-                          <a href={chosenActivity.facebook} target="_blank" rel="noopener noreferrer">
-                            <Facebook className="h-4 w-4" />
-                            Facebook
-                          </a>
-                        </Button>
-                      )}
-                      {chosenActivity.instagram && (
-                        <Button variant="outline" className="rounded-xl gap-2" asChild>
-                          <a href={chosenActivity.instagram} target="_blank" rel="noopener noreferrer">
-                            <Instagram className="h-4 w-4" />
-                            Instagram
-                          </a>
-                        </Button>
-                      )}
-                    </div>
+                  
+                  {(chosenActivity.website || chosenActivity.reservationUrl) && (
+                     <div className="flex gap-2 pt-2">
+                        {chosenActivity.website && (
+                          <Button variant="outline" className="flex-1 rounded-xl" asChild>
+                            <a href={chosenActivity.website} target="_blank" rel="noopener noreferrer">Webseite</a>
+                          </Button>
+                        )}
+                        {chosenActivity.reservationUrl && (
+                          <Button className="flex-1 rounded-xl" asChild>
+                            <a href={chosenActivity.reservationUrl} target="_blank" rel="noopener noreferrer">Reservieren</a>
+                          </Button>
+                        )}
+                     </div>
                   )}
                 </CardContent>
               </Card>
@@ -608,35 +567,35 @@ export default function EventDetailPage() {
 
             {/* Date */}
             {finalDateOption && (
-              <Card className="rounded-2xl h-full flex flex-col">
+              <Card className="rounded-3xl h-full flex flex-col border-border/60 shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
+                    <Calendar className="h-5 w-5 text-primary" />
                     Termin
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-center items-center text-center p-8">
-                  <div className="mb-4 p-4 bg-primary/10 rounded-2xl text-primary">
-                    <span className="text-4xl font-bold block">
+                  <div className="mb-6 p-6 bg-primary/5 rounded-3xl text-primary ring-1 ring-primary/10">
+                    <span className="text-5xl font-bold block tracking-tighter">
                       {new Date(finalDateOption.date).getDate()}
                     </span>
-                    <span className="text-lg uppercase font-medium tracking-wide">
+                    <span className="text-xl uppercase font-medium tracking-widest opacity-80">
                       {new Date(finalDateOption.date).toLocaleDateString("de-DE", { month: "short" })}
                     </span>
                   </div>
                   
-                  <h4 className="text-2xl font-semibold mb-2">
+                  <h4 className="text-3xl font-bold mb-2">
                     {new Date(finalDateOption.date).toLocaleDateString("de-DE", { weekday: "long" })}
                   </h4>
                   
-                  <p className="text-muted-foreground text-lg">
+                  <p className="text-muted-foreground text-xl">
                     {new Date(finalDateOption.date).toLocaleDateString("de-DE", { year: "numeric" })}
                   </p>
 
                   {(finalDateOption.startTime) && (
-                    <div className="mt-6 flex items-center gap-2 px-4 py-2 bg-secondary rounded-full">
+                    <div className="mt-8 flex items-center gap-2 px-5 py-2.5 bg-secondary rounded-full">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">
+                      <span className="font-semibold">
                         {finalDateOption.startTime}
                         {finalDateOption.endTime && ` – ${finalDateOption.endTime}`} Uhr
                       </span>
@@ -646,40 +605,6 @@ export default function EventDetailPage() {
               </Card>
             )}
           </div>
-
-          {/* Participants */}
-          <Card className="rounded-2xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Teilnehmer ({event.participants.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {event.participants.map((participant) => (
-                  <div
-                    key={participant.userId}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors",
-                      participant.dateResponse === "yes" 
-                        ? "bg-success/5 border-success/20 text-success-foreground"
-                        : participant.dateResponse === "maybe"
-                        ? "bg-warning/5 border-warning/20 text-warning-foreground"
-                        : participant.dateResponse === "no"
-                        ? "bg-destructive/5 border-destructive/20 text-muted-foreground opacity-50 line-through decoration-destructive/50"
-                        : "bg-secondary/50 border-transparent text-muted-foreground"
-                    )}
-                  >
-                    <span className="text-sm font-medium">{participant.userName}</span>
-                    {participant.isOrganizer && (
-                      <Badge variant="outline" className="text-[10px] h-5">Org</Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
