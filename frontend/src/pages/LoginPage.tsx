@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle, Send, MailCheck } from "lucide-react";
+import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle, Send, MailCheck, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +10,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { signInWithMagicLink } from "@/lib/authClient";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [authVariant, setAuthVariant] = useState<"password" | "otp">("password");
+  const [authVariant, setAuthVariant] = useState<"password" | "otp" | "magic-link">("password");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
   const {
@@ -87,6 +89,43 @@ export default function LoginPage() {
           description: "Bitte Code und E-Mail prüfen.",
           variant: "destructive",
         });
+      }
+      return;
+    }
+
+    if (mode === "login" && authVariant === "magic-link") {
+      if (!email) {
+        toast({
+          title: "E-Mail fehlt",
+          description: "Bitte gib eine E-Mail-Adresse an.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const { error } = await signInWithMagicLink(email);
+        if (error) {
+          toast({
+            title: "Fehler",
+            description: error.message || "Magic Link konnte nicht gesendet werden.",
+            variant: "destructive",
+          });
+        } else {
+          setMagicLinkSent(true);
+          toast({
+            title: "Magic Link gesendet",
+            description: `Wir haben einen Anmeldelink an ${email} gesendet.`,
+          });
+        }
+      } catch (err) {
+        toast({
+          title: "Fehler",
+          description: "Ein unerwarteter Fehler ist aufgetreten.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
       return;
     }
@@ -192,6 +231,16 @@ export default function LoginPage() {
               </Alert>
             )}
 
+            {magicLinkSent && (
+              <Alert className="mb-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                <MailCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <AlertTitle className="text-green-800 dark:text-green-300">Magic Link gesendet</AlertTitle>
+                <AlertDescription className="text-green-700 dark:text-green-400">
+                  Bitte überprüfe dein Postfach. Du kannst dieses Fenster schließen.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="mb-4 flex rounded-full bg-muted p-1 text-sm font-medium">
               <button
                 type="button"
@@ -216,11 +265,11 @@ export default function LoginPage() {
             </div>
 
             {mode === "login" && (
-              <div className="mb-3 flex gap-2 text-sm font-medium">
+              <div className="mb-3 flex gap-2 text-xs font-medium overflow-x-auto pb-1">
                 <button
                   type="button"
                   className={cn(
-                    "flex-1 rounded-xl border px-3 py-2 transition-colors",
+                    "flex-1 min-w-[70px] rounded-xl border px-2 py-2 transition-colors whitespace-nowrap",
                     authVariant === "password" ? "border-primary bg-primary/10 text-primary" : "border-border"
                   )}
                   onClick={() => setAuthVariant("password")}
@@ -230,12 +279,22 @@ export default function LoginPage() {
                 <button
                   type="button"
                   className={cn(
-                    "flex-1 rounded-xl border px-3 py-2 transition-colors",
+                    "flex-1 min-w-[70px] rounded-xl border px-2 py-2 transition-colors whitespace-nowrap",
                     authVariant === "otp" ? "border-primary bg-primary/10 text-primary" : "border-border"
                   )}
                   onClick={() => setAuthVariant("otp")}
                 >
                   Code (OTP)
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex-1 min-w-[80px] rounded-xl border px-2 py-2 transition-colors whitespace-nowrap",
+                    authVariant === "magic-link" ? "border-primary bg-primary/10 text-primary" : "border-border"
+                  )}
+                  onClick={() => setAuthVariant("magic-link")}
+                >
+                  Magic Link
                 </button>
               </div>
             )}
@@ -341,6 +400,10 @@ export default function LoginPage() {
                     {otpSent && <p className="text-xs text-muted-foreground">Code gesendet. Gültig für wenige Minuten.</p>}
                   </div>
                 </>
+              ) : mode === "login" && authVariant === "magic-link" ? (
+                <p className="text-sm text-muted-foreground">
+                  Wir senden dir einen Link an deine E-Mail-Adresse, mit dem du dich sofort anmelden kannst.
+                </p>
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -439,16 +502,31 @@ export default function LoginPage() {
                   mode === "login"
                     ? authVariant === "otp"
                       ? "Einloggen..."
-                      : "Anmelden..."
+                      : authVariant === "magic-link"
+                        ? "Sende Link..."
+                        : "Anmelden..."
                     : "Registrieren..."
                 ) : (
                   <>
-                    <LogIn className="h-4 w-4" />
-                    {mode === "login"
-                      ? authVariant === "otp"
-                        ? "Mit Code einloggen"
-                        : "Anmelden"
-                      : "Registrieren"}
+                    {mode === "login" ? (
+                      authVariant === "otp" ? (
+                        <>
+                          <LogIn className="h-4 w-4" /> Mit Code einloggen
+                        </>
+                      ) : authVariant === "magic-link" ? (
+                        <>
+                          <Wand2 className="h-4 w-4" /> Link senden
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="h-4 w-4" /> Anmelden
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <LogIn className="h-4 w-4" /> Registrieren
+                      </>
+                    )}
                   </>
                 )}
               </Button>

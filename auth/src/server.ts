@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { jwt, emailOTP } from "better-auth/plugins";
+import { jwt, emailOTP, magicLink } from "better-auth/plugins";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
@@ -8,6 +8,7 @@ import { Resend } from "resend";
 import { renderOtpEmail } from "./templates/otpEmail";
 import { renderVerificationEmail } from "./templates/verificationEmail";
 import { renderResetPasswordEmail } from "./templates/resetPasswordEmail";
+import { renderMagicLinkEmail } from "./templates/magicLinkEmail";
 
 const {
   BETTER_AUTH_SECRET,
@@ -115,6 +116,31 @@ const auth = betterAuth({
     },
   },
   plugins: [
+    magicLink({
+      sendMagicLink: async ({ email, token, url }, ctx) => {
+        const { subject, text, html } = renderMagicLinkEmail({
+          magicLinkUrl: url,
+          frontendUrl: BETTER_AUTH_BASE_URL,
+        });
+
+        if (!resend) {
+          console.warn("[auth] RESEND_API_KEY not set; Magic Link URL:", url);
+          return;
+        }
+
+        try {
+          await resend.emails.send({
+            from: MAIL_FROM_EMAIL,
+            to: email,
+            subject,
+            text,
+            html,
+          });
+        } catch (error) {
+          console.error("[auth] Failed to send magic link email", error);
+        }
+      },
+    }),
     emailOTP({
       overrideDefaultEmailVerification: false,
       otpLength: 6,

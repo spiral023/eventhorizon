@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react";
-import { emailOTPClient } from "better-auth/client/plugins";
+import { emailOTPClient, magicLinkClient } from "better-auth/client/plugins";
 
 const AUTH_BASE_PATH = "/api/auth";
 const defaultBaseUrl = typeof window !== "undefined" ? window.location.origin : "";
@@ -16,7 +16,10 @@ export class AuthError extends Error {
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_AUTH_BASE_URL ?? defaultBaseUrl,
   basePath: AUTH_BASE_PATH,
-  plugins: [emailOTPClient()],
+  plugins: [
+    emailOTPClient(),
+    magicLinkClient()
+  ],
 });
 
 async function authRequest<T>(path: string, init?: RequestInit): Promise<T> {
@@ -54,6 +57,19 @@ export async function signUpWithEmail(params: { email: string; password: string;
   return authRequest("/sign-up/email", {
     method: "POST",
     body: JSON.stringify(params),
+  });
+}
+
+export async function signInWithMagicLink(email: string, callbackURL: string = "/") {
+  return authClient.signIn.magicLink({
+    email,
+    callbackURL,
+  });
+}
+
+export async function verifyMagicLink(token: string) {
+  return authClient.magicLink.verify({
+    query: { token }
   });
 }
 
