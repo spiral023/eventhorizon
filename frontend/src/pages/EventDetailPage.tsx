@@ -370,23 +370,13 @@ export default function EventDetailPage() {
               />
 
               {canAdvance && activeTab === event.phase && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={handleAdvancePhase}
-                      disabled={actionLoading}
-                      className="h-11 w-11 rounded-full border border-border/70 bg-card/80"
-                      aria-label="Nächste Phase"
-                    >
-                      <ArrowRight className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Nächste Phase</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Button
+                  onClick={handleAdvancePhase}
+                  disabled={actionLoading}
+                  className="rounded-full px-6 py-2 text-sm font-semibold shadow-md transition-all duration-200 ease-in-out bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
+                >
+                  Nächste Phase <ArrowRight className="h-4 w-4" />
+                </Button>
               )}
             </div>
           </div>

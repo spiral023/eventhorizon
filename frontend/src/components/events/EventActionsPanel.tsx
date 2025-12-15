@@ -379,7 +379,15 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
     }
   };
 
-  const ActionButton = ({ icon: Icon, label, onClick, disabled, badge, ...props }: any) => (
+  interface ActionButtonProps extends React.ComponentPropsWithoutRef<typeof Button> {
+    icon: LucideIcon;
+    label: string;
+    onClick?: () => void;
+    disabled?: boolean;
+    badge?: number;
+  }
+
+  const ActionButton = ({ icon: Icon, label, onClick, disabled, badge, ...props }: ActionButtonProps) => (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button

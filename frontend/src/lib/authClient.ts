@@ -13,6 +13,14 @@ export class AuthError extends Error {
   }
 }
 
+interface ApiErrorMessage {
+  message: string;
+}
+
+function hasApiMessage(obj: unknown): obj is ApiErrorMessage {
+  return typeof obj === 'object' && obj !== null && 'message' in obj && typeof (obj as ApiErrorMessage).message === 'string';
+}
+
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_AUTH_BASE_URL ?? defaultBaseUrl,
   basePath: AUTH_BASE_PATH,
@@ -38,7 +46,7 @@ async function authRequest<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const message =
-      (typeof data === "object" && data && "message" in data && (data as any).message) ||
+      (hasApiMessage(data) && data.message) ||
       (typeof data === "string" ? data : "Authentifizierung fehlgeschlagen");
     throw new AuthError(message as string, response.status);
   }
