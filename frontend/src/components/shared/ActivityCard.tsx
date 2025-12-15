@@ -56,6 +56,7 @@ export function ActivityCard({
         <img
           src={activity.imageUrl}
           alt={activity.title}
+          loading="lazy"
           className="h-full w-full object-cover transition-transform duration-500 ease-fluid group-hover:scale-110 will-change-transform motion-reduce:transform-none"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
@@ -155,8 +156,7 @@ export function ActivityCard({
             <div className="flex items-center gap-1" title="Körperliche Intensität">
               <Zap className={cn(
                 "h-4 w-4",
-                activity.physicalIntensity >= 4 ? "text-destructive" : 
-                activity.physicalIntensity >= 2 ? "text-warning" : "text-muted-foreground"
+                activity.physicalIntensity >= 4 ? "text-destructive" : "text-muted-foreground"
               )} />
               <span className="text-xs">{activity.physicalIntensity}/5</span>
             </div>

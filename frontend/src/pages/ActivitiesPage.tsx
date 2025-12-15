@@ -17,16 +17,19 @@ import { useAuthStore } from "@/stores/authStore";
 
 import { motion, AnimatePresence } from "framer-motion";
 
+const ITEMS_PER_PAGE = 9;
+
 export default function ActivitiesPage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
 
   const activeFilterCount =
@@ -195,6 +198,18 @@ export default function ActivitiesPage() {
     (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
   );
 
+  const visibleActivities = sortedActivities.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedActivities.length;
+
+  const loadMore = () => {
+    setVisibleCount(prev => prev + ITEMS_PER_PAGE);
+  };
+
+  // Reset visible count when filters or search changes
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [searchQuery, filters]);
+
   if (isLoadingActivities) {
     return (
       <div className="space-y-6">
@@ -280,47 +295,62 @@ export default function ActivitiesPage() {
           }
         />
       ) : (
-        <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence>
-            {sortedActivities.map((activity) => (
-              <motion.div
-                layout
-                key={activity.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
+        <div className="space-y-6">
+          <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <AnimatePresence>
+              {visibleActivities.map((activity) => (
+                <motion.div
+                  layout
+                  key={activity.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ActivityCard
+                    activity={activity}
+                    isFavorite={favoriteIds.includes(activity.id)}
+                    onFavoriteToggle={async (id) => {
+                      if (!isAuthenticated) {
+                        toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
+                        return;
+                      }
+                      const result = await toggleFavorite(id);
+                      if (result.error) {
+                        toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
+                        return;
+                      }
+                      const isFav = result.data?.isFavorite;
+                      setFavoriteIds((prev) =>
+                        isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
+                      );
+                      setActivities((prev) =>
+                        prev.map((a) =>
+                          a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
+                        )
+                      );
+                    }}
+                    showTags={false}
+                    onClick={() => navigate(`/activities/${activity.id}`)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={loadMore}
+                className="min-w-[200px]"
               >
-                <ActivityCard
-                  activity={activity}
-                  isFavorite={favoriteIds.includes(activity.id)}
-                  onFavoriteToggle={async (id) => {
-                    if (!isAuthenticated) {
-                      toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
-                      return;
-                    }
-                    const result = await toggleFavorite(id);
-                    if (result.error) {
-                      toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
-                      return;
-                    }
-                    const isFav = result.data?.isFavorite;
-                    setFavoriteIds((prev) =>
-                      isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
-                    );
-                    setActivities((prev) =>
-                      prev.map((a) =>
-                        a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
-                      )
-                    );
-                  }}
-                  showTags={false}
-                  onClick={() => navigate(`/activities/${activity.id}`)}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+                Weitere laden ({sortedActivities.length - visibleCount} verbleibend)
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

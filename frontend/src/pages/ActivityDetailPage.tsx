@@ -202,7 +202,7 @@ export default function ActivityDetailPage() {
             </Badge>
           </div>
           <h1 className="text-2xl md:text-4xl font-bold mb-2 text-foreground drop-shadow-lg">{activity.title}</h1>
-          <p className="text-foreground/80 dark:text-foreground/90 text-lg drop-shadow-md">{activity.shortDescription}</p>
+          <p className="hidden md:block text-foreground/80 dark:text-foreground/90 text-lg drop-shadow-md">{activity.shortDescription}</p>
         </div>
 
         {/* Hero Actions Overlay - Improved contrast for dark mode */}

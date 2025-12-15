@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { Icon, LatLngBounds } from "leaflet";
+import { DivIcon, LatLngBounds } from "leaflet";
 import { motion } from "framer-motion";
 import { MapPin, Euro, Clock, ExternalLink, Car, FootprintsIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,18 +14,52 @@ import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import "leaflet/dist/leaflet.css";
 
-// Fix Leaflet default marker icon issue
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+// Helper function to get color based on walking time
+function getMarkerColor(walkingTime: number | undefined): string {
+  if (!walkingTime) return "#94a3b8"; // gray for no data
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-});
+  // Define thresholds
+  if (walkingTime <= 10) return "#22c55e"; // green (0-10 min)
+  if (walkingTime <= 20) return "#84cc16"; // lime (10-20 min)
+  if (walkingTime <= 30) return "#eab308"; // yellow (20-30 min)
+  if (walkingTime <= 45) return "#f97316"; // orange (30-45 min)
+  return "#ef4444"; // red (45+ min)
+}
+
+// Create custom marker icon with color
+function createColoredIcon(walkingTime: number | undefined): DivIcon {
+  const color = getMarkerColor(walkingTime);
+
+  return new DivIcon({
+    className: "custom-marker",
+    html: `
+      <div style="
+        background-color: ${color};
+        width: 28px;
+        height: 28px;
+        border-radius: 50% 50% 50% 0;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        transform: rotate(-45deg);
+        position: relative;
+      ">
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(45deg);
+          width: 8px;
+          height: 8px;
+          background-color: white;
+          border-radius: 50%;
+        "></div>
+      </div>
+    `,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -28],
+  });
+}
 
 // Region defaults (Austria)
 const regionCoordinates: Record<string, [number, number]> = {
@@ -144,10 +178,10 @@ async function geocodeAddress(address: string): Promise<[number, number] | null>
   
 
   // Component for markers to avoid context issues
-function MapMarkers({ 
-  activityMarkers, 
-  onSelect 
-}: { 
+function MapMarkers({
+  activityMarkers,
+  onSelect
+}: {
   activityMarkers: { activity: Activity; position: [number, number] }[];
   onSelect: (activity: Activity) => void;
 }) {
@@ -157,6 +191,7 @@ function MapMarkers({
         <Marker
           key={activity.id}
           position={position}
+          icon={createColoredIcon(activity.travelTimeMinutesWalking)}
           eventHandlers={{
             click: () => onSelect(activity),
           }}
@@ -297,15 +332,46 @@ export default function MapPage() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  <MapEventHandlers 
-                    activityMarkers={activityMarkers} 
-                    selectedActivity={selectedActivity} 
+                  <MapEventHandlers
+                    activityMarkers={activityMarkers}
+                    selectedActivity={selectedActivity}
                   />
                   <MapMarkers
                     activityMarkers={activityMarkers}
                     onSelect={setSelectedActivity}
                   />
                 </MapContainer>
+
+                {/* Legend */}
+                <div className="absolute bottom-4 left-4 z-[1000] bg-card/95 backdrop-blur-sm border border-border/50 rounded-xl p-3 shadow-lg">
+                  <p className="text-xs font-semibold mb-2">Gehzeit vom Büro</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#22c55e" }} />
+                      <span>0-10 Min.</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#84cc16" }} />
+                      <span>10-20 Min.</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#eab308" }} />
+                      <span>20-30 Min.</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#f97316" }} />
+                      <span>30-45 Min.</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#ef4444" }} />
+                      <span>45+ Min.</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#94a3b8" }} />
+                      <span>Keine Angabe</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
