@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Search, Bell, User, LogOut, Menu, UserPlus } from "lucide-react";
+import { Bell, User, LogOut, Menu, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/layout/Sidebar";
+import { GlobalSearch } from "@/components/shared/GlobalSearch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,15 +65,7 @@ export function Header() {
 
         {/* Search */}
         <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Räume, Aktivitäten, Events durchsuchen..."
-              className="w-full pl-10 bg-secondary/50 border-border/50 focus:bg-secondary/80 transition-colors"
-              aria-label="Suche"
-            />
-          </div>
+          <GlobalSearch />
         </div>
 
         {/* Right Actions */}

@@ -17,7 +17,7 @@ from app.schemas.domain import (
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate,
     DateOptionCreate, EventComment as EventCommentSchema, EventCommentCreate,
     ActivityComment as ActivityCommentSchema, ActivityCommentCreate,
-    AvatarUploadRequest, AvatarUploadResponse, AvatarProcessRequest, BookingRequest
+    AvatarUploadRequest, AvatarUploadResponse, AvatarProcessRequest, BookingRequest, SearchResult
 )
 from app.api.endpoints import auth, users, ai, emails
 from app.services.email_service import email_service
@@ -42,6 +42,136 @@ router.include_router(emails.router)
 async def get_version():
     from app.core.config import settings
     return {"version": settings.PROJECT_VERSION}
+
+@router.get("/search", response_model=SearchResult)
+async def search_global(
+    q: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from sqlalchemy import or_, and_
+    from app.models.domain import RoomMember
+
+    if not q or len(q) < 2:
+        return SearchResult()
+
+    query_str = f"%{q}%"
+
+    # 1. Activities (Public)
+    activities_result = await db.execute(
+        select(Activity)
+        .where(
+            or_(
+                Activity.title.ilike(query_str),
+                Activity.description.ilike(query_str),
+                # Check tags if needed, but array search is different
+            )
+        )
+        .limit(10)
+    )
+    activities = activities_result.scalars().all()
+
+    # 2. Rooms (User is member or creator)
+    rooms_result = await db.execute(
+        select(Room)
+        .outerjoin(RoomMember, Room.id == RoomMember.room_id)
+        .where(
+            and_(
+                or_(
+                    Room.name.ilike(query_str),
+                    Room.description.ilike(query_str)
+                ),
+                or_(
+                    Room.created_by_user_id == current_user.id,
+                    and_(
+                        RoomMember.user_id == current_user.id,
+                        RoomMember.room_id == Room.id
+                    )
+                )
+            )
+        )
+        .distinct()
+        .limit(10)
+    )
+    rooms = rooms_result.scalars().all()
+    
+    # Calculate member counts for rooms
+    for room in rooms:
+        member_count_result = await db.execute(
+            select(func.count())
+            .select_from(RoomMember)
+            .where(RoomMember.room_id == room.id)
+        )
+        room.member_count = member_count_result.scalar_one() + 1 # +1 for creator
+
+    # 3. Events (In user's rooms)
+    # Get IDs of rooms user has access to
+    user_room_ids_result = await db.execute(
+        select(Room.id)
+        .outerjoin(RoomMember, Room.id == RoomMember.room_id)
+        .where(
+            or_(
+                Room.created_by_user_id == current_user.id,
+                RoomMember.user_id == current_user.id
+            )
+        )
+    )
+    user_room_ids = [row.id for row in user_room_ids_result.fetchall()]
+
+    if user_room_ids:
+        events_result = await db.execute(
+            select(Event)
+            .where(
+                and_(
+                    Event.name.ilike(query_str),
+                    Event.room_id.in_(user_room_ids)
+                )
+            )
+            .limit(10)
+        )
+        events = events_result.scalars().all()
+    else:
+        events = []
+
+    # 4. Users (Members of user's rooms)
+    if user_room_ids:
+        # Find distinct user IDs first to avoid JSON comparison issues with DISTINCT
+        user_ids_result = await db.execute(
+            select(User.id)
+            .join(RoomMember, User.id == RoomMember.user_id)
+            .where(
+                and_(
+                    or_(
+                        User.first_name.ilike(query_str),
+                        User.last_name.ilike(query_str),
+                        User.email.ilike(query_str)
+                    ),
+                    RoomMember.room_id.in_(user_room_ids),
+                    User.id != current_user.id # Exclude self
+                )
+            )
+            .distinct()
+            .limit(10)
+        )
+        found_user_ids = user_ids_result.scalars().all()
+
+        if found_user_ids:
+            # Fetch full user objects
+            users_result = await db.execute(
+                select(User).where(User.id.in_(found_user_ids))
+            )
+            users_found = users_result.scalars().all()
+        else:
+            users_found = []
+    else:
+        users_found = []
+
+    return SearchResult(
+        activities=activities,
+        rooms=rooms,
+        events=events,
+        users=users_found
+    )
 
 class EventUpdateRequest(BaseModel):
     name: Optional[str] = None

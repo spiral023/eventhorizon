@@ -303,3 +303,10 @@ class BookingRequest(BaseSchema):
     contact_name: str
     contact_email: str
     contact_phone: Optional[str] = None
+
+# --- Search ---
+class SearchResult(BaseSchema):
+    activities: List[Activity] = []
+    rooms: List[Room] = []
+    events: List[Event] = []
+    users: List[User] = []

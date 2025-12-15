@@ -22,6 +22,16 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const greeting = getGreeting();
+  const [isReturningVisitor, setIsReturningVisitor] = useState(false);
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem("hasVisited");
+    if (hasVisited) {
+      setIsReturningVisitor(true);
+    } else {
+      localStorage.setItem("hasVisited", "true");
+    }
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -87,7 +97,9 @@ export default function HomePage() {
         <div className="relative">
           <div className="flex items-center gap-2 text-primary mb-2">
             <Sparkles className="h-5 w-5" />
-            <span className="text-sm font-medium">Willkommen zurück!</span>
+            <span className="text-sm font-medium">
+              {isAuthenticated || isReturningVisitor ? "Willkommen zurück!" : "Willkommen bei EventHorizon!"}
+            </span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">
             {greeting}, {user?.firstName || "Gast"}!

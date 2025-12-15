@@ -300,6 +300,13 @@ export type ApiEventTimeWindow =
   | ApiEventTimeWindowWeekRange
   | ApiEventTimeWindowFreeText;
 
+export interface ApiSearchResult {
+  activities: ApiActivity[];
+  rooms: ApiRoom[];
+  events: ApiEvent[];
+  users: ApiUser[];
+}
+
 
 
 
