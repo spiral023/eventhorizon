@@ -291,3 +291,15 @@ class ActivityComment(BaseSchema):
     created_at: datetime
     user_name: Optional[str] = None
     user_avatar: Optional[str] = None
+
+# --- Booking ---
+class BookingRequest(BaseSchema):
+    activity_id: UUID
+    participant_count: int
+    requested_date: datetime
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    notes: Optional[str] = None
+    contact_name: str
+    contact_email: str
+    contact_phone: Optional[str] = None

@@ -1848,3 +1848,39 @@ export async function sendVotingReminder(eventId: string, userId?: string): Prom
   }
   return { data: undefined, error: result.error };
 }
+
+export interface BookingRequestInput {
+  participantCount: number;
+  requestedDate: string;
+  startTime?: string;
+  endTime?: string;
+  notes?: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string;
+}
+
+export async function sendBookingRequest(activityId: string, requestData: BookingRequestInput): Promise<ApiResult<void>> {
+  if (USE_MOCKS) {
+    await delay(800);
+    return { data: undefined };
+  }
+
+  // Convert camelCase to snake_case for backend
+  const apiPayload = {
+    activity_id: activityId,
+    participant_count: requestData.participantCount,
+    requested_date: requestData.requestedDate,
+    start_time: requestData.startTime,
+    end_time: requestData.endTime,
+    notes: requestData.notes,
+    contact_name: requestData.contactName,
+    contact_email: requestData.contactEmail,
+    contact_phone: requestData.contactPhone,
+  };
+
+  return request<void>(`/activities/${activityId}/booking-request`, {
+    method: "POST",
+    body: JSON.stringify(apiPayload),
+  });
+}

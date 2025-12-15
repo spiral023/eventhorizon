@@ -49,6 +49,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { BookingRequestDialog } from "@/components/activities/BookingRequestDialog";
 
 const PrimaryGoalLabels: Record<string, string> = {
   teambuilding: "Teambuilding",
@@ -415,6 +416,23 @@ export default function ActivityDetailPage() {
                 {favoriteCount} Favoriten
               </span>
             </Button>
+          </motion.div>
+
+          {/* Booking Request */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <BookingRequestDialog activity={activity}>
+              <Button 
+                variant="default"
+                className="w-full rounded-xl h-12 text-base gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20"
+              >
+                <Mail className="h-5 w-5" />
+                Buchungsanfrage
+              </Button>
+            </BookingRequestDialog>
           </motion.div>
 
           {/* Quick Info */}

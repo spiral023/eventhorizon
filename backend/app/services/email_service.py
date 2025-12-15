@@ -282,32 +282,32 @@ class EmailService:
     # ACTIVITY PROVIDER EMAILS
     # ========================================
 
-    async def send_booking_request_to_provider(
+    async def send_booking_request_email(
         self,
         provider_email: str,
         provider_name: str,
         activity_title: str,
-        event_name: str,
-        organizer_name: str,
-        organizer_email: str,
-        organizer_phone: Optional[str],
         participant_count: int,
-        preferred_date: str,
-        budget: float,
-        additional_notes: Optional[str] = None
+        requested_date: str,
+        start_time: Optional[str],
+        end_time: Optional[str],
+        contact_name: str,
+        contact_email: str,
+        contact_phone: Optional[str],
+        notes: Optional[str]
     ) -> bool:
         """Send booking request to activity provider"""
         context = {
             "provider_name": provider_name,
             "activity_title": activity_title,
-            "event_name": event_name,
-            "organizer_name": organizer_name,
-            "organizer_email": organizer_email,
-            "organizer_phone": organizer_phone,
             "participant_count": participant_count,
-            "preferred_date": preferred_date,
-            "budget": budget,
-            "additional_notes": additional_notes
+            "requested_date": requested_date,
+            "start_time": start_time,
+            "end_time": end_time,
+            "contact_name": contact_name,
+            "contact_email": contact_email,
+            "contact_phone": contact_phone,
+            "notes": notes
         }
 
         html = self._render_template("booking_request.html", context)
@@ -316,31 +316,7 @@ class EmailService:
             to=provider_email,
             subject=f"Buchungsanfrage: {activity_title} für {participant_count} Personen",
             html_content=html,
-            reply_to=organizer_email
-        )
-
-    async def send_booking_confirmation_to_organizer(
-        self,
-        organizer_email: str,
-        organizer_name: str,
-        activity_title: str,
-        provider_name: str,
-        provider_email: str
-    ) -> bool:
-        """Confirm booking request was sent to organizer"""
-        context = {
-            "organizer_name": organizer_name,
-            "activity_title": activity_title,
-            "provider_name": provider_name,
-            "provider_email": provider_email
-        }
-
-        html = self._render_template("booking_confirmation.html", context)
-
-        return await self.send_email(
-            to=organizer_email,
-            subject=f"Buchungsanfrage versendet: {activity_title}",
-            html_content=html
+            reply_to=contact_email
         )
 
     # ========================================

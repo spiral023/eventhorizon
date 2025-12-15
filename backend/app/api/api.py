@@ -17,9 +17,10 @@ from app.schemas.domain import (
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate,
     DateOptionCreate, EventComment as EventCommentSchema, EventCommentCreate,
     ActivityComment as ActivityCommentSchema, ActivityCommentCreate,
-    AvatarUploadRequest, AvatarUploadResponse, AvatarProcessRequest
+    AvatarUploadRequest, AvatarUploadResponse, AvatarProcessRequest, BookingRequest
 )
 from app.api.endpoints import auth, users, ai, emails
+from app.services.email_service import email_service
 from app.services.room_avatar_service import (
     generate_room_avatar_upload_url,
     process_room_avatar_upload,
@@ -353,6 +354,41 @@ async def toggle_favorite_activity(
     favorites_count = count_result.scalar_one()
 
     return {"is_favorite": is_favorite, "favorites_count": favorites_count}
+
+@router.post("/activities/{activity_id}/booking-request")
+async def create_booking_request(
+    activity_id: UUID,
+    request_in: BookingRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify activity exists
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    if not activity.email:
+        raise HTTPException(status_code=400, detail="Activity has no contact email")
+
+    success = await email_service.send_booking_request_email(
+        provider_email=activity.email,
+        provider_name=activity.provider or "Anbieter",
+        activity_title=activity.title,
+        participant_count=request_in.participant_count,
+        requested_date=request_in.requested_date.strftime("%d.%m.%Y"),
+        start_time=request_in.start_time,
+        end_time=request_in.end_time,
+        contact_name=request_in.contact_name,
+        contact_email=request_in.contact_email,
+        contact_phone=request_in.contact_phone,
+        notes=request_in.notes
+    )
+
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send booking request email")
+
+    return {"message": "Booking request sent successfully"}
 
 # --- Rooms ---
 @router.get("/rooms", response_model=List[RoomSchema])

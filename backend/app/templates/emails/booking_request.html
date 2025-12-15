@@ -1,40 +1,68 @@
 {% extends "base.html" %}
 
+{% block title %}Buchungsanfrage für {{ activity_title }}{% endblock %}
+
 {% block content %}
-<h1>Neue Buchungsanfrage für {{ activity_title }}</h1>
+<h2 style="margin: 0 0 16px; color: #1e293b;">Buchungsanfrage</h2>
 
-<p>Hallo {{ provider_name }},</p>
-
-<p>Sie haben eine neue Buchungsanfrage über EventHorizon erhalten.</p>
-
-<div class="highlight">
-    <h3>Anfrage-Details:</h3>
-    <ul>
-        <li><strong>Aktivität:</strong> {{ activity_title }}</li>
-        <li><strong>Event:</strong> {{ event_name }}</li>
-        <li><strong>Teilnehmerzahl:</strong> {{ participant_count }} Personen</li>
-        <li><strong>Gewünschter Termin:</strong> {{ preferred_date }}</li>
-        <li><strong>Budget:</strong> ca. {{ budget }}€ pro Person</li>
-    </ul>
-</div>
-
-<h3>Kontaktperson:</h3>
-<p>
-    <strong>{{ organizer_name }}</strong><br>
-    E-Mail: <a href="mailto:{{ organizer_email }}">{{ organizer_email }}</a><br>
-    {% if organizer_phone %}
-    Telefon: {{ organizer_phone }}<br>
-    {% endif %}
+<p style="margin: 0 0 16px;">
+  Hallo {{ provider_name }},<br>
+  Sie haben eine neue Buchungsanfrage über EventHorizon erhalten.
 </p>
 
-{% if additional_notes %}
-<div class="highlight">
-    <strong>Zusätzliche Hinweise:</strong>
-    <p>{{ additional_notes }}</p>
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+  <h3 style="margin: 0 0 12px; font-size: 16px; color: #0f172a;">Aktivität</h3>
+  <p style="margin: 0; font-weight: 600; color: #3b82f6;">{{ activity_title }}</p>
+</div>
+
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+  <h3 style="margin: 0 0 12px; font-size: 16px; color: #0f172a;">Anfragedetails</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 4px 0; color: #64748b; width: 140px;">Datum:</td>
+      <td style="padding: 4px 0; font-weight: 500;">{{ requested_date }}</td>
+    </tr>
+    {% if start_time %}
+    <tr>
+      <td style="padding: 4px 0; color: #64748b;">Zeit:</td>
+      <td style="padding: 4px 0; font-weight: 500;">{{ start_time }}{% if end_time %} - {{ end_time }}{% endif %}</td>
+    </tr>
+    {% endif %}
+    <tr>
+      <td style="padding: 4px 0; color: #64748b;">Personen:</td>
+      <td style="padding: 4px 0; font-weight: 500;">{{ participant_count }}</td>
+    </tr>
+  </table>
+</div>
+
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+  <h3 style="margin: 0 0 12px; font-size: 16px; color: #0f172a;">Kontakt</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 4px 0; color: #64748b; width: 140px;">Name:</td>
+      <td style="padding: 4px 0; font-weight: 500;">{{ contact_name }}</td>
+    </tr>
+    <tr>
+      <td style="padding: 4px 0; color: #64748b;">E-Mail:</td>
+      <td style="padding: 4px 0; font-weight: 500;"><a href="mailto:{{ contact_email }}" style="color: #3b82f6; text-decoration: none;">{{ contact_email }}</a></td>
+    </tr>
+    {% if contact_phone %}
+    <tr>
+      <td style="padding: 4px 0; color: #64748b;">Telefon:</td>
+      <td style="padding: 4px 0; font-weight: 500;">{{ contact_phone }}</td>
+    </tr>
+    {% endif %}
+  </table>
+</div>
+
+{% if notes %}
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+  <h3 style="margin: 0 0 12px; font-size: 16px; color: #0f172a;">Nachricht / Notizen</h3>
+  <p style="margin: 0; color: #334155; line-height: 1.5; white-space: pre-wrap;">{{ notes }}</p>
 </div>
 {% endif %}
 
-<p>Bitte kontaktieren Sie {{ organizer_name }} direkt, um die Buchung zu besprechen.</p>
-
-<p>Mit freundlichen Grüßen,<br>Das EventHorizon Team</p>
+<div style="text-align: center; margin-top: 32px;">
+  <a href="mailto:{{ contact_email }}?subject=Re: Buchungsanfrage: {{ activity_title }}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">Per E-Mail antworten</a>
+</div>
 {% endblock %}
