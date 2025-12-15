@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { Icon, LatLngBounds } from "leaflet";
 import { motion } from "framer-motion";
-import { MapPin, Euro, Clock, ExternalLink } from "lucide-react";
+import { MapPin, Euro, Clock, ExternalLink, Car, FootprintsIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -171,10 +172,28 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [geocodeCache, setGeocodeCache] = useState<Record<string, [number, number]>>({});
 
+  const formatDuration = (activity: Activity) => {
+    if (activity.duration) return activity.duration;
+    if (typeof activity.typicalDurationHours === "number") {
+      const hours = activity.typicalDurationHours;
+      const formatted = hours % 1 === 0
+        ? hours.toString()
+        : hours.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      return `${formatted}h`;
+    }
+    return "-";
+  };
+
   useEffect(() => {
     const fetchActivities = async () => {
       const result = await getActivities();
-      setActivities(result.data);
+      // Sort activities by walking time from office (ascending)
+      const sorted = result.data.sort((a, b) => {
+        const timeA = a.travelTimeMinutesWalking ?? Infinity;
+        const timeB = b.travelTimeMinutesWalking ?? Infinity;
+        return timeA - timeB;
+      });
+      setActivities(sorted);
       setLoading(false);
     };
     fetchActivities();
@@ -328,14 +347,28 @@ export default function MapPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      <span>{selectedActivity.duration}</span>
+                      <span>{formatDuration(selectedActivity)}</span>
                     </div>
+                    {selectedActivity.travelTimeMinutesWalking && (
+                      <div className="flex items-center gap-1">
+                        <FootprintsIcon className="h-3.5 w-3.5" />
+                        <span>{selectedActivity.travelTimeMinutesWalking} Min.</span>
+                      </div>
+                    )}
+                    {selectedActivity.travelTimeMinutes && (
+                      <div className="flex items-center gap-1">
+                        <Car className="h-3.5 w-3.5" />
+                        <span>{selectedActivity.travelTimeMinutes} Min.</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-2 mt-4">
-                    <Button className="flex-1 rounded-xl gap-2" size="sm">
-                      <ExternalLink className="h-4 w-4" />
-                      Details
+                    <Button asChild className="flex-1 rounded-xl gap-2" size="sm">
+                      <Link to={`/activities/${selectedActivity.id}`}>
+                        <ExternalLink className="h-4 w-4" />
+                        Details
+                      </Link>
                     </Button>
                     <Button
                       variant="secondary"
@@ -378,9 +411,22 @@ export default function MapPage() {
                         />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{activity.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {RegionLabels[activity.locationRegion]} · {activity.estPricePerPerson}€
-                          </p>
+                          {(activity.travelTimeMinutesWalking || activity.travelTimeMinutes) && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              {activity.travelTimeMinutesWalking && (
+                                <div className="flex items-center gap-1">
+                                  <FootprintsIcon className="h-3 w-3" />
+                                  <span>{activity.travelTimeMinutesWalking} Min.</span>
+                                </div>
+                              )}
+                              {activity.travelTimeMinutes && (
+                                <div className="flex items-center gap-1">
+                                  <Car className="h-3 w-3" />
+                                  <span>{activity.travelTimeMinutes} Min.</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
