@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Check, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints } from "lucide-react";
+import { X, Check, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -20,6 +20,7 @@ export interface ActivityFilters {
   priceRange: [number, number];
   groupSizeRange: [number, number];
   durationRange: [number, number];
+  travelTimeRange: [number, number];
   travelTimeWalkingRange: [number, number];
   physicalIntensity: [number, number];
   mentalChallenge: [number, number];
@@ -46,6 +47,7 @@ export const defaultFilters: ActivityFilters = {
   priceRange: [0, 200],
   groupSizeRange: [1, 100],
   durationRange: [0, 480], // in minutes
+  travelTimeRange: [0, 60], // in minutes
   travelTimeWalkingRange: [0, 60], // in minutes
   physicalIntensity: [1, 5],
   mentalChallenge: [1, 5],
@@ -130,6 +132,7 @@ export function ActivityFilterPanel({
     ((filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 200) ? 1 : 0) +
     ((filters.groupSizeRange?.[0] > 1 || filters.groupSizeRange?.[1] < 100) ? 1 : 0) +
     ((filters.durationRange?.[0] > 0 || filters.durationRange?.[1] < 480) ? 1 : 0) +
+    ((filters.travelTimeRange?.[0] > 0 || filters.travelTimeRange?.[1] < 60) ? 1 : 0) +
     ((filters.travelTimeWalkingRange?.[0] > 0 || filters.travelTimeWalkingRange?.[1] < 60) ? 1 : 0) +
     ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
     ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
@@ -138,7 +141,6 @@ export function ActivityFilterPanel({
     (filters.outdoorOnly ? 1 : 0) +
     (filters.weatherIndependent ? 1 : 0) +
     (filters.favoritesOnly ? 1 : 0);
-
   const formatDuration = (minutes: number) => {
     if (minutes >= 60) {
       const hours = Math.floor(minutes / 60);
@@ -264,7 +266,10 @@ export function ActivityFilterPanel({
           className="flex w-full items-center justify-between py-2 text-sm font-medium"
           onClick={() => toggleSection("season")}
         >
-          Saison
+          <span className="flex items-center gap-2">
+            <Sun className="h-4 w-4 text-primary" />
+            Saison
+          </span>
           <ChevronDown className={cn(
             "h-4 w-4 transition-transform",
             openSections.includes("season") && "rotate-180"
@@ -292,7 +297,10 @@ export function ActivityFilterPanel({
           className="flex w-full items-center justify-between py-2 text-sm font-medium"
           onClick={() => toggleSection("risk")}
         >
-          Risiko
+          <span className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-primary" />
+            Risiko
+          </span>
           <ChevronDown className={cn(
             "h-4 w-4 transition-transform",
             openSections.includes("risk") && "rotate-180"
@@ -320,7 +328,10 @@ export function ActivityFilterPanel({
           className="flex w-full items-center justify-between py-2 text-sm font-medium"
           onClick={() => toggleSection("price")}
         >
-          Preis pro Person
+          <span className="flex items-center gap-2">
+            <Euro className="h-4 w-4 text-primary" />
+            Preis pro Person
+          </span>
           <ChevronDown className={cn(
             "h-4 w-4 transition-transform",
             openSections.includes("price") && "rotate-180"
@@ -411,6 +422,41 @@ export function ActivityFilterPanel({
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{formatDuration(filters.durationRange[0])}</span>
               <span>{formatDuration(filters.durationRange[1])}+</span>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Travel Time Driving */}
+      <Collapsible open={openSections.includes("travelDriving")}>
+        <CollapsibleTrigger
+          className="flex w-full items-center justify-between py-2 text-sm font-medium"
+          onClick={() => toggleSection("travelDriving")}
+        >
+          <span className="flex items-center gap-2">
+            <Car className="h-4 w-4 text-primary" />
+            Fahrtzeit vom Büro
+          </span>
+          <ChevronDown className={cn(
+            "h-4 w-4 transition-transform",
+            openSections.includes("travelDriving") && "rotate-180"
+          )} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4 pb-2">
+          <div className="px-2">
+            <Slider
+              value={filters.travelTimeRange}
+              min={0}
+              max={60}
+              step={5}
+              onValueChange={(value) =>
+                onChange({ ...filters, travelTimeRange: value as [number, number] })
+              }
+              className="mb-2"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{filters.travelTimeRange[0]} min</span>
+              <span>{filters.travelTimeRange[1]}+ min</span>
             </div>
           </div>
         </CollapsibleContent>

@@ -38,6 +38,7 @@ export default function ActivitiesPage() {
     ((filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 200) ? 1 : 0) +
     ((filters.groupSizeRange?.[0] > 1 || filters.groupSizeRange?.[1] < 100) ? 1 : 0) +
     ((filters.durationRange?.[0] > 0 || filters.durationRange?.[1] < 480) ? 1 : 0) +
+    ((filters.travelTimeRange?.[0] > 0 || filters.travelTimeRange?.[1] < 60) ? 1 : 0) +
     ((filters.travelTimeWalkingRange?.[0] > 0 || filters.travelTimeWalkingRange?.[1] < 60) ? 1 : 0) +
     ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
     ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
@@ -141,6 +142,12 @@ export default function ActivitiesPage() {
     if (durationMinutes !== undefined) {
       if (durationMinutes < filters.durationRange[0]) return false;
       if (filters.durationRange[1] < 480 && durationMinutes > filters.durationRange[1]) return false;
+    }
+
+    // Travel Time Driving
+    if (activity.travelTimeMinutes !== undefined) {
+      if (activity.travelTimeMinutes < filters.travelTimeRange[0]) return false;
+      if (filters.travelTimeRange[1] < 60 && activity.travelTimeMinutes > filters.travelTimeRange[1]) return false;
     }
 
     // Travel Time Walking
