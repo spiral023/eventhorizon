@@ -144,8 +144,8 @@ export default function ActivityDetailPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-secondary/50 rounded animate-pulse" />
-        <div className="h-[400px] bg-secondary/30 rounded-2xl animate-pulse" />
+        <div className="h-8 w-48 bg-secondary/60 dark:bg-secondary/40 rounded animate-pulse" />
+        <div className="h-[400px] bg-secondary/40 dark:bg-secondary/30 rounded-2xl animate-pulse" />
       </div>
     );
   }
@@ -190,36 +190,37 @@ export default function ActivityDetailPage() {
           alt={activity.title}
           className="w-full h-[300px] md:h-[400px] object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        {/* Enhanced gradient overlay for better text readability in both light and dark mode */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10 dark:from-background dark:via-background/80 dark:to-background/30" />
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="flex flex-wrap items-center gap-2 mb-3">
-            <Badge className={cn(CategoryColors[activity.category])}>
+            <Badge className={cn(CategoryColors[activity.category], "shadow-lg")}>
               {CategoryLabels[activity.category]}
             </Badge>
-            <Badge variant="outline" className="bg-black/35 text-white border-white/30 shadow-sm backdrop-blur-sm">
+            <Badge variant="outline" className="bg-black/50 dark:bg-white/20 text-white border-white/40 dark:border-white/50 shadow-lg backdrop-blur-sm">
               {SeasonLabels[activity.season]}
             </Badge>
           </div>
-          <h1 className="text-2xl md:text-4xl font-bold mb-2">{activity.title}</h1>
-          <p className="text-muted-foreground text-lg">{activity.shortDescription}</p>
+          <h1 className="text-2xl md:text-4xl font-bold mb-2 text-foreground drop-shadow-lg">{activity.title}</h1>
+          <p className="text-foreground/80 dark:text-foreground/90 text-lg drop-shadow-md">{activity.shortDescription}</p>
         </div>
-        
-        {/* Hero Actions Overlay */}
+
+        {/* Hero Actions Overlay - Improved contrast for dark mode */}
         <div className="absolute top-4 right-4 flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-black/20 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-1 h-10 hover:bg-black/30 transition-all">
+          <div className="flex items-center gap-1 bg-black/30 dark:bg-white/20 backdrop-blur-md border border-white/20 dark:border-white/30 rounded-full pl-1 pr-1 h-10 hover:bg-black/40 dark:hover:bg-white/30 transition-all shadow-lg">
             <Button
               size="icon"
               variant="ghost"
               className={cn(
-                "h-8 w-8 rounded-full text-white hover:text-white hover:bg-white/10",
-                isFav && "text-red-500 hover:text-red-400"
+                "h-8 w-8 rounded-full text-white hover:text-white hover:bg-white/10 dark:hover:bg-white/20",
+                isFav && "text-red-500 hover:text-red-400 dark:text-red-400 dark:hover:text-red-300"
               )}
               onClick={handleFavoriteToggle}
             >
               <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
             </Button>
             {favoriteCount > 0 && (
-              <span className="text-white text-sm font-medium pr-3 select-none">
+              <span className="text-white dark:text-white text-sm font-medium pr-3 select-none drop-shadow-md">
                 {favoriteCount}
               </span>
             )}
@@ -237,12 +238,12 @@ export default function ActivityDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="bg-card/60 border-border/50 rounded-2xl">
+              <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg">Beschreibung</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground dark:text-muted-foreground/90 leading-relaxed">
                     {activity.longDescription}
                   </p>
                 </CardContent>
@@ -256,7 +257,7 @@ export default function ActivityDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-card/60 border-border/50 rounded-2xl">
+            <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Aktivitätsprofil</CardTitle>
               </CardHeader>
@@ -314,7 +315,7 @@ export default function ActivityDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="bg-card/60 border-border/50 rounded-2xl">
+              <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg">Tags</CardTitle>
                 </CardHeader>
@@ -337,7 +338,7 @@ export default function ActivityDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="bg-card/60 border-border/50 rounded-2xl">
+            <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Kommentare</CardTitle>
               </CardHeader>
@@ -345,7 +346,7 @@ export default function ActivityDetailPage() {
                 {/* Comment Input */}
                 {user ? (
                   <div className="flex gap-4">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-10 w-10 ring-2 ring-border/50">
                       <AvatarImage src={user.avatarUrl} alt={user.name} />
                       <AvatarFallback>{user.firstName?.[0]}{user.lastName?.[0]}</AvatarFallback>
                     </Avatar>
@@ -356,8 +357,8 @@ export default function ActivityDetailPage() {
                         onChange={(e) => setNewComment(e.target.value)}
                         className="min-h-[100px]"
                       />
-                      <Button 
-                        onClick={handleSubmitComment} 
+                      <Button
+                        onClick={handleSubmitComment}
                         disabled={!newComment.trim() || submittingComment}
                         className="ml-auto"
                       >
@@ -366,9 +367,9 @@ export default function ActivityDetailPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Bitte <Link to="/login" className="text-primary hover:underline">anmelden</Link>, um zu kommentieren.
+                  <div className="text-center p-4 bg-muted/60 dark:bg-muted/40 rounded-lg">
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground/90">
+                      Bitte <Link to="/login" className="text-primary hover:underline font-medium">anmelden</Link>, um zu kommentieren.
                     </p>
                   </div>
                 )}
@@ -376,27 +377,27 @@ export default function ActivityDetailPage() {
                 {/* Comments List */}
                 <div className="space-y-6">
                   {comments.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
+                    <p className="text-center text-muted-foreground dark:text-muted-foreground/90 py-8">
                       Noch keine Kommentare vorhanden. Sei der Erste!
                     </p>
                   ) : (
                     comments.map((comment) => (
                       <div key={comment.id} className="flex gap-4">
-                         <Avatar className="h-10 w-10">
+                         <Avatar className="h-10 w-10 ring-2 ring-border/50">
                           <AvatarImage src={comment.userAvatar} alt={comment.userName} />
                           <AvatarFallback>{comment.userName?.[0]}</AvatarFallback>
                         </Avatar>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold">{comment.userName}</span>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground dark:text-muted-foreground/80">
                               {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: de })}
                             </span>
                             {comment.userId === user?.id && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 px-2 text-xs text-muted-foreground"
+                                className="h-7 px-2 text-xs text-muted-foreground dark:text-muted-foreground/80 hover:text-destructive dark:hover:text-destructive"
                                 onClick={() => handleDeleteComment(comment.id)}
                               >
                                 <Trash2 className="h-3.5 w-3.5 mr-1" />
@@ -404,7 +405,7 @@ export default function ActivityDetailPage() {
                               </Button>
                             )}
                           </div>
-                          <p className="text-sm text-foreground/90 leading-relaxed">
+                          <p className="text-sm text-foreground/90 dark:text-foreground/95 leading-relaxed">
                             {comment.content}
                           </p>
                         </div>
@@ -426,9 +427,9 @@ export default function ActivityDetailPage() {
             transition={{ delay: 0.1 }}
           >
             <BookingRequestDialog activity={activity}>
-              <Button 
+              <Button
                 variant="default"
-                className="w-full rounded-xl h-12 text-base gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20"
+                className="w-full rounded-xl h-12 text-base gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-500/40"
               >
                 <Mail className="h-5 w-5" />
                 Buchungsanfrage
@@ -442,7 +443,7 @@ export default function ActivityDetailPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-card/60 border-primary/30 rounded-2xl">
+            <Card className="bg-card/80 dark:bg-card/90 border-primary/40 dark:border-primary/30 rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Auf einen Blick</CardTitle>
               </CardHeader>
@@ -453,7 +454,7 @@ export default function ActivityDetailPage() {
                   <div>
                     <p className="font-semibold">ab {activity.estPricePerPerson}€ p.P.</p>
                     {activity.priceComment && (
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground dark:text-muted-foreground/90 mt-1">
                         {activity.priceComment}
                       </p>
                     )}
@@ -490,7 +491,7 @@ export default function ActivityDetailPage() {
                           {activity.recommendedGroupSizeMin}–{activity.recommendedGroupSizeMax} Personen
                         </p>
                         {activity.minParticipants && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground dark:text-muted-foreground/90">
                             Min. {activity.minParticipants} Teilnehmer
                           </p>
                         )}
@@ -558,7 +559,7 @@ export default function ActivityDetailPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-card/60 border-border/50 rounded-2xl">
+            <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Standort & Kontakt</CardTitle>
               </CardHeader>
@@ -569,7 +570,7 @@ export default function ActivityDetailPage() {
                   <div>
                     <p className="font-medium">{activity.locationCity || RegionLabels[activity.locationRegion]}</p>
                     {activity.locationAddress && (
-                      <p className="text-sm text-muted-foreground">{activity.locationAddress}</p>
+                      <p className="text-sm text-muted-foreground dark:text-muted-foreground/90">{activity.locationAddress}</p>
                     )}
                   </div>
                 </div>
@@ -584,14 +585,14 @@ export default function ActivityDetailPage() {
                     <Separator />
                     <div className="space-y-2">
                       {activity.travelTimeMinutes && (
-                        <div className="flex items-center gap-3 text-sm">
-                          <Car className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center gap-3 text-sm text-foreground/90">
+                          <Car className="h-4 w-4 text-muted-foreground dark:text-muted-foreground/90" />
                           <span>ca. {activity.travelTimeMinutes} Min. mit Auto</span>
                         </div>
                       )}
                       {activity.travelTimeMinutesWalking && (
-                        <div className="flex items-center gap-3 text-sm">
-                          <FootprintsIcon className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center gap-3 text-sm text-foreground/90">
+                          <FootprintsIcon className="h-4 w-4 text-muted-foreground dark:text-muted-foreground/90" />
                           <span>ca. {activity.travelTimeMinutesWalking} Min. zu Fuß</span>
                         </div>
                       )}
@@ -645,7 +646,7 @@ export default function ActivityDetailPage() {
                 {/* Provider */}
                 {activity.provider && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Anbieter</p>
+                    <p className="text-xs text-muted-foreground dark:text-muted-foreground/90 mb-1">Anbieter</p>
                     <p className="font-medium">{activity.provider}</p>
                   </div>
                 )}

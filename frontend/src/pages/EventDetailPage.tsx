@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun, Check, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Check, ArrowRight, ChevronDown, Info, MoreVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,7 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("proposal");
+  const [phaseMenuOpen, setPhaseMenuOpen] = useState(false);
   
   // Track previous phase to only auto-switch tab when phase actually changes
   const prevPhaseRef = useRef<EventPhase | null>(null);
@@ -275,7 +276,7 @@ export default function EventDetailPage() {
               </div>
 
               {/* Current phase popover */}
-              <Popover>
+              <Popover open={phaseMenuOpen} onOpenChange={setPhaseMenuOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="secondary"
@@ -308,7 +309,10 @@ export default function EventDetailPage() {
                       return (
                         <button
                           key={phase}
-                          onClick={() => setActiveTab(phase)}
+                          onClick={() => {
+                            setActiveTab(phase);
+                            setPhaseMenuOpen(false);
+                          }}
                           disabled={isFuture && !isCompleted && !isCurrent}
                           className={cn(
                             "flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left transition",
@@ -331,10 +335,20 @@ export default function EventDetailPage() {
                             {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
                           </div>
                           <div className="flex-1 space-y-0.5">
-                            <div className="text-sm font-semibold leading-tight">
+                            <div
+                              className={cn(
+                                "text-sm font-semibold leading-tight",
+                                isActive && "text-primary-foreground"
+                              )}
+                            >
                               {PhaseLabels[phase]}
                             </div>
-                            <div className="text-xs text-muted-foreground leading-snug">
+                            <div
+                              className={cn(
+                                "text-xs leading-snug text-muted-foreground",
+                                isActive && "text-primary-foreground/80"
+                              )}
+                            >
                               {PhaseDescriptions[phase]}
                             </div>
                           </div>
