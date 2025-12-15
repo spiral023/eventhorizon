@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Moon, Sun, Bell, Globe, Shield } from "lucide-react";
+import { Moon, Sun, Bell, Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -197,21 +197,6 @@ export default function SettingsPage() {
               </div>
               <Switch id="voting-reminders" defaultChecked />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Language */}
-        <Card className="rounded-2xl bg-card/60 border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Globe className="h-5 w-5 text-primary" />
-              Sprache & Region
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Spracheinstellungen werden in einer späteren Phase ergänzt.
-            </p>
           </CardContent>
         </Card>
       </div>

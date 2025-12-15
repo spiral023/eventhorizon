@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Check, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro } from "lucide-react";
+import { X, Check, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -169,7 +169,7 @@ export function ActivityFilterPanel({
         className="w-full justify-start gap-2 rounded-xl"
         onClick={() => onChange({ ...filters, favoritesOnly: !filters.favoritesOnly })}
       >
-        {filters.favoritesOnly && <Check className="h-4 w-4" />}
+        <Heart className={cn("h-4 w-4", filters.favoritesOnly && "fill-current")} />
         Nur Favoriten
       </Button>
 

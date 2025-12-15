@@ -203,6 +203,28 @@ export default function ActivityDetailPage() {
           <h1 className="text-2xl md:text-4xl font-bold mb-2">{activity.title}</h1>
           <p className="text-muted-foreground text-lg">{activity.shortDescription}</p>
         </div>
+        
+        {/* Hero Actions Overlay */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-black/20 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-1 h-10 hover:bg-black/30 transition-all">
+            <Button
+              size="icon"
+              variant="ghost"
+              className={cn(
+                "h-8 w-8 rounded-full text-white hover:text-white hover:bg-white/10",
+                isFav && "text-red-500 hover:text-red-400"
+              )}
+              onClick={handleFavoriteToggle}
+            >
+              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
+            </Button>
+            {favoriteCount > 0 && (
+              <span className="text-white text-sm font-medium pr-3 select-none">
+                {favoriteCount}
+              </span>
+            )}
+          </div>
+        </div>
       </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -397,27 +419,6 @@ export default function ActivityDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.0 }}
-          >
-            <Button 
-              className={cn(
-                "w-full rounded-xl h-12 text-base gap-2",
-                isFav && "bg-destructive hover:bg-destructive/90"
-              )}
-              onClick={handleFavoriteToggle}
-            >
-              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
-              {isFav ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
-              <span className="text-xs text-muted-foreground ml-auto">
-                {favoriteCount} Favoriten
-              </span>
-            </Button>
-          </motion.div>
-
           {/* Booking Request */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
