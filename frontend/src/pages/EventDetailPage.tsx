@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun, Check, ArrowRight } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Globe, Facebook, Instagram, BookOpen, CloudSun, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VotingCard } from "@/components/events/VotingCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
@@ -237,7 +239,7 @@ export default function EventDetailPage() {
                 </div>
               )}
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                  {isCreator && (
@@ -249,95 +251,130 @@ export default function EventDetailPage() {
                 <span>•</span>
                 <span>{formatTimeWindow(event.timeWindow)}</span>
               </div>
+              {event.description && event.description.trim().length > 0 && (
+                <p className="text-sm text-muted-foreground line-clamp-2 max-w-2xl">
+                  {event.description}
+                </p>
+              )}
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-             {/* Stats */}
-             <div className="flex items-center gap-4 px-4 py-2 rounded-2xl bg-secondary/30 border border-border/40">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+              {/* Stats */}
+              <div className="flex items-center gap-4 px-4 py-2 rounded-2xl bg-secondary/30 border border-border/40 w-full sm:w-auto">
                 <div className="text-center">
                   <div className="text-lg font-bold leading-none">{event.participants.length}</div>
                   <div className="text-[10px] uppercase text-muted-foreground font-medium mt-0.5">Dabei</div>
                 </div>
                 <div className="h-8 w-px bg-border/40" />
                 <div className="text-center">
-                   <div className="text-lg font-bold leading-none">{votedCount}</div>
-                   <div className="text-[10px] uppercase text-muted-foreground font-medium mt-0.5">Voted</div>
+                  <div className="text-lg font-bold leading-none">{votedCount}</div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-medium mt-0.5">Voted</div>
                 </div>
-             </div>
+              </div>
 
-             {/* Actions */}
-             <EventActionsPanel
-              event={event}
-              isCreator={!!isCreator}
-              activePhase={activeTab as EventPhase}
-              onEventUpdated={handleEventUpdated}
-              className="bg-background rounded-full border shadow-sm p-1"
-            />
-          </div>
-        </div>
-        
-        {/* Unified Navigation (Stepper + Tabs) */}
-        <div className="border-b">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4">
-            <div className="w-full overflow-hidden">
-              <div className="flex overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 gap-1 hide-scrollbar touch-pan-x">
-                {phaseOrder.map((phase, index) => {
-                  const isCompleted = isPhaseCompleted(phase, event.phase);
-                  const isCurrent = isPhaseCurrent(phase, event.phase);
-                  const isActive = activeTab === phase;
-                  const isFuture = !isCompleted && !isCurrent;
-                  
-                  return (
-                    <button
-                      key={phase}
-                      onClick={() => setActiveTab(phase)}
-                      disabled={isFuture && !isCompleted && !isCurrent} // Allow navigation if past or current
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-xl transition-all whitespace-nowrap min-w-fit",
-                        isActive 
-                          ? "bg-primary text-primary-foreground shadow-sm" 
-                          : isCurrent
-                          ? "bg-secondary text-foreground ring-1 ring-inset ring-border"
-                          : "text-muted-foreground hover:bg-secondary/50",
-                        (isFuture && !isCompleted && !isCurrent) && "opacity-50 cursor-not-allowed hover:bg-transparent"
-                      )}
-                    >
-                      <div className={cn(
-                        "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-bold",
-                        isActive 
-                          ? "border-primary-foreground/30 bg-primary-foreground/20" 
-                          : isCompleted
-                          ? "border-primary bg-primary text-primary-foreground border-transparent"
-                          : "border-muted-foreground/30"
-                      )}>
-                        {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
+              {/* Current phase popover */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    className="w-full sm:w-auto justify-between sm:justify-start rounded-full border border-border/60 bg-card/70 text-foreground shadow-sm px-4 py-2 gap-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-xs font-bold text-primary">
+                        {phaseOrder.indexOf(activeTab as EventPhase) + 1}
                       </div>
                       <div className="flex flex-col items-start">
-                        <span className="text-sm font-semibold leading-none">{PhaseLabels[phase]}</span>
-                        {isActive && (
-                          <span className="text-[10px] font-medium opacity-80 leading-none mt-1">
-                            {PhaseDescriptions[phase]}
-                          </span>
-                        )}
+                        <span className="text-sm font-semibold leading-none">
+                          {PhaseLabels[activeTab as EventPhase]}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-none mt-1 line-clamp-1">
+                          {PhaseDescriptions[activeTab as EventPhase]}
+                        </span>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-72 p-2">
+                  <div className="space-y-1">
+                    {phaseOrder.map((phase, index) => {
+                      const isCompleted = isPhaseCompleted(phase, event.phase);
+                      const isCurrent = isPhaseCurrent(phase, event.phase);
+                      const isFuture = !isCompleted && !isCurrent;
+                      const isActive = activeTab === phase;
+
+                      return (
+                        <button
+                          key={phase}
+                          onClick={() => setActiveTab(phase)}
+                          disabled={isFuture && !isCompleted && !isCurrent}
+                          className={cn(
+                            "flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left transition",
+                            isActive
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "hover:bg-secondary/60 text-foreground",
+                            (isFuture && !isCompleted && !isCurrent) && "opacity-50 cursor-not-allowed hover:bg-transparent"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold",
+                              isActive
+                                ? "border-primary-foreground/40 bg-primary-foreground/20"
+                                : isCompleted
+                                  ? "border-primary bg-primary text-primary-foreground border-transparent"
+                                  : "border-muted-foreground/30 text-muted-foreground"
+                            )}
+                          >
+                            {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
+                          </div>
+                          <div className="flex-1 space-y-0.5">
+                            <div className="text-sm font-semibold leading-tight">
+                              {PhaseLabels[phase]}
+                            </div>
+                            <div className="text-xs text-muted-foreground leading-snug">
+                              {PhaseDescriptions[phase]}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
-            
-             {canAdvance && activeTab === event.phase && (
-                <Button 
-                  size="sm" 
-                  onClick={handleAdvancePhase} 
-                  disabled={actionLoading}
-                  className="w-full md:w-auto shrink-0 rounded-xl gap-2 shadow-sm"
-                >
-                  Nächste Phase
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <EventActionsPanel
+                event={event}
+                isCreator={!!isCreator}
+                activePhase={activeTab as EventPhase}
+                onEventUpdated={handleEventUpdated}
+                className="bg-background rounded-full border shadow-sm p-1 w-full sm:w-auto"
+              />
+
+              {canAdvance && activeTab === event.phase && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={handleAdvancePhase}
+                      disabled={actionLoading}
+                      className="h-11 w-11 rounded-full border border-border/70 bg-card/80"
+                      aria-label="Nächste Phase"
+                    >
+                      <ArrowRight className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Nächste Phase</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
+            </div>
           </div>
         </div>
       </div>
