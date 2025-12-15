@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, LogIn, Sparkles, CheckCircle2, XCircle, Send, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -343,7 +343,16 @@ export default function LoginPage() {
                 </>
               ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="password">Passwort</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Passwort</Label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                      tabIndex={-1}
+                    >
+                      Passwort vergessen?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <Input
                       id="password"

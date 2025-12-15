@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
-import { Moon, Sun, Bell, Globe } from "lucide-react";
+import { Moon, Sun, Bell, Globe, Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { changePassword } from "@/lib/authClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SettingsPage() {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check initial theme
@@ -25,6 +34,55 @@ export default function SettingsPage() {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) {
+      toast({
+        title: "Fehler",
+        description: "Die neuen Passwörter stimmen nicht überein.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast({
+        title: "Fehler",
+        description: "Das neue Passwort muss mindestens 8 Zeichen lang sein.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const { error } = await changePassword(currentPassword, newPassword);
+      if (error) {
+        toast({
+          title: "Fehler",
+          description: error.message || "Passwort konnte nicht geändert werden.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erfolg",
+          description: "Passwort erfolgreich geändert.",
+        });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+      }
+    } catch (err) {
+      toast({
+        title: "Fehler",
+        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return (
     <div>
       <PageHeader
@@ -33,6 +91,60 @@ export default function SettingsPage() {
       />
 
       <div className="max-w-2xl space-y-6">
+        {/* Security / Password */}
+        <Card className="rounded-2xl bg-card/60 border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Shield className="h-5 w-5 text-primary" />
+              Sicherheit
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Aktuelles Passwort</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="********"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Neues Passwort</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Mindestens 8 Zeichen"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-new-password">Bestätigen</Label>
+                  <Input
+                    id="confirm-new-password"
+                    type="password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Wiederholen"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isChangingPassword || !currentPassword || !newPassword}>
+                  {isChangingPassword ? "Speichern..." : "Passwort ändern"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
         {/* Appearance */}
         <Card className="rounded-2xl bg-card/60 border-border/50">
           <CardHeader>

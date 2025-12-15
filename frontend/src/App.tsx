@@ -26,6 +26,8 @@ import ProfilePage from "@/pages/ProfilePage";
 import MapPage from "@/pages/MapPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "@/pages/NotFound";
+import RequestResetPasswordPage from "@/pages/RequestResetPasswordPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +88,8 @@ function AppRoutes() {
       {/* Public routes */}
       <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
       <Route path="/join/:inviteCode" element={<PageTransition><JoinRoomPage /></PageTransition>} />
+      <Route path="/forgot-password" element={<PageTransition><RequestResetPasswordPage /></PageTransition>} />
+      <Route path="/reset-password" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
 
       {/* App layout for all in-app pages */}
       <Route element={<AppShell />}>

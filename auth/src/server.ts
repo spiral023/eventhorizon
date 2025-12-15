@@ -7,6 +7,7 @@ import { Pool } from "pg";
 import { Resend } from "resend";
 import { renderOtpEmail } from "./templates/otpEmail";
 import { renderVerificationEmail } from "./templates/verificationEmail";
+import { renderResetPasswordEmail } from "./templates/resetPasswordEmail";
 
 const {
   BETTER_AUTH_SECRET,
@@ -55,6 +56,33 @@ const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      const { subject, text, html } = renderResetPasswordEmail({
+        resetUrl: url,
+        userName: user.name,
+        frontendUrl: BETTER_AUTH_BASE_URL,
+      });
+
+      if (!resend) {
+        console.warn("[auth] RESEND_API_KEY not set; reset URL:", url);
+        return;
+      }
+
+      void resend.emails
+        .send({
+          from: MAIL_FROM_EMAIL,
+          to: user.email,
+          subject,
+          text,
+          html,
+        })
+        .catch((error) => {
+          console.error("[auth] Failed to send reset password email", error);
+        });
+    },
+    onPasswordReset: async ({ user }) => {
+      console.log(`[auth] Password reset successfully for user: ${user.email}`);
+    },
   },
   emailVerification: {
     sendOnSignUp: true,

@@ -78,4 +78,26 @@ export async function fetchSession() {
   }
 }
 
+export async function requestPasswordReset(email: string, redirectTo?: string) {
+  return authClient.requestPasswordReset({
+    email,
+    redirectTo,
+  });
+}
+
+export async function resetPassword(password: string, token: string) {
+  return authClient.resetPassword({
+    newPassword: password,
+    token,
+  });
+}
+
+export async function changePassword(currentPassword: string, newPassword: string, revokeOtherSessions: boolean = true) {
+  return authClient.changePassword({
+    currentPassword,
+    newPassword,
+    revokeOtherSessions,
+  });
+}
+
 export const useBetterAuthSession = authClient.useSession;
