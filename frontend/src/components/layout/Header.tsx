@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Bell, User, LogOut, Menu, UserPlus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -55,12 +55,14 @@ export function Header() {
             </SheetContent>
           </Sheet>
 
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20">
-            <div className="h-5 w-5 rounded-md bg-primary" />
-          </div>
-          <span className="text-lg font-semibold tracking-tight">
-            Event<span className="text-primary">Horizon</span>
-          </span>
+          <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20">
+              <div className="h-5 w-5 rounded-md bg-primary" />
+            </div>
+            <span className="text-lg font-semibold tracking-tight">
+              Event<span className="text-primary">Horizon</span>
+            </span>
+          </Link>
         </div>
 
         {/* Right Actions */}

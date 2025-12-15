@@ -110,7 +110,10 @@ export default function ActivityDetailPage() {
     setIsFav(isFavorite);
     setFavoriteCount(count);
     setActivity((prev) => (prev ? { ...prev, favoritesCount: count } : prev));
-    toast.success(isFavorite ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
+    // Only show toast on desktop
+    if (window.innerWidth >= 768) {
+      toast.success(isFavorite ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
+    }
   };
 
   const handleSubmitComment = async () => {
@@ -170,7 +173,7 @@ export default function ActivityDetailPage() {
   const rating = activity.externalRating || activity.rating;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 md:pb-0">
       {/* Back Button */}
       <Button asChild variant="ghost" size="sm" className="gap-2">
         <Link to="/activities">
@@ -205,8 +208,8 @@ export default function ActivityDetailPage() {
           <p className="hidden md:block text-foreground/80 dark:text-foreground/90 text-lg drop-shadow-md">{activity.shortDescription}</p>
         </div>
 
-        {/* Hero Actions Overlay - Improved contrast for dark mode */}
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+        {/* Hero Actions Overlay - Improved contrast for dark mode - Hidden on mobile */}
+        <div className="hidden md:flex absolute top-4 right-4 items-center gap-2">
           <div className="flex items-center gap-1 bg-black/30 dark:bg-white/20 backdrop-blur-md border border-white/20 dark:border-white/30 rounded-full pl-1 pr-1 h-10 hover:bg-black/40 dark:hover:bg-white/30 transition-all shadow-lg">
             <Button
               size="icon"
@@ -420,11 +423,12 @@ export default function ActivityDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Booking Request */}
+          {/* Booking Request - Hidden on mobile */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+            className="hidden md:block"
           >
             <BookingRequestDialog activity={activity}>
               <Button
@@ -713,6 +717,47 @@ export default function ActivityDetailPage() {
               </CardContent>
             </Card>
           </motion.div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Bottom Action Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999]">
+        <div className="bg-background/95 dark:bg-background/95 backdrop-blur-lg border-t border-border/50 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.3)]">
+          <div className="container max-w-screen-xl mx-auto px-4 py-3">
+            <div className="flex items-center gap-3">
+              {/* Favorite Button with Count */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className={cn(
+                    "h-12 w-12 rounded-xl",
+                    isFav && "bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/50"
+                  )}
+                  onClick={handleFavoriteToggle}
+                >
+                  <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
+                </Button>
+                {favoriteCount > 0 && (
+                  <span className="text-sm font-medium text-foreground/70 dark:text-foreground/80">
+                    {favoriteCount}
+                  </span>
+                )}
+              </div>
+
+              {/* Booking Request Button */}
+              <BookingRequestDialog activity={activity}>
+                <Button
+                  size="lg"
+                  variant="default"
+                  className="flex-1 h-12 rounded-xl gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-500/40"
+                >
+                  <Mail className="h-5 w-5" />
+                  Buchungsanfrage
+                </Button>
+              </BookingRequestDialog>
+            </div>
+          </div>
         </div>
       </div>
     </div>
