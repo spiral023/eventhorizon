@@ -331,7 +331,7 @@ export default function ActivitiesPage() {
                       );
                     }}
                     showTags={false}
-                    onClick={() => navigate(`/activities/${activity.id}`)}
+                    onClick={() => navigate(`/activities/${activity.slug}`)}
                   />
                 </motion.div>
               ))}

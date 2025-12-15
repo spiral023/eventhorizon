@@ -155,6 +155,7 @@ class ActivityCreate(ActivityBase):
 
 class Activity(ActivityBase):
     id: UUID
+    slug: str
     created_at: datetime
     favorites_count: int = 0
 

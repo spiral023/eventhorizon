@@ -232,7 +232,7 @@ export default function TeamPage() {
                 activity={activity}
                 isFavorite={favoriteIds.includes(activity.id)}
                 onFavoriteToggle={handleFavoriteToggle}
-                onClick={() => navigate(`/activities/${activity.id}`)}
+                onClick={() => navigate(`/activities/${activity.slug}`)}
               />
             </motion.div>
           ))}

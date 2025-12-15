@@ -3,13 +3,20 @@ services:
     image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: eventhorizon
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-eventhorizon}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-eventhorizon}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
@@ -20,32 +27,36 @@ services:
       - "8000:8000"
     environment:
       POSTGRES_SERVER: db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: eventhorizon
-      SECRET_KEY: dgdjds2352!!sddfg
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-eventhorizon}
+      # Backend Config
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:5173}
       BETTER_AUTH_JWKS_URL: http://auth:3000/api/auth/jwks
-      BETTER_AUTH_ISSUER: eventhorizon-auth
-      BETTER_AUTH_AUDIENCE: eventhorizon-api
+      BETTER_AUTH_ISSUER: ${BETTER_AUTH_JWT_ISSUER:-eventhorizon-auth}
+      BETTER_AUTH_AUDIENCE: ${BETTER_AUTH_JWT_AUDIENCE:-eventhorizon-api}
       # S3 Storage (avatars, assets)
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-eu-west-1}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
       AWS_STORAGE_BUCKET: ${AWS_STORAGE_BUCKET}
       AWS_STORAGE_BUCKET_BASE_URL: ${AWS_STORAGE_BUCKET_BASE_URL}
       AVATAR_MAX_SIZE_MB: ${AVATAR_MAX_SIZE_MB:-5}
-      # OpenRouter API Configuration
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
-      OPENROUTER_BASE_URL: https://openrouter.ai/api/v1
-      OPENROUTER_APP_NAME: EventHorizon
-      OPENROUTER_SITE_URL: http://localhost:5173
-      # Email Configuration
-      RESEND_API_KEY: ${RESEND_API_KEY}
-      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-noreply@eventhorizon.app}
-      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-EventHorizon}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   auth:
     build:
@@ -62,15 +73,22 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-secret-change-me}
       BETTER_AUTH_BASE_URL: http://localhost:5173
       BETTER_AUTH_BASE_PATH: /api/auth
-      DATABASE_URL: postgres://user:password@db:5432/eventhorizon
+      BETTER_AUTH_JWT_ISSUER: ${BETTER_AUTH_JWT_ISSUER:-eventhorizon-auth}
+      BETTER_AUTH_JWT_AUDIENCE: ${BETTER_AUTH_JWT_AUDIENCE:-eventhorizon-api}
+      DATABASE_URL: postgres://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-eventhorizon}
       TRUSTED_ORIGINS: http://localhost:5173
-      BETTER_AUTH_JWT_ISSUER: eventhorizon-auth
-      BETTER_AUTH_JWT_AUDIENCE: eventhorizon-api
       BETTER_AUTH_DB_SCHEMA: auth
       RESEND_API_KEY: ${RESEND_API_KEY}
       MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-event-horizon@notifications.sp23.online}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
 
 volumes:
   postgres_data:

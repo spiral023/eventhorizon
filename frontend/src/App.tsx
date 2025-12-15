@@ -95,7 +95,7 @@ function AppRoutes() {
       <Route element={<AppShell />}>
         <Route index element={<PageTransition><HomePage /></PageTransition>} />
         <Route path="activities" element={<PageTransition><ActivitiesPage /></PageTransition>} />
-        <Route path="activities/:activityId" element={<PageTransition><ActivityDetailPage /></PageTransition>} />
+        <Route path="activities/:slug" element={<PageTransition><ActivityDetailPage /></PageTransition>} />
 
         {/* Guest-visible but auth-gated sections show inline notice */}
         <Route

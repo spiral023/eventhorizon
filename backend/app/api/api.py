@@ -181,43 +181,43 @@ class EventUpdateRequest(BaseModel):
     avatar_url: Optional[str] = None
 
 # --- Activity Comments ---
-@router.get("/activities/{activity_id}/comments", response_model=List[ActivityCommentSchema])
+@router.get("/activities/{identifier}/comments", response_model=List[ActivityCommentSchema])
 async def get_activity_comments(
-    activity_id: UUID,
+    identifier: str,
     skip: int = 0,
     limit: int = 50,
     db: AsyncSession = Depends(get_db)
 ):
-    query = select(ActivityComment).where(ActivityComment.activity_id == activity_id)
+    # Resolve activity by slug or UUID
+    activity = await resolve_activity_identifier(identifier, db)
+
+    query = select(ActivityComment).where(ActivityComment.activity_id == activity.id)
     query = query.order_by(desc(ActivityComment.created_at)).offset(skip).limit(limit).options(selectinload(ActivityComment.user))
-    
+
     result = await db.execute(query)
     comments = result.scalars().all()
-    
+
     # Hydrate user details
     for comment in comments:
         if comment.user:
             comment.user_name = comment.user.name
             comment.user_avatar = comment.user.avatar_url
-            
+
     return comments
 
-@router.post("/activities/{activity_id}/comments", response_model=ActivityCommentSchema)
+@router.post("/activities/{identifier}/comments", response_model=ActivityCommentSchema)
 async def create_activity_comment(
-    activity_id: UUID,
+    identifier: str,
     comment_in: ActivityCommentCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Verify activity exists
-    result = await db.execute(select(Activity).where(Activity.id == activity_id))
-    activity = result.scalar_one_or_none()
-    if not activity:
-        raise HTTPException(status_code=404, detail="Activity not found")
-        
+    # Resolve activity by slug or UUID
+    activity = await resolve_activity_identifier(identifier, db)
+
     comment = ActivityComment(
         id=uuid4(),
-        activity_id=activity_id,
+        activity_id=activity.id,
         user_id=current_user.id,
         content=comment_in.content,
         created_at=datetime.utcnow()
@@ -225,27 +225,30 @@ async def create_activity_comment(
     db.add(comment)
     await db.commit()
     await db.refresh(comment)
-    
+
     # Load user for response
     await db.refresh(comment, attribute_names=['user'])
-    
+
     comment.user_name = current_user.name
     comment.user_avatar = current_user.avatar_url
-    
+
     return comment
 
-@router.delete("/activities/{activity_id}/comments/{comment_id}", status_code=204)
+@router.delete("/activities/{identifier}/comments/{comment_id}", status_code=204)
 async def delete_activity_comment(
-    activity_id: UUID,
+    identifier: str,
     comment_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Resolve activity by slug or UUID
+    activity = await resolve_activity_identifier(identifier, db)
+
     result = await db.execute(
         select(ActivityComment).where(ActivityComment.id == comment_id)
     )
     comment = result.scalar_one_or_none()
-    if not comment or comment.activity_id != activity_id:
+    if not comment or comment.activity_id != activity.id:
         raise HTTPException(status_code=404, detail="Comment not found")
     if comment.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
@@ -339,6 +342,30 @@ async def health_check():
     return {"status": "ok"}
 
 # --- Helpers ---
+async def resolve_activity_identifier(identifier: str, db: AsyncSession) -> Activity:
+    """
+    Resolve activity by UUID or slug.
+    Returns Activity instance or raises HTTPException if not found.
+    """
+    # Try UUID first
+    try:
+        activity_id = UUID(identifier)
+        result = await db.execute(select(Activity).where(Activity.id == activity_id))
+        activity = result.scalar_one_or_none()
+        if activity:
+            return activity
+    except ValueError:
+        pass  # Not a UUID, try slug
+
+    # Try slug
+    result = await db.execute(select(Activity).where(Activity.slug == identifier))
+    activity = result.scalar_one_or_none()
+
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    return activity
+
 def enhance_event_with_user_names_helper(event):
     """Add user_name to votes from user relationship"""
     if hasattr(event, 'votes') and event.votes:
@@ -390,9 +417,26 @@ async def get_user_favorites(
     )
     return [row.activity_id for row in result.fetchall()]
 
-@router.get("/activities/{activity_id}", response_model=ActivitySchema)
-async def get_activity(activity_id: UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+@router.get("/activities/{identifier}", response_model=ActivitySchema)
+async def get_activity(identifier: str, db: AsyncSession = Depends(get_db)):
+    from fastapi.responses import RedirectResponse
+
+    # Try to parse as UUID first (for backward compatibility with redirects)
+    try:
+        activity_id = UUID(identifier)
+        result = await db.execute(select(Activity).where(Activity.id == activity_id))
+        activity = result.scalar_one_or_none()
+        if activity:
+            # Redirect UUID to slug URL (301 for SEO)
+            return RedirectResponse(
+                url=f"/api/v1/activities/{activity.slug}",
+                status_code=301
+            )
+    except ValueError:
+        pass  # Not a UUID, treat as slug
+
+    # Query by slug
+    result = await db.execute(select(Activity).where(Activity.slug == identifier))
     activity = result.scalar_one_or_none()
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -401,27 +445,25 @@ async def get_activity(activity_id: UUID, db: AsyncSession = Depends(get_db)):
     count_result = await db.execute(
         select(func.count())
         .select_from(user_favorites)
-        .where(user_favorites.c.activity_id == activity_id)
+        .where(user_favorites.c.activity_id == activity.id)
     )
     activity.favorites_count = count_result.scalar_one()
 
     return activity
 
-@router.get("/activities/{activity_id}/favorite")
+@router.get("/activities/{identifier}/favorite")
 async def get_favorite_status(
-    activity_id: UUID,
+    identifier: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Ensure activity exists
-    activity_result = await db.execute(select(Activity).where(Activity.id == activity_id))
-    if not activity_result.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Activity not found")
+    # Resolve activity by slug or UUID
+    activity = await resolve_activity_identifier(identifier, db)
 
     fav_result = await db.execute(
         select(user_favorites.c.activity_id)
         .where(
-            user_favorites.c.activity_id == activity_id,
+            user_favorites.c.activity_id == activity.id,
             user_favorites.c.user_id == current_user.id
         )
     )
@@ -430,28 +472,26 @@ async def get_favorite_status(
     count_result = await db.execute(
         select(func.count())
         .select_from(user_favorites)
-        .where(user_favorites.c.activity_id == activity_id)
+        .where(user_favorites.c.activity_id == activity.id)
     )
     favorites_count = count_result.scalar_one()
 
     return {"is_favorite": is_favorite, "favorites_count": favorites_count}
 
-@router.post("/activities/{activity_id}/favorite")
+@router.post("/activities/{identifier}/favorite")
 async def toggle_favorite_activity(
-    activity_id: UUID,
+    identifier: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Ensure activity exists
-    activity_result = await db.execute(select(Activity).where(Activity.id == activity_id))
-    if not activity_result.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Activity not found")
+    # Resolve activity by slug or UUID
+    activity = await resolve_activity_identifier(identifier, db)
 
     # Check if favorite exists
     existing = await db.execute(
         select(user_favorites)
         .where(
-            user_favorites.c.activity_id == activity_id,
+            user_favorites.c.activity_id == activity.id,
             user_favorites.c.user_id == current_user.id
         )
     )
@@ -460,7 +500,7 @@ async def toggle_favorite_activity(
     if favorite_row:
         await db.execute(
             user_favorites.delete().where(
-                user_favorites.c.activity_id == activity_id,
+                user_favorites.c.activity_id == activity.id,
                 user_favorites.c.user_id == current_user.id
             )
         )
@@ -468,7 +508,7 @@ async def toggle_favorite_activity(
     else:
         await db.execute(
             user_favorites.insert().values(
-                activity_id=activity_id,
+                activity_id=activity.id,
                 user_id=current_user.id
             )
         )
@@ -479,24 +519,21 @@ async def toggle_favorite_activity(
     count_result = await db.execute(
         select(func.count())
         .select_from(user_favorites)
-        .where(user_favorites.c.activity_id == activity_id)
+        .where(user_favorites.c.activity_id == activity.id)
     )
     favorites_count = count_result.scalar_one()
 
     return {"is_favorite": is_favorite, "favorites_count": favorites_count}
 
-@router.post("/activities/{activity_id}/booking-request")
+@router.post("/activities/{identifier}/booking-request")
 async def create_booking_request(
-    activity_id: UUID,
+    identifier: str,
     request_in: BookingRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Verify activity exists
-    result = await db.execute(select(Activity).where(Activity.id == activity_id))
-    activity = result.scalar_one_or_none()
-    if not activity:
-        raise HTTPException(status_code=404, detail="Activity not found")
+    # Resolve activity by slug or UUID
+    activity = await resolve_activity_identifier(identifier, db)
 
     if not activity.email:
         raise HTTPException(status_code=400, detail="Activity has no contact email")

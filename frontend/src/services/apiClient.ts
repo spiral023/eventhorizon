@@ -185,6 +185,7 @@ const mockRooms: Room[] = [
 const mockActivities: Activity[] = [
   {
     id: "act-1",
+    slug: "masters-of-escape-team-raetselspass-in-linz",
     title: "Masters of Escape: Team-Rätselspaß in Linz",
     category: "action",
     tags: ["escape-game", "teambuilding", "puzzle"],
@@ -589,6 +590,7 @@ function mapActivityFromApi(apiActivity: ApiActivity): Activity {
   return {
     // Map snake_case to camelCase
     id: apiActivity.id,
+    slug: apiActivity.slug,
     title: apiActivity.title,
     category: apiActivity.category as EventCategory,
     tags: apiActivity.tags || [],

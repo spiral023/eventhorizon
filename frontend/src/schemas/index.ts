@@ -62,6 +62,7 @@ export const RoomSchema = z.object({
 
 export const ActivitySchema = z.object({
   id: z.string(),
+  slug: z.string(),
   title: z.string().min(1).max(100),
   category: EventCategorySchema,
   tags: z.array(z.string()),

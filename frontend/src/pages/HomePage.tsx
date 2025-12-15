@@ -222,11 +222,11 @@ export default function HomePage() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ActivityCard 
-                    activity={activity} 
+                  <ActivityCard
+                    activity={activity}
                     isFavorite={favoriteIds.includes(activity.id)}
                     onFavoriteToggle={handleFavoriteToggle}
-                    onClick={() => navigate(`/activities/${activity.id}`)}
+                    onClick={() => navigate(`/activities/${activity.slug}`)}
                     showTags={false}
                   />
                 </motion.div>

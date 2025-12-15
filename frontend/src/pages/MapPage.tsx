@@ -431,7 +431,7 @@ export default function MapPage() {
 
                   <div className="flex gap-2 mt-4">
                     <Button asChild className="flex-1 rounded-xl gap-2" size="sm">
-                      <Link to={`/activities/${selectedActivity.id}`}>
+                      <Link to={`/activities/${selectedActivity.slug}`}>
                         <ExternalLink className="h-4 w-4" />
                         Details
                       </Link>

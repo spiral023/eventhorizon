@@ -50,6 +50,7 @@ export interface ApiRoom {
 
 export interface ApiActivity {
   id: string;
+  slug: string;
   title: string;
   category: string;
   tags: string[];

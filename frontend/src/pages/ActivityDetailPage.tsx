@@ -60,12 +60,12 @@ const PrimaryGoalLabels: Record<string, string> = {
 };
 
 export default function ActivityDetailPage() {
-  const { activityId } = useParams<{ activityId: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
-  
+
   const { user, isAuthenticated } = useAuthStore();
   const [comments, setComments] = useState<ActivityComment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -73,13 +73,13 @@ export default function ActivityDetailPage() {
 
   useEffect(() => {
     const fetchActivity = async () => {
-      if (!activityId) return;
+      if (!slug) return;
       const [activityResult, favResult, commentsResult] = await Promise.all([
-        getActivityById(activityId),
+        getActivityById(slug),
         isAuthenticated
-          ? isFavorite(activityId)
+          ? isFavorite(slug)
           : Promise.resolve({ data: { isFavorite: false, favoritesCount: 0 } }),
-        getActivityComments(activityId)
+        getActivityComments(slug)
       ]);
       setActivity(activityResult.data);
 
@@ -92,15 +92,15 @@ export default function ActivityDetailPage() {
       setLoading(false);
     };
     fetchActivity();
-  }, [activityId, isAuthenticated]);
+  }, [slug, isAuthenticated]);
 
   const handleFavoriteToggle = async () => {
     if (!isAuthenticated) {
       toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
       return;
     }
-    if (!activityId) return;
-    const result = await toggleFavorite(activityId);
+    if (!slug) return;
+    const result = await toggleFavorite(slug);
     if (result.error) {
       toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden");
       return;
@@ -117,9 +117,9 @@ export default function ActivityDetailPage() {
   };
 
   const handleSubmitComment = async () => {
-    if (!activityId || !newComment.trim()) return;
+    if (!slug || !newComment.trim()) return;
     setSubmittingComment(true);
-    const result = await createActivityComment(activityId, newComment);
+    const result = await createActivityComment(slug, newComment);
     if (result.error) {
       toast.error(result.error.message || "Kommentar konnte nicht gesendet werden");
     } else if (result.data) {
@@ -131,11 +131,11 @@ export default function ActivityDetailPage() {
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!activityId) return;
+    if (!slug) return;
     const confirmDelete = window.confirm("Diesen Kommentar löschen?");
     if (!confirmDelete) return;
 
-    const result = await deleteActivityComment(activityId, commentId);
+    const result = await deleteActivityComment(slug, commentId);
     if (result.error) {
       toast.error(result.error.message || "Kommentar konnte nicht gelöscht werden");
       return;

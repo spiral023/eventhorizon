@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.models.domain import Activity, EventCategory, Region, Season, RiskLevel
 from app.core.config import settings
+from app.services.slug_service import generate_unique_slug
 
 # Mapping von JSON-Feldern zu Backend-Modell
 FIELD_MAPPING = {
@@ -185,10 +186,15 @@ async def seed_activities(force: bool = False):
                     if title and title in existing_by_title:
                         act = existing_by_title[title]
                         for field, value in activity_data.items():
-                            setattr(act, field, value)
+                            # Don't update slug on existing activities
+                            if field != 'slug':
+                                setattr(act, field, value)
                         updated += 1
                         print(f"[{idx:2d}/{len(activities_json)}] ↻ Aktualisiert: {title}")
                     else:
+                        # Generate unique slug for new activity
+                        if title:
+                            activity_data['slug'] = await generate_unique_slug(title, session)
                         activity = Activity(**activity_data)
                         session.add(activity)
                         created += 1

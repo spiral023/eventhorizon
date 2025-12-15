@@ -149,6 +149,12 @@ docker compose -f docker-compose.dev.yml exec backend sh -c "cd /app && python -
 docker compose -f docker-compose.dev.yml run --rm backend sh -c "cd /app && python -m pip install -r requirements.txt"
 ```
 
+### Einzelnes Paket im Backend Container
+
+```bash
+docker compose -f docker-compose.dev.yml exec backend pip install unidecode
+```
+
 ### Tests und Infos
 
 ```bash
@@ -218,3 +224,22 @@ docker compose -f docker-compose.dev.yml exec backend alembic revision --autogen
 ```bash
 docker compose -f docker-compose.prod.yml exec backend alembic revision --autogenerate -m "description"
 ```
+
+## 10. Datenbank-Migration im Docker Backend Container anwenden
+
+```bash
+docker compose -f docker-compose.dev.yml exec backend alembic upgrade head
+```
+
+## 11. Aktivitäten seeden (lädt Activities aus: /app/data/activities.json)
+
+```bash
+docker compose -f docker-compose.dev.yml exec backend python scripts/seed_activities. (-- force zum überschreiben)
+```
+
+
+docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml up -d
+
+
+docker compose -f docker-compose.dev.yml exec db psql -U eventhorizon_usr -d eventhorizon -c "SELECT title, slug FROM     
+   activity LIMIT 5;"
