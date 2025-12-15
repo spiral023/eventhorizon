@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, User, LogOut, Menu, UserPlus } from "lucide-react";
+import { Search, Bell, User, LogOut, Menu, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -63,13 +63,16 @@ export function Header() {
           </span>
         </div>
 
-        {/* Search */}
-        <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <GlobalSearch />
-        </div>
-
         {/* Right Actions */}
         <div className="flex items-center gap-2">
+          <GlobalSearch 
+            trigger={
+              <Button variant="ghost" size="icon" aria-label="Suche">
+                <Search className="h-5 w-5" />
+              </Button>
+            }
+          />
+          
           <Button variant="ghost" size="icon" className="relative" aria-label="Benachrichtigungen">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary" />

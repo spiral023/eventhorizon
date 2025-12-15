@@ -29,7 +29,11 @@ import { cn } from "@/lib/utils";
 import { searchGlobal, SearchResult } from "@/services/apiClient";
 import { useDebounce } from "@/hooks/use-debounce"; // Assuming this hook exists or I'll implement a simple one
 
-export function GlobalSearch({ ...props }: DialogProps) {
+interface GlobalSearchProps extends DialogProps {
+  trigger?: React.ReactNode;
+}
+
+export function GlobalSearch({ trigger, ...props }: GlobalSearchProps) {
   const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
@@ -79,21 +83,27 @@ export function GlobalSearch({ ...props }: DialogProps) {
 
   return (
     <>
-      <Button
-        variant="outline"
-        className={cn(
-          "relative h-10 w-full justify-start rounded-[0.5rem] bg-secondary/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64 xl:w-80",
-        )}
-        onClick={() => setOpen(true)}
-      >
-        <span className="inline-flex">
-          <Search className="mr-2 h-4 w-4" />
-          Suche...
-        </span>
-        <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </Button>
+      {trigger ? (
+        <div onClick={() => setOpen(true)} className="cursor-pointer">
+          {trigger}
+        </div>
+      ) : (
+        <Button
+          variant="outline"
+          className={cn(
+            "relative h-10 w-full justify-start rounded-[0.5rem] bg-secondary/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64 xl:w-80",
+          )}
+          onClick={() => setOpen(true)}
+        >
+          <span className="inline-flex">
+            <Search className="mr-2 h-4 w-4" />
+            Suche...
+          </span>
+          <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </Button>
+      )}
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput 
           placeholder="Tippe, um zu suchen..." 

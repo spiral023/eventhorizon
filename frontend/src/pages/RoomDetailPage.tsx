@@ -244,7 +244,7 @@ export default function RoomDetailPage() {
           ) : (
             activeEvents.map((event, index) => (
               <div
-                key={event.id}
+                key={`active-event-${event.id}`}
                 className="animate-fade-in-up relative"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
@@ -281,7 +281,7 @@ export default function RoomDetailPage() {
           ) : (
             pastEvents.map((event, index) => (
               <div
-                key={event.id}
+                key={`past-event-${event.id}`}
                 className="animate-fade-in-up opacity-70 relative"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
@@ -325,7 +325,7 @@ export default function RoomDetailPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {members.map((member, index) => (
               <div
-                key={member.id}
+                key={`member-${member.id}`}
                 className="flex items-center gap-3 p-4 rounded-2xl bg-card/60 border border-border/50 animate-fade-in-up hover:bg-card/80 transition-colors"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
