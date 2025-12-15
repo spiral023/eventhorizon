@@ -238,6 +238,7 @@ class UserStats(BaseSchema):
 class EventBase(BaseSchema):
     name: str
     description: Optional[str] = None
+    avatar_url: Optional[str] = None
     phase: str = "proposal"
     time_window: Optional[Any] = None
     budget_amount: Optional[float] = None

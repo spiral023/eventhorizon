@@ -26,7 +26,7 @@ export interface UserProfile {
   // Neue Felder
   dietaryRestrictions: string[];
   allergies: string[];
-  activityPreferences: {
+  activityPreferences?: {
     physical: number; // 1-5
     mental: number;
     social: number;
@@ -72,12 +72,7 @@ export default function ProfilePage() {
           hobbies: result.data.hobbies || [],
           dietaryRestrictions: result.data.dietaryRestrictions || [],
           allergies: result.data.allergies || [],
-          activityPreferences: result.data.activityPreferences || {
-            physical: 3,
-            mental: 4,
-            social: 5,
-            creative: 2,
-          },
+          activityPreferences: result.data.activityPreferences,
           preferredGroupSize: result.data.preferredGroupSize || "medium",
           travelWillingness: result.data.travelWillingness || "regional",
           budgetPreference: result.data.budgetPreference || "medium",
@@ -264,36 +259,40 @@ export default function ProfilePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Körperlich</span>
-                    <span className="text-muted-foreground">{user.activityPreferences.physical}/5</span>
+              {user.activityPreferences ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Körperlich</span>
+                      <span className="text-muted-foreground">{user.activityPreferences.physical}/5</span>
+                    </div>
+                    <Progress value={user.activityPreferences.physical * 20} className="h-2" />
                   </div>
-                  <Progress value={user.activityPreferences.physical * 20} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Mental</span>
-                    <span className="text-muted-foreground">{user.activityPreferences.mental}/5</span>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Mental</span>
+                      <span className="text-muted-foreground">{user.activityPreferences.mental}/5</span>
+                    </div>
+                    <Progress value={user.activityPreferences.mental * 20} className="h-2" />
                   </div>
-                  <Progress value={user.activityPreferences.mental * 20} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Sozial</span>
-                    <span className="text-muted-foreground">{user.activityPreferences.social}/5</span>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Sozial</span>
+                      <span className="text-muted-foreground">{user.activityPreferences.social}/5</span>
+                    </div>
+                    <Progress value={user.activityPreferences.social * 20} className="h-2" />
                   </div>
-                  <Progress value={user.activityPreferences.social * 20} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Kreativ</span>
-                    <span className="text-muted-foreground">{user.activityPreferences.creative}/5</span>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Kreativ</span>
+                      <span className="text-muted-foreground">{user.activityPreferences.creative}/5</span>
+                    </div>
+                    <Progress value={user.activityPreferences.creative * 20} className="h-2" />
                   </div>
-                  <Progress value={user.activityPreferences.creative * 20} className="h-2" />
                 </div>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Noch keine Präferenzen angegeben.</p>
+              )}
 
               <div className="flex flex-wrap gap-2 pt-2">
                 <Badge variant="outline" className="rounded-lg">

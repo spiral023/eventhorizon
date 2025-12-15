@@ -76,8 +76,8 @@ export function ActivityCard({
           size="icon"
           className={cn(
             "absolute top-3 right-3 h-9 w-9 rounded-full",
-            "bg-card/80 backdrop-blur-sm hover:bg-card",
-            isFavorite && "text-destructive"
+            "bg-card/80 backdrop-blur-sm hover:bg-card hover:text-foreground",
+            isFavorite && "text-destructive hover:text-destructive"
           )}
           onClick={handleFavoriteClick}
         >

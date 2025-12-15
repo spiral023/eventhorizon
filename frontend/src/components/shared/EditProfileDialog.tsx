@@ -58,10 +58,10 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [newHobby, setNewHobby] = useState("");
   
   // Preferences
-  const [physical, setPhysical] = useState([user.activityPreferences.physical]);
-  const [mental, setMental] = useState([user.activityPreferences.mental]);
-  const [social, setSocial] = useState([user.activityPreferences.social]);
-  const [creative, setCreative] = useState([user.activityPreferences.creative]);
+  const [physical, setPhysical] = useState([user.activityPreferences?.physical ?? 3]);
+  const [mental, setMental] = useState([user.activityPreferences?.mental ?? 3]);
+  const [social, setSocial] = useState([user.activityPreferences?.social ?? 3]);
+  const [creative, setCreative] = useState([user.activityPreferences?.creative ?? 3]);
   const [preferredGroupSize, setPreferredGroupSize] = useState(user.preferredGroupSize);
   const [travelWillingness, setTravelWillingness] = useState(user.travelWillingness);
   const [budgetPreference, setBudgetPreference] = useState(user.budgetPreference);

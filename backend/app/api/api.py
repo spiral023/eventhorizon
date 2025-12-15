@@ -747,7 +747,10 @@ async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
     members_result = await db.execute(
         select(RoomMember, User)
         .join(User, RoomMember.user_id == User.id)
-        .where(RoomMember.room_id == room_id)
+        .where(
+            RoomMember.room_id == room_id,
+            RoomMember.user_id != room.created_by_user_id
+        )
     )
 
     for room_member, user in members_result:

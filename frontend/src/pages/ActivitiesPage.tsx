@@ -15,6 +15,8 @@ import type { Activity } from "@/types/domain";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 
+import { motion, AnimatePresence } from "framer-motion";
+
 export default function ActivitiesPage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -271,37 +273,47 @@ export default function ActivitiesPage() {
           }
         />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {sortedActivities.map((activity) => (
-            <ActivityCard
-              key={activity.id}
-              activity={activity}
-              isFavorite={favoriteIds.includes(activity.id)}
-              onFavoriteToggle={async (id) => {
-                if (!isAuthenticated) {
-                  toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
-                  return;
-                }
-                const result = await toggleFavorite(id);
-                if (result.error) {
-                  toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
-                  return;
-                }
-                const isFav = result.data?.isFavorite;
-                setFavoriteIds((prev) =>
-                  isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
-                );
-                setActivities((prev) =>
-                  prev.map((a) =>
-                    a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
-                  )
-                );
-              }}
-              showTags={false}
-              onClick={() => navigate(`/activities/${activity.id}`)}
-            />
-          ))}
-        </div>
+        <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <AnimatePresence>
+            {sortedActivities.map((activity) => (
+              <motion.div
+                layout
+                key={activity.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ActivityCard
+                  activity={activity}
+                  isFavorite={favoriteIds.includes(activity.id)}
+                  onFavoriteToggle={async (id) => {
+                    if (!isAuthenticated) {
+                      toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
+                      return;
+                    }
+                    const result = await toggleFavorite(id);
+                    if (result.error) {
+                      toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
+                      return;
+                    }
+                    const isFav = result.data?.isFavorite;
+                    setFavoriteIds((prev) =>
+                      isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
+                    );
+                    setActivities((prev) =>
+                      prev.map((a) =>
+                        a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
+                      )
+                    );
+                  }}
+                  showTags={false}
+                  onClick={() => navigate(`/activities/${activity.id}`)}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
     </div>
   );

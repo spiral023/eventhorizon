@@ -236,15 +236,10 @@ export default function EventDetailPage() {
                   <img src={event.avatarUrl} alt={event.name} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                    <Users className="h-6 w-6" />
+                    <Calendar className="h-6 w-6" />
                   </div>
                 )}
               </div>
-              {isCreator && (
-                <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-sm">
-                  Owner
-                </span>
-              )}
             </div>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">

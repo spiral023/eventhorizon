@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, forwardRef } from "react";
 import { BellRing, Image as ImageIcon, Link2, MessageCircle, Send, Settings, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,52 +48,48 @@ type ReminderLoadingState = string | "all" | null;
 
 const phaseOrder: EventPhase[] = ["proposal", "voting", "scheduling", "info"];
 
-const ActionTile = ({
-  icon: Icon,
-  label,
-  description,
-  accent,
-  onClick,
-  disabled,
-  badge,
-}: {
+interface ActionTileProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: LucideIcon;
   label: string;
   description: string;
   accent: string;
-  onClick?: () => void;
-  disabled?: boolean;
   badge?: string | number;
-}) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        "group relative flex h-full w-full flex-col gap-1 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted/60 via-background to-background p-4 text-left transition-all",
-        "hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
-        disabled && "opacity-60 cursor-not-allowed"
-      )}
-    >
-      <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <div className="flex items-start justify-between gap-3">
-        <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl text-primary shadow-sm shadow-primary/20 ring-1 ring-primary/20", accent)}>
-          <Icon className="h-5 w-5" />
+}
+
+const ActionTile = forwardRef<HTMLButtonElement, ActionTileProps>(
+  ({ icon: Icon, label, description, accent, className, badge, ...props }, ref) => {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={cn(
+          "group relative flex h-full w-full flex-col gap-1 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted/60 via-background to-background p-4 text-left transition-all",
+          "hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
+          props.disabled && "opacity-60 cursor-not-allowed",
+          className
+        )}
+        {...props}
+      >
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="flex items-start justify-between gap-3">
+          <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl text-primary shadow-sm shadow-primary/20 ring-1 ring-primary/20", accent)}>
+            <Icon className="h-5 w-5" />
+          </div>
+          {badge ? (
+            <Badge variant="destructive" className="rounded-full px-2 py-0 text-[11px] shadow-sm shadow-destructive/40">
+              {badge}
+            </Badge>
+          ) : null}
         </div>
-        {badge ? (
-          <Badge variant="destructive" className="rounded-full px-2 py-0 text-[11px] shadow-sm shadow-destructive/40">
-            {badge}
-          </Badge>
-        ) : null}
-      </div>
-      <div className="space-y-1">
-        <p className="text-sm font-semibold leading-tight">{label}</p>
-        <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
-      </div>
-    </button>
-  );
-};
+        <div className="space-y-1">
+          <p className="text-sm font-semibold leading-tight">{label}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+        </div>
+      </button>
+    );
+  }
+);
+ActionTile.displayName = "ActionTile";
 
 const ManageEventDialog = ({ event, isCreator, trigger, onEventUpdated }: ManageEventDialogProps) => {
   const [open, setOpen] = useState(false);
