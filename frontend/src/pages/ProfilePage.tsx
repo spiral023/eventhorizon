@@ -178,7 +178,11 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
               <h2 className="mt-4 text-xl font-semibold">{user.name}</h2>
-              <p className="text-sm text-muted-foreground">{user.position} · {user.department}</p>
+              {(user.position || user.department) && (
+                <p className="text-sm text-muted-foreground">
+                  {[user.position, user.department].filter(Boolean).join(" · ")}
+                </p>
+              )}
               
               {user.bio && (
                 <p className="mt-3 text-sm text-muted-foreground italic">"{user.bio}"</p>
@@ -210,10 +214,12 @@ export default function ProfilePage() {
                     <span>{user.location}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Building className="h-4 w-4 flex-shrink-0" />
-                  <span>{user.department}</span>
-                </div>
+                {user.department && (
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Building className="h-4 w-4 flex-shrink-0" />
+                    <span>{user.department}</span>
+                  </div>
+                )}
                 {user.birthday && (
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 flex-shrink-0" />

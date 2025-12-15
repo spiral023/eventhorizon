@@ -133,7 +133,7 @@ export function ActivityFilterPanel({
     ((filters.travelTimeWalkingRange?.[0] > 0 || filters.travelTimeWalkingRange?.[1] < 60) ? 1 : 0) +
     ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
     ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
-    ((filters.teamworkLevel?.[0] > 1 || filters.teamworkLevel?.[1] < 5) ? 1 : 0) +
+    // ((filters.teamworkLevel?.[0] > 1 || filters.teamworkLevel?.[1] < 5) ? 1 : 0) +
     (filters.indoorOnly ? 1 : 0) +
     (filters.outdoorOnly ? 1 : 0) +
     (filters.weatherIndependent ? 1 : 0) +
@@ -151,8 +151,7 @@ export function ActivityFilterPanel({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Filter</h3>
+      <div className="flex items-center justify-end">
         {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={onReset} className="gap-1 text-xs h-7">
             <X className="h-3 w-3" />
@@ -231,8 +230,8 @@ export function ActivityFilterPanel({
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Region Filter */}
-      <Collapsible open={openSections.includes("region")}>
+      {/* Region Filter - Hidden for now as only OOE is available */}
+      {/* <Collapsible open={openSections.includes("region")}>
         <CollapsibleTrigger
           className="flex w-full items-center justify-between py-2 text-sm font-medium"
           onClick={() => toggleSection("region")}
@@ -257,7 +256,7 @@ export function ActivityFilterPanel({
             ))}
           </div>
         </CollapsibleContent>
-      </Collapsible>
+      </Collapsible> */}
 
       {/* Season Filter */}
       <Collapsible open={openSections.includes("season")}>
@@ -523,7 +522,7 @@ export function ActivityFilterPanel({
       </Collapsible>
 
       {/* Teamwork Level */}
-      <Collapsible open={openSections.includes("teamwork")}>
+      {/* <Collapsible open={openSections.includes("teamwork")}>
         <CollapsibleTrigger
           className="flex w-full items-center justify-between py-2 text-sm font-medium"
           onClick={() => toggleSection("teamwork")}
@@ -555,7 +554,7 @@ export function ActivityFilterPanel({
             </div>
           </div>
         </CollapsibleContent>
-      </Collapsible>
+      </Collapsible> */}
 
       {/* Quick Toggles */}
       <div className="space-y-2 pt-2 border-t border-border">

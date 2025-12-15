@@ -44,7 +44,7 @@ export function ActivityCard({
   return (
     <Card
       className={cn(
-        "group cursor-pointer overflow-hidden will-change-[transform,opacity]",
+        "group cursor-pointer overflow-hidden will-change-[transform,opacity] h-full flex flex-col",
         "bg-card/60 hover:bg-card/80 border-border/50 hover:border-primary/30",
         "transition duration-300 ease-fluid hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1",
         "rounded-2xl motion-reduce:transform-none motion-reduce:hover:shadow-none"
@@ -52,7 +52,7 @@ export function ActivityCard({
       onClick={onClick}
     >
       {/* Image Section */}
-      <div className="relative h-44 overflow-hidden">
+      <div className="relative h-44 overflow-hidden flex-shrink-0">
         <img
           src={activity.imageUrl}
           alt={activity.title}
@@ -97,8 +97,8 @@ export function ActivityCard({
       </div>
 
       {/* Content Section */}
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
+      <CardContent className="p-4 flex flex-col flex-1">
+        <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
           {activity.title}
         </h3>
         <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -151,7 +151,7 @@ export function ActivityCard({
 
         {/* Quick Stats Icons */}
         {!showDetails && (
-          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border/50">
+          <div className="flex items-center gap-3 mt-auto pt-3 border-t border-border/50">
             <div className="flex items-center gap-1" title="Koerperliche Intensitaet">
               <Zap className={cn(
                 "h-4 w-4",

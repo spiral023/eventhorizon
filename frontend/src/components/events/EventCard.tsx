@@ -37,8 +37,19 @@ export function EventCard({ event, onClick, actionSlot }: EventCardProps) {
       )}
       onClick={onClick}
     >
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-4">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          {/* Event Avatar */}
+          <div className="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-xl border border-border/60 bg-secondary/40">
+            {event.avatarUrl ? (
+              <img src={event.avatarUrl} alt={event.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                <Calendar className="h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
+            )}
+          </div>
+
           <div className="flex-1 min-w-0">
             {/* Header */}
             <div className="flex items-center gap-2 mb-2">
