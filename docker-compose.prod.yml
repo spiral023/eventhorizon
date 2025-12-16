@@ -63,12 +63,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
-      # Router Configuration
-      - "traefik.http.routers.eventhorizon.rule=Host(`event-horizon.sp23.online`)"
-      - "traefik.http.routers.eventhorizon.entrypoints=websecure"
-      - "traefik.http.routers.eventhorizon.tls.certresolver=le"
-      # Service Configuration (Nginx is on port 80 inside container)
-      - "traefik.http.services.eventhorizon.loadbalancer.server.port=80"
+      - "traefik.http.routers.eventhorizon-frontend.rule=Host(`event-horizon.sp23.online`) && !PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.eventhorizon-frontend.entrypoints=websecure"
+      - "traefik.http.routers.eventhorizon-frontend.tls.certresolver=le"
+      - "traefik.http.routers.eventhorizon-frontend.priority=10"
+      - "traefik.http.services.eventhorizon-frontend.loadbalancer.server.port=80"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
       interval: 30s
@@ -100,12 +99,14 @@ services:
       - internal
       - traefik
     labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik"
-      - "traefik.http.routers.eventhorizon-auth.rule=PathPrefix(`/api/auth`)"
-      - "traefik.http.routers.eventhorizon-auth.entrypoints=websecure"
-      - "traefik.http.routers.eventhorizon-auth.tls.certresolver=le"
-      - "traefik.http.services.eventhorizon-auth.loadbalancer.server.port=3000"
+  - "traefik.enable=true"
+  - "traefik.docker.network=traefik"
+  - "traefik.http.routers.eventhorizon-auth.rule=Host(`event-horizon.sp23.online`) && PathPrefix(`/api/auth`)"
+  - "traefik.http.routers.eventhorizon-auth.entrypoints=websecure"
+  - "traefik.http.routers.eventhorizon-auth.tls.certresolver=le"
+  - "traefik.http.routers.eventhorizon-auth.priority=100"
+  - "traefik.http.services.eventhorizon-auth.loadbalancer.server.port=3000"
+
 
 networks:
   traefik:
