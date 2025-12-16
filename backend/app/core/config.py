@@ -39,7 +39,13 @@ class Settings(BaseSettings):
     # Backwards compatibility for existing callers
     AVATAR_BUCKET: str = STORAGE_BUCKET
     AVATAR_BUCKET_BASE_URL: str = STORAGE_BUCKET_BASE_URL
-    
+
+    # Sentry (Error Monitoring & Tracing)
+    SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
+    SENTRY_ENVIRONMENT: str = os.getenv("SENTRY_ENVIRONMENT", "development")
+    SENTRY_TRACES_SAMPLE_RATE: float = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1"))
+    SENTRY_PROFILES_SAMPLE_RATE: float = float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.1"))
+
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

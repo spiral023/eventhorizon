@@ -19,7 +19,7 @@ from app.schemas.domain import (
     ActivityComment as ActivityCommentSchema, ActivityCommentCreate,
     AvatarUploadRequest, AvatarUploadResponse, AvatarProcessRequest, BookingRequest, SearchResult
 )
-from app.api.endpoints import auth, users, ai, emails
+from app.api.endpoints import auth, users, ai, emails, dev, sentry_tunnel
 from app.services.email_service import email_service
 from app.services.room_avatar_service import (
     generate_room_avatar_upload_url,
@@ -37,6 +37,8 @@ router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(ai.router)
 router.include_router(emails.router)
+router.include_router(dev.router)  # Development endpoints
+router.include_router(sentry_tunnel.router)  # Sentry tunnel for ad-blocker bypass
 
 @router.get("/version")
 async def get_version():

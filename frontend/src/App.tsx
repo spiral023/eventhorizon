@@ -10,6 +10,7 @@ import { PageTransition } from "@/components/shared/PageTransition";
 import { AnimatePresence } from "framer-motion";
 import { GuestAccessNotice } from "@/components/auth/GuestAccessNotice";
 import { useAuthStore } from "@/stores/authStore";
+import * as Sentry from "@sentry/react";
 
 // Pages
 import HomePage from "@/pages/HomePage";
@@ -28,6 +29,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "@/pages/NotFound";
 import RequestResetPasswordPage from "@/pages/RequestResetPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import DevSentryTest from "@/pages/DevSentryTest";
 
 const queryClient = new QueryClient();
 
@@ -130,6 +132,7 @@ function AppRoutes() {
         </Route>
 
         <Route path="map" element={<PageTransition><MapPage /></PageTransition>} />
+        <Route path="dev/sentry-test" element={<PageTransition><DevSentryTest /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Route>
     </Routes>
@@ -146,22 +149,57 @@ function useDarkMode() {
 
 const App = () => {
   useDarkMode();
-  const { refresh } = useAuthStore();
+  const { refresh, user } = useAuthStore();
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
+  // Set Sentry user context when authenticated
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({
+        id: user.id,
+        email: user.email,
+        username: user.name,
+      });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user]);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Sentry.ErrorBoundary
+      fallback={({ error, resetError }) => (
+        <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-card border border-border rounded-lg p-6 shadow-lg">
+            <h2 className="text-xl font-semibold text-destructive mb-4">Ein Fehler ist aufgetreten</h2>
+            <p className="text-muted-foreground mb-4">
+              Entschuldigung, es ist ein unerwarteter Fehler aufgetreten. Das Problem wurde automatisch gemeldet.
+            </p>
+            <pre className="bg-muted p-3 rounded text-xs overflow-auto mb-4 max-h-32">
+              {error?.toString()}
+            </pre>
+            <button
+              onClick={resetError}
+              className="w-full bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+            >
+              Erneut versuchen
+            </button>
+          </div>
+        </div>
+      )}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </Sentry.ErrorBoundary>
   );
 };
 

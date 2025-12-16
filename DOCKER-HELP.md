@@ -236,10 +236,3 @@ docker compose -f docker-compose.dev.yml exec backend alembic upgrade head
 ```bash
 docker compose -f docker-compose.dev.yml exec backend python scripts/seed_activities. (-- force zum überschreiben)
 ```
-
-
-docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml up -d
-
-
-docker compose -f docker-compose.dev.yml exec db psql -U eventhorizon_usr -d eventhorizon -c "SELECT title, slug FROM     
-   activity LIMIT 5;"
