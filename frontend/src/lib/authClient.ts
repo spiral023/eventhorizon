@@ -82,7 +82,10 @@ export async function verifyMagicLink(token: string) {
 }
 
 export async function signOutUser() {
-  return authRequest("/sign-out", { method: "POST" });
+  return authRequest("/sign-out", {
+    method: "POST",
+    body: JSON.stringify({})
+  });
 }
 
 export async function fetchJwtToken(): Promise<string | null> {
