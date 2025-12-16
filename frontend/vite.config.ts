@@ -6,6 +6,8 @@ import packageJson from './package.json';
 
 export default defineConfig({
   plugins: [react()],
+  // Load .env from parent directory (project root)
+  envDir: path.resolve(__dirname, '..'),
   define: {
     'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version),
   },

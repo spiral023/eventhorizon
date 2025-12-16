@@ -236,3 +236,9 @@ docker compose -f docker-compose.dev.yml exec backend alembic upgrade head
 ```bash
 docker compose -f docker-compose.dev.yml exec backend python scripts/seed_activities. (-- force zum überschreiben)
 ```
+
+## 12. Nano Banana Bilder in .webp Dateien konvertieren
+
+```bash
+docker compose -f docker-compose.dev.yml exec backend python scripts/convert_images.py --format webp --quality 60
+```
