@@ -19,7 +19,8 @@ services:
   backend:
     build: ./backend
     restart: always
-    # Command is defined in Dockerfile (runs migrations then app)
+    volumes:
+      - ./nanobanana-output:/app/nanobanana-output
     environment:
       POSTGRES_SERVER: db
       POSTGRES_USER: ${POSTGRES_USER:-user}
