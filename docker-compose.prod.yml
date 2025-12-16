@@ -99,14 +99,13 @@ services:
       - internal
       - traefik
     labels:
-  - "traefik.enable=true"
-  - "traefik.docker.network=traefik"
-  - "traefik.http.routers.eventhorizon-auth.rule=Host(`event-horizon.sp23.online`) && PathPrefix(`/api/auth`)"
-  - "traefik.http.routers.eventhorizon-auth.entrypoints=websecure"
-  - "traefik.http.routers.eventhorizon-auth.tls.certresolver=le"
-  - "traefik.http.routers.eventhorizon-auth.priority=100"
-  - "traefik.http.services.eventhorizon-auth.loadbalancer.server.port=3000"
-
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.eventhorizon-auth.rule=Host(`event-horizon.sp23.online`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.eventhorizon-auth.entrypoints=websecure"
+      - "traefik.http.routers.eventhorizon-auth.tls.certresolver=le"
+      - "traefik.http.routers.eventhorizon-auth.priority=100"
+      - "traefik.http.services.eventhorizon-auth.loadbalancer.server.port=3000"
 
 networks:
   traefik:
