@@ -26,7 +26,7 @@ export function PageHeader({ title, description, action, className }: PageHeader
         )}
       </div>
       {action && (
-        <div className="w-full sm:w-full sm:max-w-md flex flex-col gap-2 sm:items-end">
+        <div className="w-full sm:w-full sm:max-w-md flex flex-col gap-2 sm:items-end p-1">
           {action}
         </div>
       )}

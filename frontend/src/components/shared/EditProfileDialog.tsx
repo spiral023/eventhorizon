@@ -243,9 +243,9 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
               <TabsTrigger value="preferences">Präferenzen</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="h-[400px] pr-4">
+            <ScrollArea className="h-[400px] pl-1 pr-4">
               {/* Basic Info */}
-              <TabsContent value="basic" className="space-y-4 mt-0">
+              <TabsContent value="basic" className="space-y-4 mt-0 p-1">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -435,7 +435,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
               </TabsContent>
 
               {/* Preferences */}
-              <TabsContent value="preferences" className="space-y-6 mt-0">
+              <TabsContent value="preferences" className="space-y-6 mt-0 p-1">
                 <div className="space-y-4">
                   <Label>Aktivitäts-Präferenzen</Label>
                   
