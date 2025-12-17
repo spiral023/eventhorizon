@@ -97,9 +97,9 @@ export function VotingCard({
               </p>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{RegionLabels[activity.locationRegion]}</span>
-                <span>·</span>
-                <span>ab {activity.estPricePerPerson}€ p.P.</span>
-                <span>·</span>
+                <span>•</span>
+                <span>ab {activity.estPricePerPerson} € p.P.</span>
+                <span>•</span>
                 <span>{activity.duration}</span>
               </div>
             </div>
@@ -110,42 +110,51 @@ export function VotingCard({
                 {/* Vote Buttons */}
                 <div className="flex items-center gap-2">
                   <Button
-                    variant={userVote === "for" ? "default" : "secondary"}
+                    variant="outline"
                     size="sm"
                     className={cn(
-                      "gap-1.5 rounded-lg",
-                      userVote === "for" && "bg-success hover:bg-success/90"
+                      "gap-1.5 rounded-lg border-2 transition-all",
+                      userVote === "for"
+                        ? "border-success bg-success/15 text-success ring-2 ring-success/30 hover:bg-success/20"
+                        : "border-border bg-secondary/70 text-foreground hover:border-success/40 hover:bg-success/10 hover:text-success"
                     )}
                     onClick={() => onVote(activity.id, "for")}
                     disabled={isLoading || disabled}
+                    aria-pressed={userVote === "for"}
                   >
                     <ThumbsUp className="h-4 w-4" />
                     Dafür
                     {userVote === "for" && <Check className="h-3 w-3 ml-1" />}
                   </Button>
                   <Button
-                    variant={userVote === "against" ? "default" : "secondary"}
+                    variant="outline"
                     size="sm"
                     className={cn(
-                      "gap-1.5 rounded-lg",
-                      userVote === "against" && "bg-destructive hover:bg-destructive/90"
+                      "gap-1.5 rounded-lg border-2 transition-all",
+                      userVote === "against"
+                        ? "border-destructive bg-destructive/15 text-destructive ring-2 ring-destructive/30 hover:bg-destructive/20"
+                        : "border-border bg-secondary/70 text-foreground hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
                     )}
                     onClick={() => onVote(activity.id, "against")}
                     disabled={isLoading || disabled}
+                    aria-pressed={userVote === "against"}
                   >
                     <ThumbsDown className="h-4 w-4" />
                     Dagegen
                     {userVote === "against" && <Check className="h-3 w-3 ml-1" />}
                   </Button>
                   <Button
-                    variant={userVote === "abstain" ? "default" : "ghost"}
+                    variant="outline"
                     size="sm"
                     className={cn(
-                      "gap-1.5 rounded-lg",
-                      userVote === "abstain" && "bg-secondary"
+                      "gap-1.5 rounded-lg border-2 transition-all",
+                      userVote === "abstain"
+                        ? "border-muted-foreground/60 bg-muted/40 text-foreground ring-2 ring-muted-foreground/50"
+                        : "border-border bg-secondary/70 text-foreground hover:border-muted-foreground/40 hover:bg-muted/30 hover:text-muted-foreground"
                     )}
                     onClick={() => onVote(activity.id, "abstain")}
                     disabled={isLoading || disabled}
+                    aria-pressed={userVote === "abstain"}
                   >
                     <Minus className="h-4 w-4" />
                     Enthaltung

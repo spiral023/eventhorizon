@@ -8,6 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { VotingCard } from "@/components/events/VotingCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
@@ -44,6 +53,7 @@ export default function EventDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("proposal");
   const [phaseMenuOpen, setPhaseMenuOpen] = useState(false);
+  const [missingActivityDialogOpen, setMissingActivityDialogOpen] = useState(false);
   
   // Track previous phase to only auto-switch tab when phase actually changes
   const prevPhaseRef = useRef<EventPhase | null>(null);
@@ -93,6 +103,10 @@ export default function EventDetailPage() {
 
   const handleAdvancePhase = async () => {
     if (!event || !eventCode) return;
+    if (event.phase === "voting" && !event.chosenActivityId) {
+      setMissingActivityDialogOpen(true);
+      return;
+    }
     const nextPhases = getNextPhases(event.phase);
     if (nextPhases.length > 0) {
       setActionLoading(true);
@@ -216,6 +230,25 @@ export default function EventDetailPage() {
 
   return (
     <div className="space-y-6">
+      <AlertDialog open={missingActivityDialogOpen} onOpenChange={setMissingActivityDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aktivität auswählen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Wähle zuerst eine Gewinner-Aktivität aus der Abstimmung, bevor du in die Terminfindungs-Phase wechselst.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => {
+              setMissingActivityDialogOpen(false);
+              setActiveTab("voting");
+            }}>
+              Zur Abstimmung
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Back Button */}
       <Button
         variant="ghost"
