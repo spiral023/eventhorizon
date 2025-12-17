@@ -1318,17 +1318,16 @@ async def create_date_option(
     current_user: User = Depends(get_current_user)
 ):
     # Check event
-    event = await resolve_event_identifier(
-        event_identifier,
-        db,
-        options=[selectinload(Event.date_options)],
-    )
+    event = await resolve_event_identifier(event_identifier, db)
 
     if event.phase != "scheduling":
         raise HTTPException(status_code=400, detail="Can only add dates in scheduling phase")
     
     # Check limits
-    if len(event.date_options) >= 10:
+    existing_count = await db.execute(
+        select(func.count(DateOption.id)).where(DateOption.event_id == event.id)
+    )
+    if (existing_count.scalar_one() or 0) >= 10:
         raise HTTPException(status_code=400, detail="Maximum 10 date options allowed")
 
     # Validate times
@@ -1348,15 +1347,17 @@ async def create_date_option(
     logger.info(f"Created date option {new_date.id} for event {event.id}")
     
     # Reload event with eager relationships to avoid async lazy-loading issues
-    updated_event = await resolve_event_identifier(
-        str(event.id),
-        db,
-        options=[
+    updated_event_result = await db.execute(
+        select(Event)
+        .where(Event.id == event.id)
+        .options(
             selectinload(Event.votes).selectinload(Vote.user),
             selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
             selectinload(Event.participants).selectinload(EventParticipant.user),
-        ],
+        )
+        .execution_options(populate_existing=True)
     )
+    updated_event = updated_event_result.scalar_one()
     return enhance_event_full(updated_event)
 
 @router.delete("/events/{event_identifier}/date-options/{date_option_id}", response_model=EventSchema)

@@ -71,6 +71,10 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
       return dates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Chronological
     }
   }, [event.dateOptions, sortByScore]);
+  const topScore = useMemo(() => {
+    const scores = event.dateOptions.map((opt) => getScore(opt));
+    return scores.length > 0 ? Math.max(...scores) : 0;
+  }, [event.dateOptions]);
 
   // Pending Voters Logic
   const pendingVoters = useMemo(() => {
@@ -160,24 +164,34 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
                                 <DialogTitle>Finalen Termin wählen</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
-                                {sortedDates.map((opt) => (
-                                    <div key={opt.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
-                                        <div>
-                                            <div className="font-medium">
-                                                {format(new Date(opt.date), "EEE, d. MMM", { locale: de })}
+                                {sortedDates.map((opt) => {
+                                    const score = getScore(opt);
+                                    const isTopScore = topScore > 0 && score === topScore;
+                                    return (
+                                        <div key={opt.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                                            <div>
+                                                <div className="font-medium">
+                                                    {format(new Date(opt.date), "EEE, d. MMM", { locale: de })}
+                                                </div>
+                                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                                    <span>{score} Punkte</span>
+                                                    {isTopScore && (
+                                                        <Badge className="bg-yellow-500 text-white border-white border px-2 py-0.5">
+                                                            <Trophy className="mr-1 h-3 w-3" />
+                                                            Sieger
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="text-sm text-muted-foreground">
-                                                {getScore(opt)} Punkte
-                                            </div>
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => setDateToConfirm(opt.id)}
+                                            >
+                                                Wählen
+                                            </Button>
                                         </div>
-                                        <Button 
-                                            size="sm" 
-                                            onClick={() => setDateToConfirm(opt.id)}
-                                        >
-                                            Wählen
-                                        </Button>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </DialogContent>
                     </Dialog>
