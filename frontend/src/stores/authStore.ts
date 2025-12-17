@@ -10,7 +10,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   pendingVerificationEmail: string | null;
-  roomRoles: Record<string, RoomRole>; // roomId -> role
+  roomRoles: Record<string, RoomRole>; // room identifier (UUID or invite code) -> role
   
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
@@ -41,6 +41,10 @@ export const useAuthStore = create<AuthState>()(
         "room-2": "member",
         "room-3": "member",
         "room-4": "owner",
+        "A2B-3C4-D5E": "admin",
+        "F6G-7H8-J9K": "member",
+        "L2M-3N4-P5Q": "member",
+        "R6S-7T8-U9V": "owner",
       },
 
       login: async (email: string, password: string) => {

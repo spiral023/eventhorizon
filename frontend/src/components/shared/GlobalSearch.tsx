@@ -120,7 +120,7 @@ export function GlobalSearch({ trigger, ...props }: GlobalSearchProps) {
                 <CommandItem
                   key={activity.id}
                   value={activity.title} // Used for filtering, but we handle it via API
-                  onSelect={() => handleSelect(() => navigate(`/activities/${activity.id}`))}
+                  onSelect={() => handleSelect(() => navigate(`/activities/${activity.slug}`))}
                 >
                   <Zap className="mr-2 h-4 w-4" />
                   <span>{activity.title}</span>
@@ -137,7 +137,7 @@ export function GlobalSearch({ trigger, ...props }: GlobalSearchProps) {
                   <CommandItem
                     key={room.id}
                     value={room.name}
-                    onSelect={() => handleSelect(() => navigate(`/rooms/${room.id}`))}
+                    onSelect={() => handleSelect(() => navigate(`/rooms/${room.inviteCode}`))}
                   >
                     <Building className="mr-2 h-4 w-4" />
                     <span>{room.name}</span>
@@ -155,7 +155,12 @@ export function GlobalSearch({ trigger, ...props }: GlobalSearchProps) {
                   <CommandItem
                     key={event.id}
                     value={event.name}
-                    onSelect={() => handleSelect(() => navigate(`/rooms/${event.roomId}/events/${event.id}`))}
+                    onSelect={() => {
+                      const room = results.rooms.find((r) => r.id === event.roomId);
+                      const accessCode = room?.inviteCode || event.roomId;
+                      const eventCode = event.shortCode || event.id;
+                      handleSelect(() => navigate(`/rooms/${accessCode}/events/${eventCode}`));
+                    }}
                   >
                     <CalendarCheck className="mr-2 h-4 w-4" />
                     <span>{event.name}</span>

@@ -238,6 +238,7 @@ mockActivities.forEach((a) => {
 let events: Event[] = [
   {
     id: "event-1",
+    shortCode: "B55-2EB-FF8",
     roomId: "room-1",
     name: "Sommer-Teamevent 2024",
     description: "Unser jährliches Sommer-Teamevent mit Action und Spaß!",
@@ -675,23 +676,23 @@ export async function getRooms(): Promise<ApiResult<Room[]>> {
   return { data: undefined, error: result.error };
 }
 
-export async function getRoomById(id: string): Promise<ApiResult<Room | null>> {
+export async function getRoomByAccessCode(accessCode: string): Promise<ApiResult<Room | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const room = mockRooms.find((r) => r.id === id) || null;
+    const room = mockRooms.find((r) => r.inviteCode === accessCode || r.id === accessCode) || null;
     return { data: room };
   }
-  const result = await request<ApiRoom>(`/rooms/${id}`);
+  const result = await request<ApiRoom>(`/rooms/${accessCode}`);
   if (result.data) {
     return { data: mapRoomFromApi(result.data) };
   }
   return { data: null, error: result.error };
 }
 
-export async function updateRoom(roomId: string, updates: { name?: string; description?: string; avatarUrl?: string }): Promise<ApiResult<Room | null>> {
+export async function updateRoom(accessCode: string, updates: { name?: string; description?: string; avatarUrl?: string }): Promise<ApiResult<Room | null>> {
   if (USE_MOCKS) {
     await delay(250);
-    const idx = mockRooms.findIndex((r) => r.id === roomId);
+    const idx = mockRooms.findIndex((r) => r.inviteCode === accessCode || r.id === accessCode);
     if (idx === -1) return { data: null, error: { code: "NOT_FOUND", message: "Raum nicht gefunden" } };
     mockRooms[idx] = { ...mockRooms[idx], ...updates };
     return { data: mockRooms[idx] };
@@ -702,7 +703,7 @@ export async function updateRoom(roomId: string, updates: { name?: string; descr
   if (updates.description !== undefined) apiPayload.description = updates.description;
   if (updates.avatarUrl !== undefined) apiPayload.avatar_url = updates.avatarUrl;
 
-  const result = await request<ApiRoom>(`/rooms/${roomId}`, {
+  const result = await request<ApiRoom>(`/rooms/${accessCode}`, {
     method: "PATCH",
     body: JSON.stringify(apiPayload),
   });
@@ -712,19 +713,19 @@ export async function updateRoom(roomId: string, updates: { name?: string; descr
   return { data: null, error: result.error };
 }
 
-export async function getRoomAvatarUploadUrl(roomId: string, contentType: string, fileSize: number): Promise<ApiResult<AvatarUploadInfo>> {
+export async function getRoomAvatarUploadUrl(accessCode: string, contentType: string, fileSize: number): Promise<ApiResult<AvatarUploadInfo>> {
   if (USE_MOCKS) {
     await delay(80);
     return {
       data: {
         uploadUrl: "https://example.com/mock-upload",
-        publicUrl: `https://picsum.photos/seed/room-${roomId}/256`,
-        uploadKey: `rooms/${roomId}/orig.png`,
+        publicUrl: `https://picsum.photos/seed/room-${accessCode}/256`,
+        uploadKey: `rooms/${accessCode}/orig.png`,
       },
     };
   }
 
-  const result = await request<ApiAvatarUploadInfo>(`/rooms/${roomId}/avatar/upload-url`, {
+  const result = await request<ApiAvatarUploadInfo>(`/rooms/${accessCode}/avatar/upload-url`, {
     method: "POST",
     body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
   });
@@ -740,16 +741,16 @@ export async function getRoomAvatarUploadUrl(roomId: string, contentType: string
   return { data: null, error: result.error };
 }
 
-export async function processRoomAvatar(roomId: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Room | null>> {
+export async function processRoomAvatar(accessCode: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Room | null>> {
   if (USE_MOCKS) {
     await delay(120);
-    const url = `https://picsum.photos/seed/room-${roomId}-${Date.now()}/256`;
-    const idx = mockRooms.findIndex((r) => r.id === roomId);
+    const url = `https://picsum.photos/seed/room-${accessCode}-${Date.now()}/256`;
+    const idx = mockRooms.findIndex((r) => r.inviteCode === accessCode || r.id === accessCode);
     if (idx !== -1) mockRooms[idx].avatarUrl = url;
     return { data: idx !== -1 ? mockRooms[idx] : null };
   }
 
-  const result = await request<ApiRoom>(`/rooms/${roomId}/avatar/process`, {
+  const result = await request<ApiRoom>(`/rooms/${accessCode}/avatar/process`, {
     method: "POST",
     body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
   });
@@ -759,8 +760,8 @@ export async function processRoomAvatar(roomId: string, uploadKey: string, outpu
   return { data: null, error: result.error };
 }
 
-export async function uploadRoomAvatar(roomId: string, file: File): Promise<ApiResult<Room | null>> {
-  const presign = await getRoomAvatarUploadUrl(roomId, file.type, file.size);
+export async function uploadRoomAvatar(accessCode: string, file: File): Promise<ApiResult<Room | null>> {
+  const presign = await getRoomAvatarUploadUrl(accessCode, file.type, file.size);
   if (presign.error || !presign.data) {
     return { data: null, error: presign.error };
   }
@@ -780,7 +781,7 @@ export async function uploadRoomAvatar(roomId: string, file: File): Promise<ApiR
     return { data: null, error: { code: "UPLOAD_KEY_MISSING", message: "Upload key fehlt" } };
   }
 
-  return await processRoomAvatar(roomId, presign.data.uploadKey, "webp");
+  return await processRoomAvatar(accessCode, presign.data.uploadKey, "webp");
 }
 
 export async function createRoom(input: { name: string; description?: string }): Promise<ApiResult<Room>> {
@@ -809,19 +810,23 @@ export async function createRoom(input: { name: string; description?: string }):
   return { data: undefined, error: result.error };
 }
 
-export async function deleteRoom(roomId: string): Promise<ApiResult<void>> {
+export async function deleteRoom(accessCode: string): Promise<ApiResult<void>> {
   if (USE_MOCKS) {
     await delay(300);
-    const index = mockRooms.findIndex((r) => r.id === roomId);
-          return {
-            data: undefined,
-            error: { code: "NOT_FOUND", message: "Raum nicht gefunden" }
-          };    mockRooms.splice(index, 1);
+    const index = mockRooms.findIndex((r) => r.inviteCode === accessCode || r.id === accessCode);
+    if (index === -1) {
+      return {
+        data: undefined,
+        error: { code: "NOT_FOUND", message: "Raum nicht gefunden" }
+      };
+    }
+    const room = mockRooms[index];
+    mockRooms.splice(index, 1);
     // Also delete all events associated with this room
-    events = events.filter((e) => e.roomId !== roomId);
+    events = events.filter((e) => e.roomId !== accessCode && e.roomId !== room.id);
     return { data: undefined };
   }
-  return request<void>(`/rooms/${roomId}`, {
+  return request<void>(`/rooms/${accessCode}`, {
     method: 'DELETE',
   });
 }
@@ -850,10 +855,10 @@ export async function joinRoom(inviteCode: string): Promise<ApiResult<Room>> {
   return { data: undefined, error: result.error };
 }
 
-export async function leaveRoom(roomId: string): Promise<ApiResult<void>> {
+export async function leaveRoom(accessCode: string): Promise<ApiResult<void>> {
   if (USE_MOCKS) {
     await delay(300);
-    const room = mockRooms.find((r) => r.id === roomId);
+    const room = mockRooms.find((r) => r.inviteCode === accessCode || r.id === accessCode);
     if (!room) {
       return {
         data: undefined,
@@ -883,7 +888,7 @@ export async function leaveRoom(roomId: string): Promise<ApiResult<void>> {
     return { data: undefined };
   }
 
-  return request<void>(`/rooms/${roomId}/leave`, {
+  return request<void>(`/rooms/${accessCode}/leave`, {
     method: 'POST',
   });
 }
@@ -898,7 +903,7 @@ export interface RoomMember {
   joinedAt: string;
 }
 
-export async function getRoomMembers(roomId: string): Promise<ApiResult<RoomMember[]>> {
+export async function getRoomMembers(accessCode: string): Promise<ApiResult<RoomMember[]>> {
   if (USE_MOCKS) {
     await delay(200);
     // Mock members data
@@ -933,7 +938,7 @@ export async function getRoomMembers(roomId: string): Promise<ApiResult<RoomMemb
     ];
     return { data: mockMembers };
   }
-  const result = await request<ApiRoomMember[]>(`/rooms/${roomId}/members`);
+  const result = await request<ApiRoomMember[]>(`/rooms/${accessCode}/members`);
   if (result.data) {
     const members = result.data.map((m: ApiRoomMember) => ({
       id: m.user_id,
@@ -1013,6 +1018,7 @@ function mapEventFromApi(apiEvent: ApiEvent): Event {
 
   return {
     id: apiEvent.id,
+    shortCode: apiEvent.short_code || apiEvent.shortCode,
     roomId: apiEvent.room_id,
     name: apiEvent.name,
     description: apiEvent.description,
@@ -1064,36 +1070,38 @@ function mapEventFromApi(apiEvent: ApiEvent): Event {
   };
 }
 
-export async function getEventsByRoom(roomId: string): Promise<ApiResult<Event[]>> {
+export async function getEventsByAccessCode(accessCode: string): Promise<ApiResult<Event[]>> {
   if (USE_MOCKS) {
     await delay(300);
-    const roomEvents = events.filter((e) => e.roomId === roomId);
+    const targetRoom = mockRooms.find((r) => r.inviteCode === accessCode || r.id === accessCode);
+    const targetId = targetRoom?.id ?? accessCode;
+    const roomEvents = events.filter((e) => e.roomId === targetId);
     return { data: roomEvents };
   }
-  const result = await request<ApiEvent[]>(`/rooms/${roomId}/events`);
+  const result = await request<ApiEvent[]>(`/rooms/${accessCode}/events`);
   if (result.data) {
     return { data: result.data.map(mapEventFromApi) };
   }
   return { data: undefined, error: result.error };
 }
 
-export async function getEventById(eventId: string): Promise<ApiResult<Event | null>> {
+export async function getEventByCode(eventCode: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId) || null;
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode) || null;
     return { data: event };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}`);
+  const result = await request<ApiEvent>(`/events/${eventCode}`);
   if (result.data) {
     return { data: mapEventFromApi(result.data) };
   }
   return { data: null, error: result.error };
 }
 
-export async function deleteEvent(eventId: string): Promise<ApiResult<void>> {
+export async function deleteEvent(eventCode: string): Promise<ApiResult<void>> {
   if (USE_MOCKS) {
     await delay(200);
-    const index = events.findIndex((e) => e.id === eventId);
+    const index = events.findIndex((e) => e.id === eventCode || e.shortCode === eventCode);
     if (index === -1) {
       return {
         data: undefined,
@@ -1110,17 +1118,20 @@ export async function deleteEvent(eventId: string): Promise<ApiResult<void>> {
     events.splice(index, 1);
     return { data: undefined };
   }
-  return request<void>(`/events/${eventId}`, {
+  return request<void>(`/events/${eventCode}`, {
     method: "DELETE",
   });
 }
 
-export async function createEvent(roomId: string, input: CreateEventInput & { timeWindow: EventTimeWindow }): Promise<ApiResult<Event>> {
+export async function createEvent(accessCode: string, input: CreateEventInput & { timeWindow: EventTimeWindow }): Promise<ApiResult<Event>> {
   if (USE_MOCKS) {
     await delay(400);
+    const targetRoom = mockRooms.find((r) => r.inviteCode === accessCode || r.id === accessCode);
+    const roomKey = targetRoom?.id ?? accessCode;
     const newEvent: Event = {
       id: `event-${Date.now()}`,
-      roomId,
+      shortCode: generateInviteCode(),
+      roomId: roomKey,
       name: input.name,
       description: input.description,
       phase: "proposal",
@@ -1156,8 +1167,8 @@ export async function createEvent(roomId: string, input: CreateEventInput & { ti
     proposed_activity_ids: input.proposedActivityIds,
   };
 
-  console.log(`Making API call to create event for room ${roomId}`, apiPayload);
-  const result = await request<ApiEvent>(`/rooms/${roomId}/events`, {
+  console.log(`Making API call to create event for room ${accessCode}`, apiPayload);
+  const result = await request<ApiEvent>(`/rooms/${accessCode}/events`, {
     method: 'POST',
     body: JSON.stringify(apiPayload),
   });
@@ -1167,10 +1178,10 @@ export async function createEvent(roomId: string, input: CreateEventInput & { ti
   return { data: undefined, error: result.error };
 }
 
-export async function updateEvent(eventId: string, updates: { name?: string; description?: string; budgetType?: BudgetType; budgetAmount?: number; avatarUrl?: string; inviteSentAt?: string; lastReminderAt?: string; unreadMessageCount?: number }): Promise<ApiResult<Event | null>> {
+export async function updateEvent(eventCode: string, updates: { name?: string; description?: string; budgetType?: BudgetType; budgetAmount?: number; avatarUrl?: string; inviteSentAt?: string; lastReminderAt?: string; unreadMessageCount?: number }): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (!event) {
       return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
     }
@@ -1199,7 +1210,7 @@ export async function updateEvent(eventId: string, updates: { name?: string; des
   if (updates.lastReminderAt !== undefined) payload.last_reminder_at = updates.lastReminderAt;
   if (updates.unreadMessageCount !== undefined) payload.unread_message_count = updates.unreadMessageCount;
 
-  const result = await request<ApiEvent>(`/events/${eventId}`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
@@ -1210,18 +1221,18 @@ export async function updateEvent(eventId: string, updates: { name?: string; des
   return { data: null, error: result.error };
 }
 
-export async function getEventAvatarUploadUrl(eventId: string, contentType: string, fileSize: number): Promise<ApiResult<AvatarUploadInfo>> {
+export async function getEventAvatarUploadUrl(eventCode: string, contentType: string, fileSize: number): Promise<ApiResult<AvatarUploadInfo>> {
   if (USE_MOCKS) {
     await delay(50);
     return {
       data: {
         uploadUrl: "https://example.com/mock-upload",
-        publicUrl: `https://picsum.photos/seed/event-${eventId}-${Date.now()}/400`,
-        uploadKey: `events/mock/${eventId}/orig.png`,
+        publicUrl: `https://picsum.photos/seed/event-${eventCode}-${Date.now()}/400`,
+        uploadKey: `events/mock/${eventCode}/orig.png`,
       },
     };
   }
-  const result = await request<ApiAvatarUploadInfo>(`/events/${eventId}/avatar/upload-url`, {
+  const result = await request<ApiAvatarUploadInfo>(`/events/${eventCode}/avatar/upload-url`, {
     method: "POST",
     body: JSON.stringify({ content_type: contentType, file_size: fileSize }),
   });
@@ -1237,11 +1248,11 @@ export async function getEventAvatarUploadUrl(eventId: string, contentType: stri
   return { data: null, error: result.error };
 }
 
-export async function processEventAvatar(eventId: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Event | null>> {
+export async function processEventAvatar(eventCode: string, uploadKey: string, outputFormat: "webp" | "avif" | "jpeg" | "jpg" | "png" | undefined = "webp"): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(120);
-    const url = `https://picsum.photos/seed/event-${eventId}-${Date.now()}/400/240`;
-    const idx = events.findIndex((e) => e.id === eventId);
+    const url = `https://picsum.photos/seed/event-${eventCode}-${Date.now()}/400/240`;
+    const idx = events.findIndex((e) => e.id === eventCode || e.shortCode === eventCode);
     if (idx !== -1) {
       events[idx].avatarUrl = url;
       events[idx].updatedAt = new Date().toISOString();
@@ -1250,7 +1261,7 @@ export async function processEventAvatar(eventId: string, uploadKey: string, out
     return { data: null, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
   }
 
-  const result = await request<ApiEvent>(`/events/${eventId}/avatar/process`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/avatar/process`, {
     method: "POST",
     body: JSON.stringify({ upload_key: uploadKey, output_format: outputFormat }),
   });
@@ -1260,8 +1271,8 @@ export async function processEventAvatar(eventId: string, uploadKey: string, out
   return { data: null, error: result.error };
 }
 
-export async function uploadEventAvatar(eventId: string, file: File): Promise<ApiResult<Event | null>> {
-  const presign = await getEventAvatarUploadUrl(eventId, file.type, file.size);
+export async function uploadEventAvatar(eventCode: string, file: File): Promise<ApiResult<Event | null>> {
+  const presign = await getEventAvatarUploadUrl(eventCode, file.type, file.size);
   if (presign.error || !presign.data) {
     return { data: null, error: presign.error };
   }
@@ -1279,16 +1290,16 @@ export async function uploadEventAvatar(eventId: string, file: File): Promise<Ap
   }
 
   if (!presign.data.uploadKey) {
-    return await updateEvent(eventId, { avatarUrl: presign.data.publicUrl });
+    return await updateEvent(eventCode, { avatarUrl: presign.data.publicUrl });
   }
 
-  return await processEventAvatar(eventId, presign.data.uploadKey, "webp");
+  return await processEventAvatar(eventCode, presign.data.uploadKey, "webp");
 }
 
-export async function updateEventPhase(eventId: string, newPhase: EventPhase): Promise<ApiResult<Event | null>> {
+export async function updateEventPhase(eventCode: string, newPhase: EventPhase): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       event.phase = newPhase;
       event.updatedAt = new Date().toISOString();
@@ -1296,7 +1307,7 @@ export async function updateEventPhase(eventId: string, newPhase: EventPhase): P
     }
     return { data: null };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}/phase`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/phase`, {
     method: 'PATCH',
     body: JSON.stringify({ phase: newPhase }),
   });
@@ -1306,10 +1317,10 @@ export async function updateEventPhase(eventId: string, newPhase: EventPhase): P
   return { data: undefined, error: result.error };
 }
 
-export async function removeProposedActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
+export async function removeProposedActivity(eventCode: string, activityId: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(150);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (!event) return { data: undefined, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
 
     if (event.createdByUserId !== currentUser.id) {
@@ -1323,7 +1334,7 @@ export async function removeProposedActivity(eventId: string, activityId: string
     return { data: event };
   }
 
-  const result = await request<ApiEvent>(`/events/${eventId}/proposed-activities/${activityId}`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/proposed-activities/${activityId}`, {
     method: 'DELETE',
   });
   if (result.data) {
@@ -1332,10 +1343,10 @@ export async function removeProposedActivity(eventId: string, activityId: string
   return { data: null, error: result.error };
 }
 
-export async function excludeActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
+export async function excludeActivity(eventCode: string, activityId: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(150);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (!event) return { data: undefined, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
 
     if (event.createdByUserId !== currentUser.id) {
@@ -1352,7 +1363,7 @@ export async function excludeActivity(eventId: string, activityId: string): Prom
     return { data: event };
   }
 
-  const result = await request<ApiEvent>(`/events/${eventId}/activities/${activityId}/exclude`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/activities/${activityId}/exclude`, {
     method: 'PATCH',
   });
   if (result.data) {
@@ -1361,10 +1372,10 @@ export async function excludeActivity(eventId: string, activityId: string): Prom
   return { data: null, error: result.error };
 }
 
-export async function includeActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
+export async function includeActivity(eventCode: string, activityId: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(150);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (!event) return { data: undefined, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
 
     if (event.createdByUserId !== currentUser.id) {
@@ -1378,7 +1389,7 @@ export async function includeActivity(eventId: string, activityId: string): Prom
     return { data: event };
   }
 
-  const result = await request<ApiEvent>(`/events/${eventId}/activities/${activityId}/include`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/activities/${activityId}/include`, {
     method: 'PATCH',
   });
   if (result.data) {
@@ -1388,10 +1399,10 @@ export async function includeActivity(eventId: string, activityId: string): Prom
 }
 
 
-export async function voteOnActivity(eventId: string, activityId: string, vote: VoteType): Promise<ApiResult<Event | null>> {
+export async function voteOnActivity(eventCode: string, activityId: string, vote: VoteType): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       let activityVote = event.activityVotes.find((av) => av.activityId === activityId);
       if (!activityVote) {
@@ -1409,7 +1420,7 @@ export async function voteOnActivity(eventId: string, activityId: string, vote: 
     }
     return { data: null };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}/votes`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/votes`, {
     method: 'POST',
     body: JSON.stringify({ activity_id: activityId, vote }),
   });
@@ -1419,10 +1430,10 @@ export async function voteOnActivity(eventId: string, activityId: string, vote: 
   return { data: undefined, error: result.error };
 }
 
-export async function addDateOption(eventId: string, date: string, startTime?: string, endTime?: string): Promise<ApiResult<Event | null>> {
+export async function addDateOption(eventCode: string, date: string, startTime?: string, endTime?: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       event.dateOptions.push({
         id: `do-${Date.now()}`,
@@ -1435,7 +1446,7 @@ export async function addDateOption(eventId: string, date: string, startTime?: s
     }
     return { data: null };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}/date-options`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/date-options`, {
     method: 'POST',
     body: JSON.stringify({ date, start_time: startTime, end_time: endTime }),
   });
@@ -1445,17 +1456,17 @@ export async function addDateOption(eventId: string, date: string, startTime?: s
   return { data: undefined, error: result.error };
 }
 
-export async function deleteDateOption(eventId: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
+export async function deleteDateOption(eventCode: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       event.dateOptions = event.dateOptions.filter((d) => d.id !== dateOptionId);
       return { data: event };
     }
     return { data: null };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}/date-options/${dateOptionId}`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/date-options/${dateOptionId}`, {
     method: 'DELETE',
   });
   if (result.data) {
@@ -1464,10 +1475,10 @@ export async function deleteDateOption(eventId: string, dateOptionId: string): P
   return { data: undefined, error: result.error };
 }
 
-export async function respondToDateOption(eventId: string, dateOptionId: string, response: DateResponseType, isPriority: boolean = false, contribution?: number): Promise<ApiResult<Event | null>> {
+export async function respondToDateOption(eventCode: string, dateOptionId: string, response: DateResponseType, isPriority: boolean = false, contribution?: number): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       const dateOption = event.dateOptions.find((d) => d.id === dateOptionId);
       if (dateOption) {
@@ -1492,7 +1503,7 @@ export async function respondToDateOption(eventId: string, dateOptionId: string,
     }
     return { data: null };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}/date-options/${dateOptionId}/response`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/date-options/${dateOptionId}/response`, {
     method: 'POST',
     body: JSON.stringify({ response, is_priority: isPriority, contribution }),
   });
@@ -1502,10 +1513,10 @@ export async function respondToDateOption(eventId: string, dateOptionId: string,
   return { data: undefined, error: result.error };
 }
 
-export async function selectWinningActivity(eventId: string, activityId: string): Promise<ApiResult<Event | null>> {
+export async function selectWinningActivity(eventCode: string, activityId: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       event.chosenActivityId = activityId;
       event.phase = "scheduling";
@@ -1513,7 +1524,7 @@ export async function selectWinningActivity(eventId: string, activityId: string)
     }
     return { data: null };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}/select-activity`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/select-activity`, {
     method: 'POST',
     body: JSON.stringify({ activity_id: activityId }),
   });
@@ -1523,10 +1534,10 @@ export async function selectWinningActivity(eventId: string, activityId: string)
   return { data: undefined, error: result.error };
 }
 
-export async function finalizeDateOption(eventId: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
+export async function finalizeDateOption(eventCode: string, dateOptionId: string): Promise<ApiResult<Event | null>> {
   if (USE_MOCKS) {
     await delay(200);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       event.finalDateOptionId = dateOptionId;
       event.phase = "info";
@@ -1534,7 +1545,7 @@ export async function finalizeDateOption(eventId: string, dateOptionId: string):
     }
     return { data: null };
   }
-  const result = await request<ApiEvent>(`/events/${eventId}/finalize-date`, {
+  const result = await request<ApiEvent>(`/events/${eventCode}/finalize-date`, {
     method: 'POST',
     body: JSON.stringify({ date_option_id: dateOptionId }),
   });
@@ -1635,22 +1646,22 @@ function mapCommentFromApi(apiComment: ApiEventComment): EventComment {
   };
 }
 
-export async function getEventComments(eventId: string, phase?: EventPhase, skip = 0, limit = 50): Promise<ApiResult<EventComment[]>> {
+export async function getEventComments(eventCode: string, phase?: EventPhase, skip = 0, limit = 50): Promise<ApiResult<EventComment[]>> {
   if (USE_MOCKS) {
     await delay(300);
     // Mock comments
     const mockComments: EventComment[] = [
       {
-        id: "c1", eventId, userId: "u2", content: "Super Idee!", phase: "proposal", createdAt: new Date().toISOString(), userName: "Anna", userAvatar: ""
+        id: "c1", eventId: eventCode, userId: "u2", content: "Super Idee!", phase: "proposal", createdAt: new Date().toISOString(), userName: "Anna", userAvatar: ""
       },
       {
-        id: "c2", eventId, userId: "u3", content: "Bin dabei.", phase: "voting", createdAt: new Date().toISOString(), userName: "Tom", userAvatar: ""
+        id: "c2", eventId: eventCode, userId: "u3", content: "Bin dabei.", phase: "voting", createdAt: new Date().toISOString(), userName: "Tom", userAvatar: ""
       }
     ].filter(c => !phase || c.phase === phase);
     return { data: mockComments };
   }
   
-  let url = `/events/${eventId}/comments?skip=${skip}&limit=${limit}`;
+  let url = `/events/${eventCode}/comments?skip=${skip}&limit=${limit}`;
   if (phase) url += `&phase=${phase}`;
   
   const result = await request<ApiEventComment[]>(url);
@@ -1660,17 +1671,17 @@ export async function getEventComments(eventId: string, phase?: EventPhase, skip
   return { data: undefined, error: result.error };
 }
 
-export async function createEventComment(eventId: string, content: string, phase: EventPhase): Promise<ApiResult<EventComment>> {
+export async function createEventComment(eventCode: string, content: string, phase: EventPhase): Promise<ApiResult<EventComment>> {
   if (USE_MOCKS) {
     await delay(300);
     return { 
       data: {
-        id: `c-${Date.now()}`, eventId, userId: currentUser.id, content, phase, createdAt: new Date().toISOString(), userName: currentUser.name, userAvatar: currentUser.avatarUrl
+        id: `c-${Date.now()}`, eventId: eventCode, userId: currentUser.id, content, phase, createdAt: new Date().toISOString(), userName: currentUser.name, userAvatar: currentUser.avatarUrl
       }
     };
   }
   
-  const result = await request<ApiEventComment>(`/events/${eventId}/comments`, {
+  const result = await request<ApiEventComment>(`/events/${eventCode}/comments`, {
     method: 'POST',
     body: JSON.stringify({ content, phase }),
   });
@@ -1681,13 +1692,13 @@ export async function createEventComment(eventId: string, content: string, phase
   return { data: undefined, error: result.error };
 }
 
-export async function deleteEventComment(eventId: string, commentId: string): Promise<ApiResult<void>> {
+export async function deleteEventComment(eventCode: string, commentId: string): Promise<ApiResult<void>> {
   if (USE_MOCKS) {
     await delay(150);
     return { data: undefined };
   }
 
-  const result = await request<void>(`/events/${eventId}/comments/${commentId}`, {
+  const result = await request<void>(`/events/${eventCode}/comments/${commentId}`, {
     method: 'DELETE',
   });
   if (result.error) {
@@ -1802,15 +1813,15 @@ export async function getTeamRecommendations(roomId: string): Promise<ApiResult<
   return { data: summary };
 }
 
-export async function getActivitySuggestionsForEvent(eventId: string): Promise<ApiResult<AiRecommendation[]>> {
+export async function getActivitySuggestionsForEvent(eventCode: string): Promise<ApiResult<AiRecommendation[]>> {
   await delay(500);
   return { data: [] };
 }
 
-export async function sendEventInvites(eventId: string): Promise<ApiResult<{ sent: number }>> {
+export async function sendEventInvites(eventCode: string): Promise<ApiResult<{ sent: number }>> {
   if (USE_MOCKS) {
     await delay(800);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       event.inviteSentAt = event.inviteSentAt || new Date().toISOString();
       event.updatedAt = new Date().toISOString();
@@ -1819,7 +1830,7 @@ export async function sendEventInvites(eventId: string): Promise<ApiResult<{ sen
     return { data: { sent: 0 }, error: { code: "NOT_FOUND", message: "Event nicht gefunden" } };
   }
 
-  const result = await request<ApiSentCount>(`/ai/events/${eventId}/invites`, {
+  const result = await request<ApiSentCount>(`/ai/events/${eventCode}/invites`, {
     method: "POST",
   });
   if (result.data) {
@@ -1828,10 +1839,10 @@ export async function sendEventInvites(eventId: string): Promise<ApiResult<{ sen
   return { data: undefined, error: result.error };
 }
 
-export async function sendVotingReminder(eventId: string, userId?: string): Promise<ApiResult<{ sent: number }>> {
+export async function sendVotingReminder(eventCode: string, userId?: string): Promise<ApiResult<{ sent: number }>> {
   if (USE_MOCKS) {
     await delay(600);
-    const event = events.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventCode || e.shortCode === eventCode);
     if (event) {
       event.lastReminderAt = new Date().toISOString();
       const targetCount = userId ? 1 : (event.participants.filter((p) => !p.hasVoted).length || 0);
@@ -1841,7 +1852,7 @@ export async function sendVotingReminder(eventId: string, userId?: string): Prom
   }
 
   const body = userId ? { user_id: userId } : undefined;
-  const result = await request<ApiSentCount>(`/ai/events/${eventId}/voting-reminders`, {
+  const result = await request<ApiSentCount>(`/ai/events/${eventCode}/voting-reminders`, {
     method: "POST",
     body: body ? JSON.stringify(body) : undefined,
   });

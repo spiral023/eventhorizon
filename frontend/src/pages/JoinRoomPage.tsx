@@ -43,9 +43,10 @@ export default function JoinRoomPage() {
         setRoomName(result.data.name);
         // Set room role as member for joined rooms
         setRoomRole(result.data.id, "member");
+        setRoomRole(result.data.inviteCode, "member");
         // Redirect to the room after a short delay
         setTimeout(() => {
-          navigate(`/rooms/${result.data.id}`, { replace: true });
+          navigate(`/rooms/${result.data.inviteCode}`, { replace: true });
         }, 1500);
       }
     };

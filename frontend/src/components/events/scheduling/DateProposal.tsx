@@ -28,6 +28,7 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const eventCode = event.shortCode || event.id;
 
   const handleAddDates = async () => {
     if (!dates || dates.length === 0) return;
@@ -56,7 +57,7 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
       const promises = dates.map(date => {
         const isoDate = format(date, "yyyy-MM-dd");
         return addDateOption(
-          event.id,
+          eventCode,
           isoDate,
           startTime || undefined,
           endTime || undefined

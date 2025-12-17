@@ -9,14 +9,14 @@ interface RequireRoleProps {
 }
 
 export function RequireRole({ children, allowedRoles, fallback }: RequireRoleProps) {
-  const { roomId } = useParams<{ roomId: string }>();
+  const { accessCode } = useParams<{ accessCode: string }>();
   const { getRoomRole } = useAuthStore();
 
-  if (!roomId) {
+  if (!accessCode) {
     return <>{children}</>;
   }
 
-  const userRole = getRoomRole(roomId);
+  const userRole = getRoomRole(accessCode);
   const hasAccess = allowedRoles.includes(userRole);
 
   if (!hasAccess) {
@@ -28,11 +28,11 @@ export function RequireRole({ children, allowedRoles, fallback }: RequireRolePro
 
 // Hook for checking role access
 export function useHasRole(allowedRoles: RoomRole[]): boolean {
-  const { roomId } = useParams<{ roomId: string }>();
+  const { accessCode } = useParams<{ accessCode: string }>();
   const { getRoomRole } = useAuthStore();
 
-  if (!roomId) return true;
+  if (!accessCode) return true;
   
-  const userRole = getRoomRole(roomId);
+  const userRole = getRoomRole(accessCode);
   return allowedRoles.includes(userRole);
 }

@@ -256,6 +256,7 @@ class EventCreate(EventBase):
 class Event(EventBase):
     id: UUID
     room_id: UUID
+    short_code: str
     created_by_user_id: Optional[UUID] = None
     created_at: datetime
     voting_deadline: Optional[datetime] = None

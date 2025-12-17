@@ -218,6 +218,7 @@ class Event(Base):
     name = Column(String, nullable=False)
     description = Column(Text)
     avatar_url = Column(String)
+    short_code = Column(String, unique=True, nullable=False, index=True)
     phase = Column(SQLEnum(EventPhase), default=EventPhase.proposal)
     
     time_window = Column(JSON) # { type: "season", value: "summer" } etc.

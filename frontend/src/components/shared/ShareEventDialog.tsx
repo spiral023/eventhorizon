@@ -37,8 +37,8 @@ export function ShareEventDialog({ event, trigger }: ShareEventDialogProps) {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const eventCode = formatEventCode(event.id);
-  const shareUrl = `${window.location.origin}/join/${eventCode}`;
+  const eventCode = event.shortCode || formatEventCode(event.id);
+  const shareUrl = `${window.location.origin}${window.location.pathname}`;
 
   const handleCopyCode = async () => {
     await navigator.clipboard.writeText(eventCode);

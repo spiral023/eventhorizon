@@ -109,9 +109,9 @@ function AppRoutes() {
           }
         >
           <Route path="rooms" element={<PageTransition><RoomsPage /></PageTransition>} />
-          <Route path="rooms/:roomId" element={<PageTransition><RoomDetailPage /></PageTransition>} />
-          <Route path="rooms/:roomId/events/new" element={<PageTransition><CreateEventPage /></PageTransition>} />
-          <Route path="rooms/:roomId/events/:eventId" element={<PageTransition><EventDetailPage /></PageTransition>} />
+          <Route path="rooms/:accessCode" element={<PageTransition><RoomDetailPage /></PageTransition>} />
+          <Route path="rooms/:accessCode/events/new" element={<PageTransition><CreateEventPage /></PageTransition>} />
+          <Route path="rooms/:accessCode/events/:eventCode" element={<PageTransition><EventDetailPage /></PageTransition>} />
         </Route>
 
         <Route

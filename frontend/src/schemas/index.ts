@@ -164,6 +164,7 @@ export const EventParticipantSchema = z.object({
 
 export const EventSchema = z.object({
   id: z.string(),
+  shortCode: z.string(),
   roomId: z.string(),
   name: z.string(),
   description: z.string().optional(),

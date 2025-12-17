@@ -18,13 +18,13 @@ import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ShareRoomDialog } from "@/components/shared/ShareRoomDialog";
 import { EditRoomDialog } from "@/components/shared/EditRoomDialog";
-import { getRoomById, getEventsByRoom, deleteEvent, getRoomMembers, leaveRoom, type RoomMember } from "@/services/apiClient";
+import { getRoomByAccessCode, getEventsByAccessCode, deleteEvent, getRoomMembers, leaveRoom, type RoomMember } from "@/services/apiClient";
 import type { Room, Event } from "@/types/domain";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 
 export default function RoomDetailPage() {
-  const { roomId } = useParams<{ roomId: string }>();
+  const { accessCode } = useParams<{ accessCode: string }>();
   const navigate = useNavigate();
   const [room, setRoom] = useState<Room | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
@@ -40,11 +40,11 @@ export default function RoomDetailPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!roomId) return;
+      if (!accessCode) return;
       
       try {
         // 1. Fetch Room (by ID or Invite Code)
-        const roomResult = await getRoomById(roomId);
+        const roomResult = await getRoomByAccessCode(accessCode);
         if (roomResult.error || !roomResult.data) {
           setLoading(false);
           return; // or handle error state
@@ -55,8 +55,8 @@ export default function RoomDetailPage() {
 
         // 2. Fetch details using the resolved real UUID
         const [eventsResult, membersResult] = await Promise.all([
-          getEventsByRoom(roomData.id),
-          getRoomMembers(roomData.id),
+          getEventsByAccessCode(accessCode),
+          getRoomMembers(accessCode),
         ]);
 
         setEvents(eventsResult.data || []);
@@ -68,7 +68,7 @@ export default function RoomDetailPage() {
       }
     };
     fetchData();
-  }, [roomId]);
+  }, [accessCode]);
 
   const handleRoomUpdated = (updatedRoom: Room) => {
     setRoom(updatedRoom);
@@ -76,14 +76,15 @@ export default function RoomDetailPage() {
 
   const handleDeleteEvent = async () => {
     if (!deleteDialogEvent) return;
+    const eventCode = deleteDialogEvent.shortCode || deleteDialogEvent.id;
     setDeleteLoading(true);
     try {
-      const result = await deleteEvent(deleteDialogEvent.id);
+      const result = await deleteEvent(eventCode);
       if (result.error) {
         toast.error(result.error.message || "Fehler beim Löschen des Events");
         return;
       }
-      setEvents((prev) => prev.filter((e) => e.id !== deleteDialogEvent.id));
+      setEvents((prev) => prev.filter((e) => (e.shortCode || e.id) !== eventCode));
       toast.success("Event erfolgreich gelöscht!");
       setDeleteDialogEvent(null);
     } catch {
@@ -97,7 +98,7 @@ export default function RoomDetailPage() {
     if (!room) return;
     setLeaveLoading(true);
     try {
-      const result = await leaveRoom(room.id);
+      const result = await leaveRoom(accessCode!);
       if (result.error) {
         toast.error(result.error.message || "Fehler beim Verlassen des Raums");
         return;
@@ -206,7 +207,7 @@ export default function RoomDetailPage() {
           <Button 
             size="sm"
             className="gap-2 rounded-xl shrink-0 whitespace-nowrap"
-            onClick={() => navigate(`/rooms/${roomId}/events/new`)}
+            onClick={() => navigate(`/rooms/${accessCode}/events/new`)}
           >
             <Plus className="h-4 w-4" />
             Event erstellen
@@ -234,7 +235,7 @@ export default function RoomDetailPage() {
               action={
                 <Button 
                   className="gap-2 rounded-xl"
-                  onClick={() => navigate(`/rooms/${roomId}/events/new`)}
+                  onClick={() => navigate(`/rooms/${accessCode}/events/new`)}
                 >
                   <Plus className="h-4 w-4" />
                   Event erstellen
@@ -264,7 +265,7 @@ export default function RoomDetailPage() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   ) : undefined}
-                  onClick={() => navigate(`/rooms/${roomId}/events/${event.id}`)}
+                  onClick={() => navigate(`/rooms/${accessCode}/events/${event.shortCode || event.id}`)}
                 />
               </div>
             ))
@@ -301,7 +302,7 @@ export default function RoomDetailPage() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   ) : undefined}
-                  onClick={() => navigate(`/rooms/${roomId}/events/${event.id}`)}
+                  onClick={() => navigate(`/rooms/${accessCode}/events/${event.shortCode || event.id}`)}
                 />
               </div>
             ))

@@ -70,6 +70,7 @@ const ManageEventDialog = ({ event, isCreator, trigger, onEventUpdated }: Manage
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const eventCode = event.shortCode || event.id;
 
   useEffect(() => {
     setName(event.name);
@@ -89,7 +90,7 @@ const ManageEventDialog = ({ event, isCreator, trigger, onEventUpdated }: Manage
       return;
     }
     setSaving(true);
-    const result = await updateEvent(event.id, {
+    const result = await updateEvent(eventCode, {
       name: name.trim(),
       description: description.trim() || undefined,
       budgetType,
@@ -111,7 +112,7 @@ const ManageEventDialog = ({ event, isCreator, trigger, onEventUpdated }: Manage
       return;
     }
     setUploading(true);
-    const result = await uploadEventAvatar(event.id, file);
+    const result = await uploadEventAvatar(eventCode, file);
     setUploading(false);
     if (result.error || !result.data) {
       toast.error(result.error?.message || "Upload fehlgeschlagen");
@@ -127,7 +128,7 @@ const ManageEventDialog = ({ event, isCreator, trigger, onEventUpdated }: Manage
       return;
     }
     setUploading(true);
-    const result = await updateEvent(event.id, { avatarUrl: "" });
+    const result = await updateEvent(eventCode, { avatarUrl: "" });
     setUploading(false);
     if (result.error || !result.data) {
       toast.error(result.error?.message || "Bild konnte nicht entfernt werden");
@@ -273,6 +274,7 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
   const [inviteSent, setInviteSent] = useState<boolean>(!!event.inviteSentAt);
   const [remindedUserIds, setRemindedUserIds] = useState<string[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(event.unreadMessageCount ?? 0);
+  const eventCode = event.shortCode || event.id;
 
   useEffect(() => {
     setInviteSent(!!event.inviteSentAt);
@@ -293,12 +295,12 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
   useEffect(() => {
     const refreshUnread = async () => {
       try {
-        const lastSeenKey = `event:${event.id}:chat:last_seen`;
+        const lastSeenKey = `event:${eventCode}:chat:last_seen`;
         const lastSeenValue = typeof window !== "undefined" ? window.localStorage.getItem(lastSeenKey) : null;
         const lastSeenDate = lastSeenValue ? new Date(lastSeenValue) : null;
 
         const results = await Promise.all(
-          phaseOrder.map((phase) => getEventComments(event.id, phase, 0, 30))
+          phaseOrder.map((phase) => getEventComments(eventCode, phase, 0, 30))
         );
         const comments = results.flatMap((r) => r.data || []);
         const unread = lastSeenDate
@@ -310,7 +312,7 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
       }
     };
     void refreshUnread();
-  }, [event.id, event.unreadMessageCount]);
+  }, [eventCode, event.unreadMessageCount]);
 
   const handleInviteSend = async () => {
     if (!isCreator) {
@@ -318,14 +320,14 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
       return;
     }
     setInviteLoading(true);
-    const result = await sendEventInvites(event.id);
+    const result = await sendEventInvites(eventCode);
     setInviteLoading(false);
     if (result.error) {
       toast.error(result.error.message || "Einladungen konnten nicht gesendet werden");
       return;
     }
     if (isCreator) {
-      const updated = await updateEvent(event.id, { inviteSentAt: new Date().toISOString() });
+      const updated = await updateEvent(eventCode, { inviteSentAt: new Date().toISOString() });
       if (updated.data) {
         onEventUpdated(updated.data);
       }
@@ -346,7 +348,7 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
     }
     const key: ReminderLoadingState = userId ?? "all";
     setReminderLoading(key);
-    const result = await sendVotingReminder(event.id, userId);
+    const result = await sendVotingReminder(eventCode, userId);
     setReminderLoading(null);
     if (result.error) {
       toast.error(result.error.message || "Erinnerung konnte nicht gesendet werden");
@@ -359,14 +361,14 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
     }
     toast.success(`${result.data?.sent ?? 0} Erinnerung(en) rausgeschickt`);
     if (isCreator) {
-      const updated = await updateEvent(event.id, { lastReminderAt: new Date().toISOString() });
+      const updated = await updateEvent(eventCode, { lastReminderAt: new Date().toISOString() });
       if (updated.data) {
         onEventUpdated(updated.data);
       }
     }
   };
 
-  const lastSeenKey = `event:${event.id}:chat:last_seen`;
+  const lastSeenKey = `event:${eventCode}:chat:last_seen`;
   const handleChatOpenChange = (open: boolean) => {
     setChatOpen(open);
     if (open) {
@@ -493,7 +495,7 @@ export function EventActionsPanel({ event, isCreator, activePhase, onEventUpdate
               </SheetDescription>
             </SheetHeader>
             <div className="mt-4 space-y-4">
-              <PhaseComments eventId={event.id} phase={activePhase} />
+              <PhaseComments eventId={eventCode} phase={activePhase} />
             </div>
           </SheetContent>
         </Sheet>

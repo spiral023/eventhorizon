@@ -155,6 +155,8 @@ export interface ApiEventParticipant {
 export interface ApiEvent {
   id: string;
   room_id: string;
+  short_code: string;
+  shortCode?: string; // Alias
   name: string;
   description?: string;
   phase: string;
@@ -307,7 +309,6 @@ export interface ApiSearchResult {
   events: ApiEvent[];
   users: ApiUser[];
 }
-
 
 
 

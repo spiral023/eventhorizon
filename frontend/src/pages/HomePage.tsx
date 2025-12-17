@@ -182,7 +182,7 @@ export default function HomePage() {
                 className="motion-safe:animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:translate-y-0 will-change-[transform,opacity]"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <RoomCard room={room} onClick={() => navigate(`/rooms/${room.id}`)} />
+                <RoomCard room={room} onClick={() => navigate(`/rooms/${room.inviteCode}`)} />
               </div>
             ))}
           </div>
@@ -238,6 +238,5 @@ export default function HomePage() {
     </div>
   );
 }
-
 
 

@@ -35,6 +35,8 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
   const { toast } = useToast();
   const isOwner = user?.id === event.createdByUserId;
 
+  const eventCode = event.shortCode || event.id;
+
   const myResponse = option.responses.find((r) => r.userId === user?.id);
   const myVote = myResponse?.response;
   const isPriority = myResponse?.isPriority;
@@ -58,7 +60,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
     if (!user) return;
     try {
       const { data, error } = await respondToDateOption(
-        event.id,
+        eventCode,
         option.id,
         response,
         isPriority
@@ -78,7 +80,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
     
     try {
       const { data, error } = await respondToDateOption(
-        event.id,
+        eventCode,
         option.id,
         myVote,
         !isPriority
@@ -93,7 +95,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
   const handleDelete = async () => {
     if (!confirm("Diesen Termin wirklich löschen?")) return;
     try {
-      const { data, error } = await deleteDateOption(event.id, option.id);
+      const { data, error } = await deleteDateOption(eventCode, option.id);
       if (error || !data) throw new Error(error?.message);
       onUpdate(data);
       toast({ title: "Termin gelöscht" });

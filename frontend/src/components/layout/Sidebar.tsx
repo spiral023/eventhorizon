@@ -38,7 +38,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 import { useAuthStore } from "@/stores/authStore";
 
-import { getRooms, getEventsByRoom } from "@/services/apiClient";
+import { getRooms, getEventsByAccessCode } from "@/services/apiClient";
 
 import type { Room, Event } from "@/types/domain";
 
@@ -155,7 +155,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
   const [isRoomsOpen, setIsRoomsOpen] = useState(true);
 
-  const [openRoomIds, setOpenRoomIds] = useState<Set<string>>(new Set());
+  const [openRoomCodes, setOpenRoomCodes] = useState<Set<string>>(new Set());
 
 
 
@@ -193,7 +193,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
         roomsData.map(async (room) => {
 
-          const eventsResult = await getEventsByRoom(room.id);
+          const eventsResult = await getEventsByAccessCode(room.inviteCode);
 
           const allEvents = eventsResult.data || [];
 
@@ -213,7 +213,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
       if (currentRoomMatch) {
 
-        setOpenRoomIds((prev) => new Set([...prev, currentRoomMatch[1]]));
+        setOpenRoomCodes((prev) => new Set([...prev, currentRoomMatch[1]]));
 
       }
 
@@ -227,19 +227,19 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
 
 
-  const toggleRoom = (roomId: string) => {
+  const toggleRoom = (accessCode: string) => {
 
-    setOpenRoomIds((prev) => {
+    setOpenRoomCodes((prev) => {
 
       const newSet = new Set(prev);
 
-      if (newSet.has(roomId)) {
+      if (newSet.has(accessCode)) {
 
-        newSet.delete(roomId);
+        newSet.delete(accessCode);
 
       } else {
 
-        newSet.add(roomId);
+        newSet.add(accessCode);
 
       }
 
@@ -251,17 +251,17 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
 
 
-  const isRoomActive = (roomId: string) =>
+  const isRoomActive = (accessCode: string) =>
 
-    location.pathname === `/rooms/${roomId}` ||
+    location.pathname === `/rooms/${accessCode}` ||
 
-    location.pathname.startsWith(`/rooms/${roomId}/`);
+    location.pathname.startsWith(`/rooms/${accessCode}/`);
 
 
 
-  const isEventActive = (roomId: string, eventId: string) =>
+  const isEventActive = (accessCode: string, eventCode: string) =>
 
-    location.pathname === `/rooms/${roomId}/events/${eventId}`;
+    location.pathname === `/rooms/${accessCode}/events/${eventCode}`;
 
 
 
@@ -351,13 +351,13 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
             {activeEvents.length > 0 ? (
 
-              <Collapsible open={openRoomIds.has(room.id)} onOpenChange={() => toggleRoom(room.id)}>
+              <Collapsible open={openRoomCodes.has(room.inviteCode)} onOpenChange={() => toggleRoom(room.inviteCode)}>
 
                 <div className="flex items-center">
 
                   <NavLink
 
-                    to={`/rooms/${room.id}`}
+                    to={`/rooms/${room.inviteCode}`}
 
                     className={cn(
 
@@ -367,7 +367,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                       "transition-all duration-200",
 
-                      isRoomActive(room.id) && "bg-primary/10 text-primary"
+                      isRoomActive(room.inviteCode) && "bg-primary/10 text-primary"
 
                     )}
 
@@ -399,7 +399,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                     >
 
-                      {openRoomIds.has(room.id) ? (
+                      {openRoomCodes.has(room.inviteCode) ? (
 
                         <ChevronDown className="h-3.5 w-3.5" />
 
@@ -423,7 +423,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                       key={event.id}
 
-                      to={`/rooms/${room.id}/events/${event.id}`}
+                      to={`/rooms/${room.inviteCode}/events/${event.shortCode || event.id}`}
 
                       className={cn(
 
@@ -433,7 +433,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                         "transition-all duration-200",
 
-                        isEventActive(room.id, event.id) && "bg-primary/10 text-primary"
+                        isEventActive(room.inviteCode, event.shortCode || event.id) && "bg-primary/10 text-primary"
 
                       )}
 
@@ -457,7 +457,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
               <NavLink
 
-                to={`/rooms/${room.id}`}
+                to={`/rooms/${room.inviteCode}`}
 
                 className={cn(
 
@@ -467,7 +467,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                   "transition-all duration-200",
 
-                  isRoomActive(room.id) && "bg-primary/10 text-primary"
+                  isRoomActive(room.inviteCode) && "bg-primary/10 text-primary"
 
                 )}
 
@@ -666,7 +666,3 @@ export function Sidebar() {
   );
 
 }
-
-
-
-

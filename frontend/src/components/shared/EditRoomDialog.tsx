@@ -59,7 +59,7 @@ export function EditRoomDialog({ room, onRoomUpdated, trigger }: EditRoomDialogP
 
     setLoading(true);
     try {
-      const result = await updateRoom(room.id, {
+      const result = await updateRoom(room.inviteCode, {
         name: name.trim(),
         description: description.trim() || undefined,
         avatarUrl: avatarUrl || undefined,
@@ -82,7 +82,7 @@ export function EditRoomDialog({ room, onRoomUpdated, trigger }: EditRoomDialogP
   const handleAvatarUpload = async (file: File) => {
     setUploading(true);
     try {
-      const result = await uploadRoomAvatar(room.id, file);
+      const result = await uploadRoomAvatar(room.inviteCode, file);
       if (result.error || !result.data) {
         toast.error(result.error?.message || "Upload fehlgeschlagen");
         return;
@@ -100,7 +100,7 @@ export function EditRoomDialog({ room, onRoomUpdated, trigger }: EditRoomDialogP
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      const result = await deleteRoom(room.id);
+      const result = await deleteRoom(room.inviteCode);
       if (result.error) {
         toast.error(result.error.message || "Fehler beim Löschen des Raums");
         return;

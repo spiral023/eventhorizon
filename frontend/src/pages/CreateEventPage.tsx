@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 type TimeWindowType = "season" | "month" | "weekRange" | "freeText";
 
 export default function CreateEventPage() {
-  const { roomId } = useParams<{ roomId: string }>();
+  const { accessCode } = useParams<{ accessCode: string }>();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -105,7 +105,7 @@ export default function CreateEventPage() {
   };
 
   const onSubmit = async (data: CreateEventInput) => {
-    if (!roomId) return;
+    if (!accessCode) return;
 
     // Alle Aktivitäten sind immer ausgewählt
     const allActivityIds = activities.map(a => a.id);
@@ -113,14 +113,14 @@ export default function CreateEventPage() {
     setSubmitting(true);
     try {
       const timeWindow = buildTimeWindow();
-      const result = await createEvent(roomId, { ...data, proposedActivityIds: allActivityIds, timeWindow });
+      const result = await createEvent(accessCode, { ...data, proposedActivityIds: allActivityIds, timeWindow });
       
       toast({
         title: "Event erstellt!",
         description: `"${result.data.name}" wurde erfolgreich angelegt.`,
       });
       
-      navigate(`/rooms/${roomId}/events/${result.data.id}`);
+      navigate(`/rooms/${accessCode}/events/${result.data.shortCode || result.data.id}`);
     } catch (error) {
       toast({
         title: "Fehler",
@@ -155,7 +155,7 @@ export default function CreateEventPage() {
         variant="ghost"
         size="sm"
         className="gap-2 mb-4 -ml-2"
-        onClick={() => navigate(`/rooms/${roomId}`)}
+        onClick={() => navigate(`/rooms/${accessCode}`)}
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück zum Raum
@@ -480,7 +480,7 @@ export default function CreateEventPage() {
               type="button"
               variant="secondary"
               className="rounded-xl"
-              onClick={() => navigate(`/rooms/${roomId}`)}
+              onClick={() => navigate(`/rooms/${accessCode}`)}
             >
               Abbrechen
             </Button>

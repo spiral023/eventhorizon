@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
-from app.core.utils import generate_room_invite_code
+from app.core.utils import generate_room_invite_code, generate_event_short_code
 from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment, ActivityComment
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, RoomUpdate, Event as EventSchema,
@@ -260,15 +260,17 @@ async def delete_activity_comment(
     return Response(status_code=204)
 
 # --- Comments ---
-@router.get("/events/{event_id}/comments", response_model=List[EventCommentSchema])
+@router.get("/events/{event_identifier}/comments", response_model=List[EventCommentSchema])
 async def get_event_comments(
-    event_id: UUID,
+    event_identifier: str,
     phase: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
     db: AsyncSession = Depends(get_db)
 ):
-    query = select(EventComment).where(EventComment.event_id == event_id)
+    event = await resolve_event_identifier(event_identifier, db)
+
+    query = select(EventComment).where(EventComment.event_id == event.id)
     
     if phase:
         query = query.where(EventComment.phase == phase)
@@ -286,22 +288,19 @@ async def get_event_comments(
             
     return comments
 
-@router.post("/events/{event_id}/comments", response_model=EventCommentSchema)
+@router.post("/events/{event_identifier}/comments", response_model=EventCommentSchema)
 async def create_event_comment(
-    event_id: UUID,
+    event_identifier: str,
     comment_in: EventCommentCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     # Verify event exists
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+    event = await resolve_event_identifier(event_identifier, db)
         
     comment = EventComment(
         id=uuid4(),
-        event_id=event_id,
+        event_id=event.id,
         user_id=current_user.id,
         content=comment_in.content,
         phase=comment_in.phase,
@@ -319,18 +318,20 @@ async def create_event_comment(
     
     return comment
 
-@router.delete("/events/{event_id}/comments/{comment_id}", status_code=204)
+@router.delete("/events/{event_identifier}/comments/{comment_id}", status_code=204)
 async def delete_event_comment(
-    event_id: UUID,
+    event_identifier: str,
     comment_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    event = await resolve_event_identifier(event_identifier, db)
+
     result = await db.execute(
         select(EventComment).where(EventComment.id == comment_id)
     )
     comment = result.scalar_one_or_none()
-    if not comment or comment.event_id != event_id:
+    if not comment or comment.event_id != event.id:
         raise HTTPException(status_code=404, detail="Comment not found")
     if comment.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
@@ -367,6 +368,65 @@ async def resolve_activity_identifier(identifier: str, db: AsyncSession) -> Acti
         raise HTTPException(status_code=404, detail="Activity not found")
 
     return activity
+
+
+async def resolve_room_identifier(room_identifier: str, db: AsyncSession) -> Room:
+    """
+    Resolve a room by UUID or invite_code (case-insensitive).
+    """
+    is_uuid = False
+    try:
+        room_uuid = UUID(room_identifier)
+        is_uuid = True
+    except ValueError:
+        pass
+
+    query = select(Room)
+    if is_uuid:
+        query = query.where(Room.id == room_uuid)
+    else:
+        query = query.where(Room.invite_code == room_identifier.upper().strip())
+
+    result = await db.execute(query)
+    room = result.scalar_one_or_none()
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    return room
+
+
+async def resolve_event_identifier(event_identifier: str, db: AsyncSession, options: Optional[list] = None) -> Event:
+    """
+    Resolve an event by UUID or short_code (case-insensitive).
+    Options can be provided to eager-load relationships.
+    """
+    event_uuid = None
+    try:
+        event_uuid = UUID(event_identifier)
+    except ValueError:
+        pass
+
+    base_query = select(Event)
+    if options:
+        base_query = base_query.options(*options)
+
+    if event_uuid:
+        uuid_query = base_query.where(Event.id == event_uuid)
+        uuid_result = await db.execute(uuid_query)
+        event = uuid_result.scalar_one_or_none()
+        if event:
+            return event
+
+    short_code = event_identifier.upper().strip()
+    code_query = base_query.where(Event.short_code == short_code)
+    code_result = await db.execute(code_query)
+    event = code_result.scalar_one_or_none()
+
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    return event
 
 def enhance_event_with_user_names_helper(event):
     """Add user_name to votes from user relationship"""
@@ -645,17 +705,14 @@ async def create_room(
     await db.refresh(room)
     return room
 
-@router.patch("/rooms/{room_id}", response_model=RoomSchema)
+@router.patch("/rooms/{room_identifier}", response_model=RoomSchema)
 async def update_room(
-    room_id: UUID,
+    room_identifier: str,
     room_in: RoomUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    result = await db.execute(select(Room).where(Room.id == room_id))
-    room = result.scalar_one_or_none()
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    room = await resolve_room_identifier(room_identifier, db)
     if room.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the room creator can update this room")
 
@@ -667,43 +724,37 @@ async def update_room(
     await db.refresh(room)
     return room
 
-@router.post("/rooms/{room_id}/avatar/upload-url", response_model=AvatarUploadResponse)
+@router.post("/rooms/{room_identifier}/avatar/upload-url", response_model=AvatarUploadResponse)
 async def create_room_avatar_upload_url(
-    room_id: UUID,
+    room_identifier: str,
     payload: AvatarUploadRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    result = await db.execute(select(Room).where(Room.id == room_id))
-    room = result.scalar_one_or_none()
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    room = await resolve_room_identifier(room_identifier, db)
     if room.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the room creator can upload a room image")
 
     upload_url, public_url, upload_key = generate_room_avatar_upload_url(
-        room_id=room_id,
+        room_id=room.id,
         content_type=payload.content_type,
         file_size=payload.file_size,
     )
     return AvatarUploadResponse(upload_url=upload_url, public_url=public_url, upload_key=upload_key)
 
-@router.post("/rooms/{room_id}/avatar/process", response_model=RoomSchema)
+@router.post("/rooms/{room_identifier}/avatar/process", response_model=RoomSchema)
 async def process_room_avatar(
-    room_id: UUID,
+    room_identifier: str,
     payload: AvatarProcessRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    result = await db.execute(select(Room).where(Room.id == room_id))
-    room = result.scalar_one_or_none()
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    room = await resolve_room_identifier(room_identifier, db)
     if room.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the room creator can upload a room image")
 
     processed_url = process_room_avatar_upload(
-        room_id=room_id,
+        room_id=room.id,
         upload_key=payload.upload_key,
         desired_format=payload.output_format,
     )
@@ -714,44 +765,41 @@ async def process_room_avatar(
     return room
 
 
-@router.post("/events/{event_id}/avatar/upload-url", response_model=AvatarUploadResponse)
+@router.post("/events/{event_identifier}/avatar/upload-url", response_model=AvatarUploadResponse)
 async def create_event_avatar_upload_url(
-    event_id: UUID,
+    event_identifier: str,
     payload: AvatarUploadRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+    event = await resolve_event_identifier(event_identifier, db)
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event creator can upload an event image")
 
     upload_url, public_url, upload_key = generate_event_avatar_upload_url(
-        event_id=event_id,
+        event_id=event.id,
         content_type=payload.content_type,
         file_size=payload.file_size,
     )
     return AvatarUploadResponse(upload_url=upload_url, public_url=public_url, upload_key=upload_key)
 
 
-@router.post("/events/{event_id}/avatar/process", response_model=EventSchema)
+@router.post("/events/{event_identifier}/avatar/process", response_model=EventSchema)
 async def process_event_avatar(
-    event_id: UUID,
+    event_identifier: str,
     payload: AvatarProcessRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+    event = await resolve_event_identifier(
+        event_identifier,
+        db,
+    )
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event creator can upload an event image")
 
     processed_url = process_event_avatar_upload(
-        event_id=event_id,
+        event_id=event.id,
         upload_key=payload.upload_key,
         desired_format=payload.output_format,
     )
@@ -765,26 +813,7 @@ async def process_event_avatar(
 async def get_room(room_identifier: str, db: AsyncSession = Depends(get_db)):
     from app.models.domain import RoomMember
 
-    # Try to parse as UUID
-    is_uuid = False
-    try:
-        room_uuid = UUID(room_identifier)
-        is_uuid = True
-    except ValueError:
-        pass
-
-    query = select(Room)
-    if is_uuid:
-        query = query.where(Room.id == room_uuid)
-    else:
-        # Assume it's an invite code
-        query = query.where(Room.invite_code == room_identifier.upper().strip())
-
-    result = await db.execute(query)
-    room = result.scalar_one_or_none()
-    
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    room = await resolve_room_identifier(room_identifier, db)
 
     # Calculate member count (creator + members)
     member_count_result = await db.execute(
@@ -797,16 +826,13 @@ async def get_room(room_identifier: str, db: AsyncSession = Depends(get_db)):
 
     return room
 
-@router.delete("/rooms/{room_id}")
+@router.delete("/rooms/{room_identifier}")
 async def delete_room(
-    room_id: UUID,
+    room_identifier: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    result = await db.execute(select(Room).where(Room.id == room_id))
-    room = result.scalar_one_or_none()
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    room = await resolve_room_identifier(room_identifier, db)
 
     # Check if the current user is the creator of the room
     if room.created_by_user_id != current_user.id:
@@ -876,9 +902,9 @@ async def join_room(
 
     return room
 
-@router.post("/rooms/{room_id}/leave")
+@router.post("/rooms/{room_identifier}/leave")
 async def leave_room(
-    room_id: UUID,
+    room_identifier: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -890,10 +916,7 @@ async def leave_room(
     from app.models.domain import RoomMember
 
     # Find room
-    result = await db.execute(select(Room).where(Room.id == room_id))
-    room = result.scalar_one_or_none()
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    room = await resolve_room_identifier(room_identifier, db)
 
     # Prevent creator from leaving
     if room.created_by_user_id == current_user.id:
@@ -902,7 +925,7 @@ async def leave_room(
     # Check if user is a member
     result = await db.execute(
         select(RoomMember).where(
-            RoomMember.room_id == room_id,
+            RoomMember.room_id == room.id,
             RoomMember.user_id == current_user.id
         )
     )
@@ -917,8 +940,8 @@ async def leave_room(
 
     return {"message": "Room left successfully"}
 
-@router.get("/rooms/{room_id}/members")
-async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.get("/rooms/{room_identifier}/members")
+async def get_room_members(room_identifier: str, db: AsyncSession = Depends(get_db)):
     """
     Get all members of a room including the creator.
     Returns a list with: id, name, email, avatar_url, role, joined_at
@@ -926,10 +949,7 @@ async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
     from app.models.domain import RoomMember
 
     # Get the room and its creator
-    room_result = await db.execute(select(Room).where(Room.id == room_id))
-    room = room_result.scalar_one_or_none()
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    room = await resolve_room_identifier(room_identifier, db)
 
     # Get the creator
     creator_result = await db.execute(select(User).where(User.id == room.created_by_user_id))
@@ -953,7 +973,7 @@ async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
         select(RoomMember, User)
         .join(User, RoomMember.user_id == User.id)
         .where(
-            RoomMember.room_id == room_id,
+            RoomMember.room_id == room.id,
             RoomMember.user_id != room.created_by_user_id
         )
     )
@@ -970,8 +990,10 @@ async def get_room_members(room_id: UUID, db: AsyncSession = Depends(get_db)):
 
     return members_list
 
-@router.get("/rooms/{room_id}/events", response_model=List[EventSchema])
-async def get_room_events(room_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.get("/rooms/{room_identifier}/events", response_model=List[EventSchema])
+async def get_room_events(room_identifier: str, db: AsyncSession = Depends(get_db)):
+    room = await resolve_room_identifier(room_identifier, db)
+
     result = await db.execute(
         select(Event)
         .options(
@@ -979,7 +1001,7 @@ async def get_room_events(room_id: UUID, db: AsyncSession = Depends(get_db)):
             selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
             selectinload(Event.participants).selectinload(EventParticipant.user)
         )
-        .where(Event.room_id == room_id)
+        .where(Event.room_id == room.id)
     )
     events = result.scalars().all()
     return [enhance_event_full(e) for e in events]
@@ -993,33 +1015,27 @@ async def create_event(
 ):
     from app.models.domain import RoomMember
 
-    # Resolve room_identifier to room
-    is_uuid = False
-    try:
-        room_uuid = UUID(room_identifier)
-        is_uuid = True
-    except ValueError:
-        pass
-
-    query = select(Room)
-    if is_uuid:
-        query = query.where(Room.id == room_uuid)
-    else:
-        query = query.where(Room.invite_code == room_identifier.upper().strip())
-
-    result = await db.execute(query)
-    room = result.scalar_one_or_none()
-    
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
-        
+    room = await resolve_room_identifier(room_identifier, db)
     room_id = room.id
+
+    # Generate unique short code for the event
+    short_code: Optional[str] = None
+    for _ in range(10):
+        candidate_code = generate_event_short_code()
+        existing = await db.execute(select(Event).where(Event.short_code == candidate_code))
+        if not existing.scalar_one_or_none():
+            short_code = candidate_code
+            break
+
+    if not short_code:
+        raise HTTPException(status_code=500, detail="Failed to generate unique event short code")
 
     # Basic impl
     event = Event(
         **event_in.model_dump(),
         id=uuid4(),
         room_id=room_id,
+        short_code=short_code,
         created_at=datetime.utcnow(),
         created_by_user_id=current_user.id
     )
@@ -1055,35 +1071,29 @@ async def create_event(
     return event
 
 # --- Events ---
-@router.get("/events/{event_id}", response_model=EventSchema)
-async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        select(Event)
-        .options(
+@router.get("/events/{event_identifier}", response_model=EventSchema)
+async def get_event(event_identifier: str, db: AsyncSession = Depends(get_db)):
+    event = await resolve_event_identifier(
+        event_identifier,
+        db,
+        options=[
             selectinload(Event.votes).selectinload(Vote.user),
             selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
-            selectinload(Event.participants).selectinload(EventParticipant.user)
-        )
-        .where(Event.id == event_id)
+            selectinload(Event.participants).selectinload(EventParticipant.user),
+        ],
     )
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-    
+
     return enhance_event_full(event)
 
 
-@router.patch("/events/{event_id}", response_model=EventSchema)
+@router.patch("/events/{event_identifier}", response_model=EventSchema)
 async def update_event(
-    event_id: UUID,
+    event_identifier: str,
     payload: EventUpdateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+    event = await resolve_event_identifier(event_identifier, db)
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event creator can update this event")
 
@@ -1097,21 +1107,18 @@ async def update_event(
     await db.refresh(event)
     return enhance_event_full(event)
 
-@router.delete("/events/{event_id}/proposed-activities/{activity_id}", response_model=EventSchema)
+@router.delete("/events/{event_identifier}/proposed-activities/{activity_id}", response_model=EventSchema)
 async def remove_proposed_activity(
-    event_id: UUID,
+    event_identifier: str,
     activity_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    event_result = await db.execute(
-        select(Event)
-        .options(selectinload(Event.votes))
-        .where(Event.id == event_id)
+    event = await resolve_event_identifier(
+        event_identifier,
+        db,
+        options=[selectinload(Event.votes)],
     )
-    event = event_result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
 
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event creator can modify proposals")
@@ -1127,7 +1134,7 @@ async def remove_proposed_activity(
 
     # Remove any existing votes for that activity just in case
     await db.execute(
-        delete(Vote).where(Vote.event_id == event_id, Vote.activity_id == activity_id)
+        delete(Vote).where(Vote.event_id == event.id, Vote.activity_id == activity_id)
     )
 
     await db.commit()
@@ -1137,26 +1144,23 @@ async def remove_proposed_activity(
     result = await db.execute(
         select(Event)
         .options(selectinload(Event.votes).selectinload(Vote.user))
-        .where(Event.id == event_id)
+        .where(Event.id == event.id)
     )
     event = result.scalar_one_or_none()
     return enhance_event_with_user_names_helper(event)
 
-@router.patch("/events/{event_id}/activities/{activity_id}/exclude", response_model=EventSchema)
+@router.patch("/events/{event_identifier}/activities/{activity_id}/exclude", response_model=EventSchema)
 async def exclude_activity(
-    event_id: UUID,
+    event_identifier: str,
     activity_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    event_result = await db.execute(
-        select(Event)
-        .options(selectinload(Event.votes).selectinload(Vote.user))
-        .where(Event.id == event_id)
+    event = await resolve_event_identifier(
+        event_identifier,
+        db,
+        options=[selectinload(Event.votes).selectinload(Vote.user)],
     )
-    event = event_result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
 
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event creator can exclude activities")
@@ -1178,21 +1182,18 @@ async def exclude_activity(
 
     return enhance_event_with_user_names_helper(event)
 
-@router.patch("/events/{event_id}/activities/{activity_id}/include", response_model=EventSchema)
+@router.patch("/events/{event_identifier}/activities/{activity_id}/include", response_model=EventSchema)
 async def include_activity(
-    event_id: UUID,
+    event_identifier: str,
     activity_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    event_result = await db.execute(
-        select(Event)
-        .options(selectinload(Event.votes).selectinload(Vote.user))
-        .where(Event.id == event_id)
+    event = await resolve_event_identifier(
+        event_identifier,
+        db,
+        options=[selectinload(Event.votes).selectinload(Vote.user)],
     )
-    event = event_result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
 
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event creator can include activities")
@@ -1210,16 +1211,13 @@ async def include_activity(
 
     return enhance_event_with_user_names_helper(event)
 
-@router.delete("/events/{event_id}")
+@router.delete("/events/{event_identifier}")
 async def delete_event(
-    event_id: UUID,
+    event_identifier: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+    event = await resolve_event_identifier(event_identifier, db)
 
     if event.created_by_user_id != current_user.id:
         raise HTTPException(
@@ -1231,30 +1229,29 @@ async def delete_event(
     await db.commit()
     return {"message": "Event deleted successfully"}
 
-@router.patch("/events/{event_id}/phase", response_model=EventSchema)
-async def update_event_phase(event_id: UUID, phase_in: PhaseUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+@router.patch("/events/{event_identifier}/phase", response_model=EventSchema)
+async def update_event_phase(event_identifier: str, phase_in: PhaseUpdate, db: AsyncSession = Depends(get_db)):
+    event = await resolve_event_identifier(event_identifier, db)
     event.phase = phase_in.phase
     await db.commit()
     await db.refresh(event)
     return event
 
-@router.post("/events/{event_id}/votes", response_model=EventSchema)
+@router.post("/events/{event_identifier}/votes", response_model=EventSchema)
 async def vote_on_activity(
-    event_id: UUID,
+    event_identifier: str,
     vote_in: VoteCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     from app.models.domain import Vote as VoteModel
 
+    event = await resolve_event_identifier(event_identifier, db)
+
     # Check if vote already exists for this user/activity/event
     existing_vote_result = await db.execute(
         select(VoteModel).where(
-            VoteModel.event_id == event_id,
+            VoteModel.event_id == event.id,
             VoteModel.activity_id == vote_in.activity_id,
             VoteModel.user_id == current_user.id
         )
@@ -1266,7 +1263,7 @@ async def vote_on_activity(
         existing_vote.voted_at = datetime.utcnow()
     else:
         new_vote = VoteModel(
-            event_id=event_id,
+            event_id=event.id,
             activity_id=vote_in.activity_id,
             user_id=current_user.id,
             vote=vote_in.vote,
@@ -1277,7 +1274,7 @@ async def vote_on_activity(
     # Update participant status
     participant_result = await db.execute(
         select(EventParticipant).where(
-            EventParticipant.event_id == event_id,
+            EventParticipant.event_id == event.id,
             EventParticipant.user_id == current_user.id
         )
     )
@@ -1287,7 +1284,7 @@ async def vote_on_activity(
     else:
         # Auto-add as participant if they vote
         new_participant = EventParticipant(
-            event_id=event_id,
+            event_id=event.id,
             user_id=current_user.id,
             has_voted=True
         )
@@ -1299,7 +1296,7 @@ async def vote_on_activity(
     result = await db.execute(
         select(Event)
         .options(selectinload(Event.votes).selectinload(Vote.user))
-        .where(Event.id == event_id)
+        .where(Event.id == event.id)
     )
     event = result.scalar_one_or_none()
     if not event:
@@ -1313,22 +1310,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-@router.post("/events/{event_id}/date-options", response_model=EventSchema)
+@router.post("/events/{event_identifier}/date-options", response_model=EventSchema)
 async def create_date_option(
-    event_id: UUID,
+    event_identifier: str,
     date_in: DateOptionCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     # Check event
-    result = await db.execute(
-        select(Event)
-        .options(selectinload(Event.date_options))
-        .where(Event.id == event_id)
+    event = await resolve_event_identifier(
+        event_identifier,
+        db,
+        options=[selectinload(Event.date_options)],
     )
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
 
     if event.phase != "scheduling":
         raise HTTPException(status_code=400, detail="Can only add dates in scheduling phase")
@@ -1343,7 +1337,7 @@ async def create_date_option(
 
     new_date = DateOption(
         id=uuid4(),
-        event_id=event_id,
+        event_id=event.id,
         date=date_in.date.replace(tzinfo=None),
         start_time=date_in.start_time,
         end_time=date_in.end_time
@@ -1351,50 +1345,44 @@ async def create_date_option(
     db.add(new_date)
     await db.commit()
     
-    logger.info(f"Created date option {new_date.id} for event {event_id}")
+    logger.info(f"Created date option {new_date.id} for event {event.id}")
     
     # Force reload of all objects in session to ensure relationships are up to date
     db.expire_all()
 
     # Reload event
-    updated_event = await get_event(event_id, db)
+    updated_event = await get_event(str(event.id), db)
     logger.info(f"Updated event has {len(updated_event.date_options)} date options")
     return updated_event
 
-@router.delete("/events/{event_id}/date-options/{date_option_id}", response_model=EventSchema)
+@router.delete("/events/{event_identifier}/date-options/{date_option_id}", response_model=EventSchema)
 async def delete_date_option(
-    event_id: UUID,
+    event_identifier: str,
     date_option_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-        
+    event = await resolve_event_identifier(event_identifier, db)
+
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only event creator can delete date options")
         
     await db.execute(
-        delete(DateOption).where(DateOption.id == date_option_id, DateOption.event_id == event_id)
+        delete(DateOption).where(DateOption.id == date_option_id, DateOption.event_id == event.id)
     )
     await db.commit()
     
-    return await get_event(event_id, db)
+    return await get_event(str(event.id), db)
 
-@router.post("/events/{event_id}/date-options/{date_option_id}/response", response_model=EventSchema)
+@router.post("/events/{event_identifier}/date-options/{date_option_id}/response", response_model=EventSchema)
 async def respond_to_date(
-    event_id: UUID, 
+    event_identifier: str, 
     date_option_id: UUID, 
     response_in: DateResponseCreate, 
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    event_result = await db.execute(select(Event).where(Event.id == event_id))
-    event = event_result.scalar_one_or_none()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+    event = await resolve_event_identifier(event_identifier, db)
         
     if event.phase != "scheduling":
         raise HTTPException(status_code=400, detail="Voting allowed only in scheduling phase")
@@ -1402,7 +1390,7 @@ async def respond_to_date(
     # Handle Priority: If this is priority, unset others for this user/event
     if response_in.is_priority:
         # Get all date options for this event
-        date_options_result = await db.execute(select(DateOption.id).where(DateOption.event_id == event_id))
+        date_options_result = await db.execute(select(DateOption.id).where(DateOption.event_id == event.id))
         date_option_ids = [row.id for row in date_options_result]
         
         if date_option_ids:
@@ -1445,24 +1433,20 @@ async def respond_to_date(
     # Force reload to ensure latest state is returned
     db.expire_all()
     
-    return await get_event(event_id, db)
+    return await get_event(str(event.id), db)
 
-@router.post("/events/{event_id}/select-activity", response_model=EventSchema)
-async def select_activity(event_id: UUID, selection: SelectActivity, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if event:
-        event.chosen_activity_id = selection.activity_id
-        event.phase = "scheduling"
-        await db.commit()
-    return await get_event(event_id, db)
+@router.post("/events/{event_identifier}/select-activity", response_model=EventSchema)
+async def select_activity(event_identifier: str, selection: SelectActivity, db: AsyncSession = Depends(get_db)):
+    event = await resolve_event_identifier(event_identifier, db)
+    event.chosen_activity_id = selection.activity_id
+    event.phase = "scheduling"
+    await db.commit()
+    return await get_event(str(event.id), db)
 
-@router.post("/events/{event_id}/finalize-date", response_model=EventSchema)
-async def finalize_date(event_id: UUID, selection: FinalizeDate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-    if event:
-        event.final_date_option_id = selection.date_option_id
-        event.phase = "info"
-        await db.commit()
-    return await get_event(event_id, db)
+@router.post("/events/{event_identifier}/finalize-date", response_model=EventSchema)
+async def finalize_date(event_identifier: str, selection: FinalizeDate, db: AsyncSession = Depends(get_db)):
+    event = await resolve_event_identifier(event_identifier, db)
+    event.final_date_option_id = selection.date_option_id
+    event.phase = "info"
+    await db.commit()
+    return await get_event(str(event.id), db)

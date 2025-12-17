@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
 import { EventActionsPanel } from "@/components/events/EventActionsPanel";
 import {
-  getEventById,
+  getEventByCode,
   getActivities,
   voteOnActivity,
   updateEventPhase,
@@ -36,7 +36,7 @@ import { getNextPhases, isPhaseCompleted, isPhaseCurrent } from "@/utils/phaseSt
 import { cn } from "@/lib/utils";
 
 export default function EventDetailPage() {
-  const { roomId, eventId } = useParams<{ roomId: string; eventId: string }>();
+  const { accessCode, eventCode } = useParams<{ accessCode: string; eventCode: string }>();
   const navigate = useNavigate();
   const [event, setEvent] = useState<Event | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -54,9 +54,9 @@ export default function EventDetailPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!eventId) return;
+      if (!eventCode) return;
       const [eventResult, activitiesResult] = await Promise.all([
-        getEventById(eventId),
+        getEventByCode(eventCode),
         getActivities(),
       ]);
       setEvent(eventResult.data);
@@ -71,7 +71,7 @@ export default function EventDetailPage() {
       setLoading(false);
     };
     fetchData();
-  }, [eventId]);
+  }, [eventCode]);
 
   // Update active tab when event phase advances
   useEffect(() => {
@@ -82,9 +82,9 @@ export default function EventDetailPage() {
   }, [event?.phase]);
 
   const handleVote = async (activityId: string, vote: VoteType) => {
-    if (!eventId) return;
+    if (!eventCode) return;
     setActionLoading(true);
-    const result = await voteOnActivity(eventId, activityId, vote);
+    const result = await voteOnActivity(eventCode, activityId, vote);
     if (result.data) {
       setEvent(result.data);
     }
@@ -92,11 +92,11 @@ export default function EventDetailPage() {
   };
 
   const handleAdvancePhase = async () => {
-    if (!event || !eventId) return;
+    if (!event || !eventCode) return;
     const nextPhases = getNextPhases(event.phase);
     if (nextPhases.length > 0) {
       setActionLoading(true);
-      const result = await updateEventPhase(eventId, nextPhases[0]);
+      const result = await updateEventPhase(eventCode, nextPhases[0]);
       if (result.data) {
         setEvent(result.data);
       }
@@ -105,9 +105,9 @@ export default function EventDetailPage() {
   };
 
   const handleSelectActivity = async (activityId: string) => {
-    if (!eventId) return;
+    if (!eventCode) return;
     setActionLoading(true);
-    const result = await selectWinningActivity(eventId, activityId);
+    const result = await selectWinningActivity(eventCode, activityId);
     if (result.data) {
       setEvent(result.data);
     }
@@ -115,13 +115,13 @@ export default function EventDetailPage() {
   };
 
   const handleToggleExclusion = async (activityId: string, currentlyExcluded: boolean) => {
-    if (!eventId) return;
+    if (!eventCode) return;
     setActionLoading(true);
     let result;
     if (currentlyExcluded) {
-      result = await includeActivity(eventId, activityId);
+      result = await includeActivity(eventCode, activityId);
     } else {
-      result = await excludeActivity(eventId, activityId);
+      result = await excludeActivity(eventCode, activityId);
     }
     if (result.data) {
       setEvent(result.data);
@@ -130,9 +130,9 @@ export default function EventDetailPage() {
   };
 
   const handleFinalizeDate = async (dateOptionId: string) => {
-    if (!eventId) return;
+    if (!eventCode) return;
     setActionLoading(true);
-    const result = await finalizeDateOption(eventId, dateOptionId);
+    const result = await finalizeDateOption(eventCode, dateOptionId);
     if (result.data) {
       setEvent(result.data);
     }
@@ -156,7 +156,7 @@ export default function EventDetailPage() {
         title="Event nicht gefunden"
         description="Das gesuchte Event existiert nicht oder wurde gelöscht."
         action={
-          <Button onClick={() => navigate(`/rooms/${roomId}`)} className="rounded-xl">
+          <Button onClick={() => navigate(`/rooms/${accessCode}`)} className="rounded-xl">
             Zurück zum Raum
           </Button>
         }
@@ -221,7 +221,7 @@ export default function EventDetailPage() {
         variant="ghost"
         size="sm"
         className="gap-2 -ml-2 text-muted-foreground hover:text-foreground"
-        onClick={() => navigate(`/rooms/${roomId}`)}
+        onClick={() => navigate(`/rooms/${accessCode}`)}
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück zum Raum
