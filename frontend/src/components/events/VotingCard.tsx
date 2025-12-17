@@ -110,12 +110,12 @@ export function VotingCard({
                 {/* Vote Buttons */}
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant={userVote === "for" ? "ghost" : "outline"}
                     size="sm"
                     className={cn(
                       "gap-1.5 rounded-lg border-2 transition-all",
                       userVote === "for"
-                        ? "border-success bg-success/15 text-success ring-2 ring-success/30 hover:bg-success/20"
+                        ? "!border-success !bg-success !text-success-foreground hover:!bg-success/90 shadow-sm"
                         : "border-border bg-secondary/70 text-foreground hover:border-success/40 hover:bg-success/10 hover:text-success"
                     )}
                     onClick={() => onVote(activity.id, "for")}
@@ -127,12 +127,12 @@ export function VotingCard({
                     {userVote === "for" && <Check className="h-3 w-3 ml-1" />}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant={userVote === "against" ? "ghost" : "outline"}
                     size="sm"
                     className={cn(
                       "gap-1.5 rounded-lg border-2 transition-all",
                       userVote === "against"
-                        ? "border-destructive bg-destructive/15 text-destructive ring-2 ring-destructive/30 hover:bg-destructive/20"
+                        ? "!border-destructive !bg-destructive !text-destructive-foreground hover:!bg-destructive/90 shadow-sm"
                         : "border-border bg-secondary/70 text-foreground hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
                     )}
                     onClick={() => onVote(activity.id, "against")}
@@ -144,12 +144,12 @@ export function VotingCard({
                     {userVote === "against" && <Check className="h-3 w-3 ml-1" />}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant={userVote === "abstain" ? "ghost" : "outline"}
                     size="sm"
                     className={cn(
                       "gap-1.5 rounded-lg border-2 transition-all",
                       userVote === "abstain"
-                        ? "border-muted-foreground/60 bg-muted/40 text-foreground ring-2 ring-muted-foreground/50"
+                        ? "!border-secondary !bg-secondary !text-secondary-foreground hover:!bg-secondary/80 shadow-sm"
                         : "border-border bg-secondary/70 text-foreground hover:border-muted-foreground/40 hover:bg-muted/30 hover:text-muted-foreground"
                     )}
                     onClick={() => onVote(activity.id, "abstain")}

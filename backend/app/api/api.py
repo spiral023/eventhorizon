@@ -1347,13 +1347,17 @@ async def create_date_option(
     
     logger.info(f"Created date option {new_date.id} for event {event.id}")
     
-    # Force reload of all objects in session to ensure relationships are up to date
-    db.expire_all()
-
-    # Reload event
-    updated_event = await get_event(str(event.id), db)
-    logger.info(f"Updated event has {len(updated_event.date_options)} date options")
-    return updated_event
+    # Reload event with eager relationships to avoid async lazy-loading issues
+    updated_event = await resolve_event_identifier(
+        str(event.id),
+        db,
+        options=[
+            selectinload(Event.votes).selectinload(Vote.user),
+            selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
+            selectinload(Event.participants).selectinload(EventParticipant.user),
+        ],
+    )
+    return enhance_event_full(updated_event)
 
 @router.delete("/events/{event_identifier}/date-options/{date_option_id}", response_model=EventSchema)
 async def delete_date_option(
@@ -1430,10 +1434,16 @@ async def respond_to_date(
         
     await db.commit()
     
-    # Force reload to ensure latest state is returned
-    db.expire_all()
-    
-    return await get_event(str(event.id), db)
+    updated_event = await resolve_event_identifier(
+        str(event.id),
+        db,
+        options=[
+            selectinload(Event.votes).selectinload(Vote.user),
+            selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
+            selectinload(Event.participants).selectinload(EventParticipant.user),
+        ],
+    )
+    return enhance_event_full(updated_event)
 
 @router.post("/events/{event_identifier}/select-activity", response_model=EventSchema)
 async def select_activity(event_identifier: str, selection: SelectActivity, db: AsyncSession = Depends(get_db)):

@@ -64,7 +64,8 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
 
   const sortedDates = useMemo(() => {
     const dates = [...event.dateOptions];
-    if (sortByScore) {
+    const hasScores = dates.some((opt) => getScore(opt) > 0);
+    if (sortByScore && hasScores) {
       return dates.sort((a, b) => getScore(b) - getScore(a)); // Descending score
     } else {
       return dates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Chronological

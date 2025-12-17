@@ -53,29 +53,28 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
 
     setIsLoading(true);
     try {
-      // Execute all adds in parallel
-      const promises = dates.map(date => {
+      let latestEvent: Event | null = event;
+
+      // Füge Termine nacheinander hinzu, damit jede Antwort den aktuellen Stand enthält
+      for (const date of dates) {
         const isoDate = format(date, "yyyy-MM-dd");
-        return addDateOption(
+        const res = await addDateOption(
           eventCode,
           isoDate,
           startTime || undefined,
           endTime || undefined
         );
-      });
 
-      const results = await Promise.all(promises);
+        if (res.error || !res.data) {
+          throw new Error("Termin konnte nicht gespeichert werden.");
+        }
 
-      // Check for errors
-      const failures = results.filter(r => r.error);
-      if (failures.length > 0) {
-        throw new Error(`${failures.length} von ${dates.length} Terminen konnten nicht gespeichert werden.`);
+        latestEvent = res.data;
+        onUpdate(res.data);
       }
 
-      // Use the data from the last successful request to update the event state
-      const lastSuccess = results[results.length - 1];
-      if (lastSuccess.data) {
-        onUpdate(lastSuccess.data);
+      if (latestEvent) {
+        onUpdate(latestEvent);
       }
 
       toast({

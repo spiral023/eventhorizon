@@ -54,6 +54,7 @@ export default function EventDetailPage() {
   const [activeTab, setActiveTab] = useState<string>("proposal");
   const [phaseMenuOpen, setPhaseMenuOpen] = useState(false);
   const [missingActivityDialogOpen, setMissingActivityDialogOpen] = useState(false);
+  const [missingDateDialogOpen, setMissingDateDialogOpen] = useState(false);
   
   // Track previous phase to only auto-switch tab when phase actually changes
   const prevPhaseRef = useRef<EventPhase | null>(null);
@@ -105,6 +106,10 @@ export default function EventDetailPage() {
     if (!event || !eventCode) return;
     if (event.phase === "voting" && !event.chosenActivityId) {
       setMissingActivityDialogOpen(true);
+      return;
+    }
+    if (event.phase === "scheduling" && !event.finalDateOptionId) {
+      setMissingDateDialogOpen(true);
       return;
     }
     const nextPhases = getNextPhases(event.phase);
@@ -244,6 +249,24 @@ export default function EventDetailPage() {
               setActiveTab("voting");
             }}>
               Zur Abstimmung
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={missingDateDialogOpen} onOpenChange={setMissingDateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Termin festlegen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bitte fixiere einen Termin, bevor du zur finalen Info-Phase wechselst.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => {
+              setMissingDateDialogOpen(false);
+              setActiveTab("scheduling");
+            }}>
+              Zur Terminfindung
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
