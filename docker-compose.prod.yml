@@ -48,6 +48,15 @@ services:
         condition: service_healthy
     networks:
       - internal
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.eventhorizon-backend.rule=Host(`event-horizon.sp23.online`) && PathPrefix(`/api/v1`)"
+      - "traefik.http.routers.eventhorizon-backend.entrypoints=websecure"
+      - "traefik.http.routers.eventhorizon-backend.tls.certresolver=le"
+      - "traefik.http.routers.eventhorizon-backend.priority=50"
+      - "traefik.http.services.eventhorizon-backend.loadbalancer.server.port=8000"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
       interval: 30s
