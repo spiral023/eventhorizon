@@ -1784,6 +1784,11 @@ export interface TeamPreferenceSummary {
   preferredGoals: PrimaryGoal[];
   recommendedActivityIds: string[];
   teamVibe: "action" | "relax" | "mixed";
+  synergyScore: number;
+  strengths: string[];
+  challenges: string[];
+  teamPersonality: string;
+  socialVibe: "low" | "medium" | "high";
   insights: string[];
 }
 

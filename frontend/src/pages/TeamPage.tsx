@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Sparkles, TrendingUp, Heart, Zap, Coffee, Mountain, Brain } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Sparkles, TrendingUp, Heart, Zap, Coffee, Mountain, 
+  Brain, ShieldCheck, AlertTriangle, Trophy, Users2, 
+  BarChart3, Target, Rocket, MessageSquare
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
 import { getTeamRecommendations, getActivities, getFavoriteActivityIds, toggleFavorite, getRooms } from "@/services/apiClient";
 import type { TeamPreferenceSummary } from "@/services/apiClient";
-import type { Activity, Room } from "@/types/domain";
+import type { Activity } from "@/types/domain";
 import { CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -26,6 +30,12 @@ const vibeLabels = {
   mixed: "Ausgewogen & Vielseitig",
 };
 
+const socialVibeLabels = {
+  low: "Fokus auf Aktivität",
+  medium: "Gute Mischung",
+  high: "Starker Austausch",
+};
+
 export default function TeamPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -36,6 +46,7 @@ export default function TeamPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       let currentRoomId = roomId;
 
       if (!currentRoomId) {
@@ -87,160 +98,284 @@ export default function TeamPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-48 bg-secondary/30 rounded animate-pulse" />
-        <div className="h-64 bg-secondary/30 rounded-2xl animate-pulse" />
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-2">
+          <div className="h-10 w-64 bg-secondary/30 rounded-lg animate-pulse" />
+          <div className="h-4 w-96 bg-secondary/20 rounded animate-pulse" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="md:col-span-2 h-48 bg-secondary/30 rounded-3xl animate-pulse" />
+          <div className="h-48 bg-secondary/30 rounded-3xl animate-pulse" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="h-64 bg-secondary/30 rounded-2xl animate-pulse" />
+          <div className="h-64 bg-secondary/30 rounded-2xl animate-pulse" />
+        </div>
       </div>
     );
   }
 
-  if (!recommendations) {
-    return null;
-  }
+  if (!recommendations) return null;
 
   const VibeIcon = vibeIcons[recommendations.teamVibe];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-12">
       <PageHeader
         title="Team-Analyse"
-        description="KI-gestützte Einblicke in die Präferenzen deines Teams"
+        description="Strategische KI-Einblicke in die DNA deines Teams"
       />
 
-      {/* Team Vibe */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border-primary/20 rounded-3xl overflow-hidden">
-          <CardContent className="p-8">
-            <div className="flex items-center gap-6">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/20">
-                <VibeIcon className="h-10 w-10 text-primary" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Brain className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium text-primary">KI-Analyse</span>
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Main Personality Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:col-span-2"
+        >
+          <Card className="h-full bg-gradient-to-br from-primary/15 via-primary/5 to-background border-primary/20 rounded-3xl overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Brain className="w-32 h-32 text-primary" />
+            </div>
+            <CardContent className="p-8 relative z-10">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3" />
+                  KI-Profil
                 </div>
-                <h2 className="text-2xl font-bold mb-1">
-                  Euer Team-Vibe: {vibeLabels[recommendations.teamVibe]}
-                </h2>
-                <p className="text-muted-foreground">
-                  Basierend auf bisherigen Votings und Favoriten
-                </p>
+                <Badge variant="outline" className="bg-background/50 backdrop-blur-sm border-primary/20">
+                  {recommendations.preferredGoals[0] || "Teambuilding"}
+                </Badge>
+              </div>
+              
+              <h2 className="text-4xl font-black tracking-tight mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                {recommendations.teamPersonality}
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 max-w-xl">
+                Euer Team zeichnet sich durch eine {recommendations.teamVibe === 'action' ? 'hohe Dynamik' : recommendations.teamVibe === 'relax' ? 'gelassene Atmosphäre' : 'ausgewogene Mischung'} aus.
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                <div className="space-y-1">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Team Vibe</span>
+                  <div className="flex items-center gap-2 text-foreground font-semibold">
+                    <VibeIcon className="w-4 h-4 text-primary" />
+                    {vibeLabels[recommendations.teamVibe]}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Social Level</span>
+                  <div className="flex items-center gap-2 text-foreground font-semibold">
+                    <MessageSquare className="w-4 h-4 text-primary" />
+                    {socialVibeLabels[recommendations.socialVibe]}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Haupt-Fokus</span>
+                  <div className="flex items-center gap-2 text-foreground font-semibold">
+                    <Target className="w-4 h-4 text-primary" />
+                    {recommendations.preferredGoals[0] || "Fun"}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Synergy Score Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="h-full bg-card/40 border-border/40 rounded-3xl flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+            <div className="relative z-10 space-y-4 w-full">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Synergy Score</h3>
+              <div className="relative inline-flex items-center justify-center">
+                <svg className="w-32 h-32 transform -rotate-90">
+                  <circle
+                    className="text-secondary"
+                    strokeWidth="8"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="58"
+                    cx="64"
+                    cy="64"
+                  />
+                  <motion.circle
+                    className="text-primary"
+                    strokeWidth="8"
+                    strokeDasharray={364.4}
+                    initial={{ strokeDashoffset: 364.4 }}
+                    animate={{ strokeDashoffset: 364.4 - (364.4 * recommendations.synergyScore) / 100 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="58"
+                    cx="64"
+                    cy="64"
+                  />
+                </svg>
+                <span className="absolute text-3xl font-black">{Math.round(recommendations.synergyScore)}%</span>
+              </div>
+              <p className="text-sm text-muted-foreground px-4">
+                {recommendations.synergyScore > 80 ? "Perfekte Harmonie im Team!" : recommendations.synergyScore > 50 ? "Gute Basis für gemeinsame Events." : "Diverse Interessen erfordern Kompromisse."}
+              </p>
+              <div className="pt-2">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
+                   {recommendations.synergyScore > 75 ? "High Synergy" : "Flexible Team"}
+                </Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </Card>
+        </motion.div>
+      </div>
 
-      {/* Category Distribution */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <Card className="bg-card/60 border-border/50 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Kategorie-Präferenzen
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Category Preferences */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="bg-card/40 border-border/40 rounded-3xl h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Interessen-Radar
+              </CardTitle>
+              <CardDescription>
+                Bevorzugte Aktivitäten basierend auf euren Favoriten
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               {recommendations.categoryDistribution.map((cat, index) => (
-                <motion.div
-                  key={cat.category}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  className="flex items-center gap-4"
-                >
-                  <Badge className={cn("w-28 justify-center", CategoryColors[cat.category])}>
-                    {CategoryLabels[cat.category]}
-                  </Badge>
-                  <div className="flex-1">
-                    <div className="h-3 rounded-full bg-secondary overflow-hidden">
-                      <motion.div
-                        className="h-full bg-primary rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${cat.percentage}%` }}
-                        transition={{ delay: 0.3 + 0.1 * index, duration: 0.5 }}
-                      />
-                    </div>
+                <div key={cat.category} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium flex items-center gap-2">
+                      <span className={cn("w-2 h-2 rounded-full", CategoryColors[cat.category])} />
+                      {CategoryLabels[cat.category]}
+                    </span>
+                    <span className="text-muted-foreground font-mono">{cat.percentage}%</span>
                   </div>
-                  <span className="text-sm font-medium w-12 text-right">
-                    {cat.percentage}%
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* AI Insights */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Card className="bg-card/60 border-border/50 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Sparkles className="h-5 w-5 text-primary" />
-              KI-Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {recommendations.insights.map((insight, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + 0.1 * index }}
-                  className="flex items-start gap-3"
-                >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">
-                    {index + 1}
+                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                    <motion.div
+                      className={cn("h-full rounded-full bg-primary", index === 0 && "bg-gradient-to-r from-primary to-primary/60")}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${cat.percentage}%` }}
+                      transition={{ delay: 0.5 + index * 0.1, duration: 0.8 }}
+                    />
                   </div>
-                  <p className="text-muted-foreground">{insight}</p>
-                </motion.li>
+                </div>
               ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Recommended Activities */}
+        {/* Strengths & Challenges */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-6"
+        >
+          <Card className="bg-green-500/5 border-green-500/20 rounded-3xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-green-600 text-lg">
+                <ShieldCheck className="w-5 h-5" />
+                Team-Stärken
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="grid gap-3">
+                {recommendations.strengths.map((s, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <Trophy className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-amber-500/5 border-amber-500/20 rounded-3xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-amber-600 text-lg">
+                <AlertTriangle className="w-5 h-5" />
+                Herausforderungen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="grid gap-3">
+                {recommendations.challenges.map((c, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Deep Insights */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Heart className="h-5 w-5 text-primary" />
-              Empfohlene Aktivitäten
+        <Card className="bg-primary/5 border-primary/20 rounded-3xl overflow-hidden">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              Tiefen-Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            {recommendations.insights.map((insight, index) => (
+              <div 
+                key={index} 
+                className="p-4 rounded-2xl bg-background/50 border border-border/50 relative group hover:border-primary/30 transition-colors"
+              >
+                <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs shadow-lg">
+                  {index + 1}
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {insight}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Recommendations */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="flex items-center justify-between mb-6 px-2">
+          <div className="space-y-1">
+            <h3 className="text-2xl font-bold flex items-center gap-2">
+              <Rocket className="w-6 h-6 text-primary" />
+              Top-Empfehlungen
             </h3>
-            <p className="text-sm text-muted-foreground">
-              Basierend auf euren Team-Präferenzen
-            </p>
+            <p className="text-muted-foreground">Exklusiv für euer Profil ausgewählt</p>
           </div>
+          <Users2 className="w-8 h-8 text-muted-foreground/20" />
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {recommendedActivities.map((activity, index) => (
             <motion.div
               key={activity.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + 0.1 * index }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6 + index * 0.1 }}
             >
               <ActivityCard
                 activity={activity}

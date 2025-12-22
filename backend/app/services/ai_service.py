@@ -148,6 +148,26 @@ class AIService:
                             "type": "string",
                             "enum": ["action", "relax", "mixed"]
                         },
+                        "synergyScore": {
+                            "type": "number",
+                            "description": "0-100 indicating how well the team's preferences align"
+                        },
+                        "strengths": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "challenges": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "teamPersonality": {
+                            "type": "string",
+                            "description": "A creative name for the team profile"
+                        },
+                        "socialVibe": {
+                            "type": "string",
+                            "enum": ["low", "medium", "high"]
+                        },
                         "insights": {
                             "type": "array",
                             "items": {"type": "string"}
@@ -158,6 +178,11 @@ class AIService:
                         "preferredGoals",
                         "recommendedActivityIds",
                         "teamVibe",
+                        "synergyScore",
+                        "strengths",
+                        "challenges",
+                        "teamPersonality",
+                        "socialVibe",
                         "insights"
                     ],
                     "additionalProperties": False
@@ -177,13 +202,14 @@ class AIService:
         messages = [
             {
                 "role": "system",
-                "content": """Du bist ein Experte für Team-Dynamik und Event-Planung.
-                Analysiere die Präferenzen der Team-Mitglieder und empfehle passende Aktivitäten.
-                Antworte auf Deutsch mit präzisen, umsetzbaren Insights."""
+                "content": """Du bist ein Experte für Team-Psychologie, Gruppendynamik und Event-Planung.
+                Deine Aufgabe ist es, aus den individuellen Profilen eines Teams ein tiefgreifendes Gesamtprofil zu erstellen.
+                Analysiere die Präferenzen der Team-Mitglieder und erstelle eine strategische Analyse.
+                Antworte auf Deutsch mit inspirierenden, präzisen und psychologisch fundierten Einblicken."""
             },
             {
                 "role": "user",
-                "content": f"""Analysiere dieses Team:
+                "content": f"""Führe eine umfassende Team-Analyse durch:
 
 **Team-Mitglieder ({len(members)} Personen):**
 {members_summary}
@@ -192,18 +218,21 @@ class AIService:
 {activities_summary}
 
 Aufgabe:
-1. Ermittle die bevorzugten Aktivitätskategorien (als Prozentverteilung). ORIENTIERE DICH DABEI STARK AN DEN TATSÄCHLICHEN FAVORITEN, falls vorhanden.
-2. Identifiziere die Haupt-Ziele (z.B. teambuilding, fun, relax)
-3. Empfehle die 3-5 besten Aktivitäten (IDs aus der Liste), die am besten zu den Favoriten passen.
-4. Bestimme den Team-Vibe (action/relax/mixed) basierend auf den Daten.
-5. Gib 2-3 prägnante Insights über die Team-Dynamik
+1. Ermittle die bevorzugten Aktivitätskategorien (Prozentverteilung). Nutze die Favoritendaten als primäre Quelle, falls vorhanden.
+2. Identifiziere die 3 wichtigsten Team-Ziele.
+3. Empfehle 3-5 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
+4. Bestimme den Team-Vibe (action/relax/mixed).
+5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
+6. Identifiziere 2-3 konkrete Stärken des Teams in der Zusammenarbeit.
+7. Benenne 2 Herausforderungen, die bei der Planung auftreten könnten.
+8. Gib dem Team ein prägnantes "Personality Profile" (z.B. 'Die Dynamischen Entdecker').
+9. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
+10. Gib 3 tiefgreifende Insights zur Teamdynamik.
 
 Berücksichtige:
-- Budget-Präferenzen der Mitglieder
-- Reisebereitschaft
-- Physische Intensität vs. Team-Fitness
-- Saisonale Verfügbarkeit
-- Gruppengröße"""
+- Gemeinsamkeiten und starke Kontraste in den Profilen.
+- Die Balance zwischen Budget-Realität und Wünschen.
+- Physische Anforderungen vs. angegebene Hobbys."""
             }
         ]
 

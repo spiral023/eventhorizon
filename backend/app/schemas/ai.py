@@ -30,6 +30,26 @@ class TeamPreferenceSummary(BaseModel):
         alias="teamVibe",
         description="Allgemeine Team-Stimmung"
     )
+    synergy_score: float = Field(
+        alias="synergyScore",
+        ge=0,
+        le=100,
+        description="Wie gut die Präferenzen des Teams harmonieren"
+    )
+    strengths: List[str] = Field(
+        description="Stärken des Teams bei der gemeinsamen Planung"
+    )
+    challenges: List[str] = Field(
+        description="Herausforderungen für das Team"
+    )
+    team_personality: str = Field(
+        alias="teamPersonality",
+        description="Ein kreativer Name/Titel für den Team-Typ"
+    )
+    social_vibe: Literal["low", "medium", "high"] = Field(
+        alias="socialVibe",
+        description="Bevorzugtes Level an sozialer Interaktion"
+    )
     insights: List[str] = Field(
         description="Insights über die Team-Dynamik"
     )

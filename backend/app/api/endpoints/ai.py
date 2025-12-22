@@ -189,6 +189,11 @@ async def get_team_recommendations(
                 "preferredGoals": ["teambuilding"],
                 "recommendedActivityIds": [],
                 "teamVibe": "mixed",
+                "synergyScore": 50,
+                "strengths": ["Echte Nutzerdaten vorhanden"],
+                "challenges": ["KI-Analyse aktuell eingeschränkt"],
+                "teamPersonality": "Die Datensammler",
+                "socialVibe": "medium",
                 "insights": ["KI-Analyse nicht verfügbar. Anzeige basiert auf echten Nutzerdaten."]
             }
         else:
