@@ -1,24 +1,39 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-import { ArrowRight, Sparkles, Users, TrendingUp, Heart } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { ArrowRight, Sparkles, Users, TrendingUp, Heart, Plus, Search, Calendar, CheckCircle2, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RoomCard } from "@/components/shared/RoomCard";
 import { ActivityCard } from "@/components/shared/ActivityCard";
-import { getRooms, getActivities, getFavoriteActivityIds, toggleFavorite, getUserStats } from "@/services/apiClient";
-import type { Room, Activity, UserStats } from "@/types/domain";
+import { EventCard } from "@/components/events/EventCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/use-debounce";
+import { 
+  getRooms, 
+  getActivities, 
+  getFavoriteActivityIds, 
+  toggleFavorite, 
+  getUserStats,
+  getUserEvents 
+} from "@/services/apiClient";
+import type { Room, Activity, UserStats, Event } from "@/types/domain";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { getGreeting } from "@/utils/greeting";
+import { cn } from "@/lib/utils";
 
 export default function HomePage() {
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [allActivities, setAllActivities] = useState<Activity[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [roomCount, setRoomCount] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({ upcomingEventsCount: 0, openVotesCount: 0 });
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const greeting = getGreeting();
@@ -37,19 +52,23 @@ export default function HomePage() {
     if (authLoading) return;
     const fetchData = async () => {
       setLoading(true);
-      const [activitiesResult, favoritesResult, roomsResult, statsResult] = await Promise.all([
+      const [activitiesResult, favoritesResult, roomsResult, statsResult, eventsResult] = await Promise.all([
         getActivities(),
         isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
         isAuthenticated ? getRooms() : Promise.resolve({ data: [] as Room[] }),
         isAuthenticated ? getUserStats() : Promise.resolve({ data: { upcomingEventsCount: 0, openVotesCount: 0 } }),
+        isAuthenticated ? getUserEvents() : Promise.resolve({ data: [] as Event[] }),
       ]);
 
-      setActivities(sortTopByFavorites(activitiesResult.data, 4));
+      setAllActivities(activitiesResult.data || []);
       setFavoriteIds(favoritesResult.data || []);
 
       const roomsData = roomsResult.data || [];
-      setRooms(roomsData.slice(0, 2));
+      setRooms(roomsData.slice(0, 3));
       setRoomCount(roomsData.length);
+      
+      const eventsData = eventsResult.data || [];
+      setEvents(eventsData.slice(0, 3));
 
       if (statsResult.data) {
         setUserStats(statsResult.data);
@@ -59,12 +78,21 @@ export default function HomePage() {
     fetchData();
   }, [isAuthenticated, authLoading]);
 
-  const sortTopByFavorites = (list: Activity[], take?: number) => {
-    const sorted = [...list].sort(
-      (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
-    );
-    return typeof take === "number" ? sorted.slice(0, take) : sorted;
-  };
+  const filteredActivities = useMemo(() => {
+    let result = [...allActivities];
+    
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
+      result = result.filter(a => 
+        a.title.toLowerCase().includes(q) || 
+        a.shortDescription?.toLowerCase().includes(q) ||
+        a.tags?.some(t => t.toLowerCase().includes(q))
+      );
+    }
+
+    // Sort by favorites count
+    return result.sort((a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)).slice(0, 4);
+  }, [allActivities, debouncedSearch]);
 
   const handleFavoriteToggle = async (activityId: string) => {
     if (!isAuthenticated) {
@@ -81,160 +109,298 @@ export default function HomePage() {
     setFavoriteIds((prev) =>
       isFav ? [...prev, activityId] : prev.filter((id) => id !== activityId)
     );
-    setActivities((prev) => {
-      const updated = prev.map((a) =>
-        a.id === activityId ? { ...a, favoritesCount: count ?? a.favoritesCount ?? 0 } : a
-      );
-      return sortTopByFavorites(updated, 4);
-    });
+    setAllActivities((prev) => 
+      prev.map((a) => a.id === activityId ? { ...a, favoritesCount: count ?? a.favoritesCount ?? 0 } : a)
+    );
   };
 
   return (
-    <div className="space-y-10">
-      {/* Welcome Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-8 border border-primary/20 motion-safe:animate-fade-in will-change-[transform,opacity]">
-        <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl motion-safe:animate-soft-float" aria-hidden />
-        <div className="relative">
-          <div className="flex items-center gap-2 text-primary mb-2">
-            <Sparkles className="h-5 w-5" />
-            <span className="text-sm font-medium">
-              {isAuthenticated || isReturningVisitor ? "Willkommen zurück!" : "Willkommen bei EventHorizon!"}
-            </span>
+    <div className="space-y-12 pb-10">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 p-8 md:p-12">
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl animate-soft-float" aria-hidden />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl animate-soft-float delay-1000" aria-hidden />
+        
+        <div className="relative z-10 grid gap-8 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                {isAuthenticated || isReturningVisitor ? "Willkommen zurück" : "Neu hier?"}
+              </span>
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+                {greeting}, <span className="text-primary">{user?.firstName || "Gast"}</span>!
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-lg leading-relaxed">
+                {isAuthenticated 
+                  ? `Du bist Teil von ${roomCount} Räumen und hast ${userStats.upcomingEventsCount} aktive Events. Zeit für das nächste Abenteuer!`
+                  : "Plane unvergessliche Teamevents, stimme über Aktivitäten ab und finde den perfekten Termin – alles an einem Ort."}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              {isAuthenticated ? (
+                <>
+                  <Button size="lg" className="rounded-2xl gap-2 shadow-lg shadow-primary/20" asChild>
+                    <Link to="/rooms">
+                      <Plus className="h-5 w-5" />
+                      Event erstellen
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="rounded-2xl gap-2 bg-background/50 backdrop-blur-sm" asChild>
+                    <Link to="/rooms/join">
+                      <Users className="h-5 w-5" />
+                      Raum beitreten
+                    </Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button size="lg" className="rounded-2xl gap-2 shadow-lg shadow-primary/20" onClick={() => navigate("/login?mode=register")}>
+                    Jetzt starten
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                  <Button size="lg" variant="outline" className="rounded-2xl gap-2" onClick={() => navigate("/login")}>
+                    Anmelden
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
-            {greeting}, {user?.firstName || "Gast"}!
-          </h1>
-          <p className="text-muted-foreground max-w-lg">
-            Du hast {userStats.upcomingEventsCount} anstehende Events und {userStats.openVotesCount} offene Abstimmungen. Schau dir die neuesten Aktivitäten an!
-          </p>
+
+          <div className="hidden lg:grid grid-cols-2 gap-4">
+            <StatCard label="Anstehende Events" value={userStats.upcomingEventsCount} icon={Calendar} color="bg-blue-500" delay={200} />
+            <StatCard label="Offene Votings" value={userStats.openVotesCount} icon={CheckCircle2} color="bg-green-500" delay={300} />
+            <StatCard label="Aktive Räume" value={roomCount} icon={Users} color="bg-primary" delay={400} />
+            <StatCard label="Favoriten" value={favoriteIds.length} icon={Heart} color="bg-destructive" delay={500} />
+          </div>
         </div>
+      </section>
+
+      {/* Mobile Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 lg:hidden">
+        <StatCard label="Events" value={userStats.upcomingEventsCount} icon={Calendar} color="bg-blue-500" />
+        <StatCard label="Votings" value={userStats.openVotesCount} icon={CheckCircle2} color="bg-green-500" />
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: "Aktive Räume", value: roomCount.toString(), icon: Users, color: "text-primary" },
-          { label: "Aktivitäten favorisiert", value: favoriteIds.length.toString(), icon: Heart, color: "text-destructive" },
-          { label: "Anstehende Events", value: userStats.upcomingEventsCount.toString(), icon: TrendingUp, color: "text-success" },
-          { label: "Offene Votings", value: userStats.openVotesCount.toString(), icon: Sparkles, color: "text-purple-400" },
-        ].map((stat, index) => (
-          <Card 
-            key={stat.label} 
-            className="rounded-2xl bg-card/60 border-border/50 motion-safe:animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:translate-y-0 will-change-[transform,opacity]"
-            style={{ animationDelay: `${index * 50}ms` }}
-          >
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-xl bg-secondary/50 ${stat.color}`}>
-                  <stat.icon className="h-5 w-5" />
-                </div>
+      <div className="grid gap-10 lg:grid-cols-3">
+        {/* Left Column: Events & Rooms */}
+        <div className="lg:col-span-2 space-y-12">
+          {/* Upcoming Events */}
+          <section>
+            <SectionHeader title="Anstehende Events" subtitle="Deine nächsten Termine und Abstimmungen" link="/events" linkLabel="Alle Events" />
+            
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
               </div>
+            ) : isAuthenticated ? (
+              events.length > 0 ? (
+                <div className="grid gap-4">
+                  {events.map((event) => (
+                    <EventCard 
+                      key={event.id} 
+                      event={event} 
+                      onClick={() => navigate(`/events/${event.shortCode}`)} 
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={Calendar} title="Keine anstehenden Events" description="Erstelle ein Event in einem deiner Räume, um zu starten." />
+              )
+            ) : (
+              <AuthRequiredState />
+            )}
+          </section>
+
+          {/* Rooms */}
+          <section>
+            <SectionHeader title="Deine Räume" subtitle="Zusammenarbeit in Teams" link="/rooms" linkLabel="Alle Räume" />
+            
+            {loading ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {[1, 2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+              </div>
+            ) : isAuthenticated ? (
+              rooms.length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {rooms.map((room) => (
+                    <RoomCard key={room.id} room={room} onClick={() => navigate(`/rooms/${room.inviteCode}`)} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={Users} title="Noch kein Raum" description="Tritt einem Raum bei oder erstelle einen neuen." />
+              )
+            ) : (
+              <AuthRequiredState />
+            )}
+          </section>
+        </div>
+
+        {/* Right Column: Activities & Quick Actions */}
+        <div className="space-y-12">
+          {/* Quick Search Activity */}
+          <section>
+             <h3 className="text-lg font-semibold mb-4">Aktivität finden</h3>
+             <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Z.B. Paintball, Klettern..."
+                  className="w-full bg-secondary/30 border-border/50 rounded-2xl py-3 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/activities?q=${searchQuery}`)}
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-secondary text-muted-foreground transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+             </div>
+             {debouncedSearch && (
+               <p className="text-xs text-muted-foreground mt-2 px-1">
+                 Ergebnisse für "<span className="text-primary font-medium">{debouncedSearch}</span>"
+               </p>
+             )}
+          </section>
+
+          {/* Popular Activities (Sidebar Style) */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">
+                {debouncedSearch ? "Gefundene Aktivitäten" : "Beliebt"}
+              </h3>
+              <Button variant="link" size="sm" asChild className="text-primary p-0">
+                <Link to="/activities">Mehr</Link>
+              </Button>
+            </div>
+            
+            <div className="space-y-6">
+              {loading ? (
+                [1, 2].map(i => <Skeleton key={i} className="h-64 rounded-2xl" />)
+              ) : filteredActivities.length > 0 ? (
+                <AnimatePresence mode="popLayout">
+                  {filteredActivities.slice(0, 3).map((activity) => (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ActivityCard
+                        activity={activity}
+                        isFavorite={favoriteIds.includes(activity.id)}
+                        onFavoriteToggle={handleFavoriteToggle}
+                        onClick={() => navigate(`/activities/${activity.slug}`)}
+                        showTags={false}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              ) : (
+                <div className="text-center py-8 px-4 rounded-2xl bg-secondary/10 border border-dashed border-border">
+                  <p className="text-sm text-muted-foreground">Keine passenden Aktivitäten gefunden.</p>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Tips / Info */}
+          <Card className="rounded-3xl bg-primary/5 border-primary/10 overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4">
+              <Sparkles className="h-8 w-8 text-primary/20" />
+            </div>
+            <CardContent className="p-6 space-y-3">
+              <h4 className="font-semibold text-primary">Pro Tipp</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Nutze die <strong>AI-Empfehlungen</strong> in deinen Räumen, um Aktivitäten zu finden, die perfekt zu deinem Team passen!
+              </p>
             </CardContent>
           </Card>
-        ))}
+        </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Rooms Section */}
-      <section>
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-xl font-semibold">Deine Räume</h2>
-            <p className="text-sm text-muted-foreground">Die letzten aktiven Räume</p>
-          </div>
-          <Button variant="ghost" size="sm" asChild className="gap-1 text-primary hover:text-primary">
-            <Link to="/rooms">
-              Alle anzeigen
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-        
-        {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="h-32 rounded-2xl bg-secondary/30 animate-pulse-soft" />
-            ))}
-          </div>
-        ) : !isAuthenticated ? (
-          <div className="rounded-2xl border border-border/50 bg-card/50 p-6 flex items-center justify-between flex-col sm:flex-row gap-4">
-            <div className="text-center sm:text-left">
-              <p className="text-base font-medium text-foreground">Räume sind nur mit Anmeldung sichtbar.</p>
-              <p className="text-sm text-muted-foreground">Melde dich an, um deine Team-Räume und Events zu verwalten.</p>
+function StatCard({ label, value, icon: Icon, color, delay = 0 }: { label: string; value: number | string; icon: any; color: string; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay / 1000, duration: 0.5 }}
+      className="h-full"
+    >
+      <Card className="rounded-[2rem] bg-background/60 border-border/50 hover:border-primary/30 transition-all duration-300 group overflow-hidden h-full">
+        <CardContent className="p-6 h-full flex flex-col justify-center">
+          <div className="flex items-center justify-between gap-4">
+            <div className={cn("p-3 rounded-2xl text-white shadow-lg flex-shrink-0", color)}>
+              <Icon className="h-6 w-6" />
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate("/login")}>
-                Anmelden
-              </Button>
-              <Button onClick={() => navigate("/login?mode=register")}>
-                Registrieren
-              </Button>
+            <div className="text-right min-w-0">
+              <p className="text-sm font-medium text-muted-foreground truncate">{label}</p>
+              <p className="text-3xl font-bold tracking-tight mt-1 group-hover:text-primary transition-colors">{value}</p>
             </div>
           </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {rooms.map((room, index) => (
-              <div
-                key={room.id}
-                className="motion-safe:animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:translate-y-0 will-change-[transform,opacity]"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <RoomCard room={room} onClick={() => navigate(`/rooms/${room.inviteCode}`)} />
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
 
-      {/* Activities Section */}
-      <section>
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-xl font-semibold">Beliebte Aktivitäten</h2>
-            <p className="text-sm text-muted-foreground">Entdecke neue Event-Ideen</p>
-          </div>
-          <Button variant="ghost" size="sm" asChild className="gap-1 text-primary hover:text-primary">
-            <Link to="/activities">
-              Alle anzeigen
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-        
-        {loading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-80 rounded-2xl bg-secondary/30 animate-pulse-soft" />
-            ))}
-          </div>
-        ) : (
-          <motion.div layout className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <AnimatePresence>
-              {activities.map((activity) => (
-                <motion.div
-                  layout
-                  key={activity.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ActivityCard
-                    activity={activity}
-                    isFavorite={favoriteIds.includes(activity.id)}
-                    onFavoriteToggle={handleFavoriteToggle}
-                    onClick={() => navigate(`/activities/${activity.slug}`)}
-                    showTags={false}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </section>
+function SectionHeader({ title, subtitle, link, linkLabel }: { title: string; subtitle: string; link: string; linkLabel: string }) {
+  return (
+    <div className="flex items-end justify-between mb-6">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        <p className="text-sm text-muted-foreground">{subtitle}</p>
+      </div>
+      <Button variant="ghost" size="sm" asChild className="text-primary hover:bg-primary/10 rounded-xl">
+        <Link to={link} className="gap-1">
+          {linkLabel}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 px-4 rounded-[2rem] border-2 border-dashed border-border/50 bg-secondary/10 text-center">
+      <div className="h-16 w-16 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+        <Icon className="h-8 w-8 text-muted-foreground" />
+      </div>
+      <h3 className="font-semibold text-lg mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-[250px]">{description}</p>
+    </div>
+  );
+}
+
+function AuthRequiredState() {
+  const navigate = useNavigate();
+  return (
+    <div className="rounded-[2rem] border border-border/50 bg-card/50 p-8 flex flex-col items-center gap-6 text-center">
+      <div className="space-y-2">
+        <p className="text-lg font-semibold text-foreground">Inhalte personalisieren</p>
+        <p className="text-sm text-muted-foreground max-w-sm">Melde dich an, um deine Räume, Events und Abstimmungen direkt hier zu sehen.</p>
+      </div>
+      <div className="flex gap-3">
+        <Button variant="outline" className="rounded-xl px-8" onClick={() => navigate("/login")}>
+          Anmelden
+        </Button>
+        <Button className="rounded-xl px-8" onClick={() => navigate("/login?mode=register")}>
+          Registrieren
+        </Button>
+      </div>
     </div>
   );
 }

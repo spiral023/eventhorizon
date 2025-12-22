@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
@@ -11,6 +11,7 @@ from app.schemas.domain import (
     User as UserSchema,
     UserUpdate,
     UserStats,
+    Event as EventSchema,
     AvatarUploadRequest,
     AvatarUploadResponse,
     AvatarProcessRequest,
@@ -90,6 +91,33 @@ async def get_user_stats(
             open_votes_count += 1
             
     return {"upcoming_events_count": upcoming_count, "open_votes_count": open_votes_count}
+
+
+@router.get("/me/events", response_model=List[EventSchema])
+async def get_user_events(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get all events the current user is participating in.
+    """
+    from app.models.domain import Event
+    from sqlalchemy.orm import selectinload
+    from app.api.helpers import enhance_event_full
+
+    result = await db.execute(
+        select(Event)
+        .join(EventParticipant, Event.id == EventParticipant.event_id)
+        .where(EventParticipant.user_id == current_user.id)
+        .options(
+            selectinload(Event.votes).selectinload(Vote.user),
+            selectinload(Event.date_options).selectinload(DateOption.responses).selectinload(DateResponse.user),
+            selectinload(Event.participants).selectinload(EventParticipant.user),
+        )
+        .order_by(Event.created_at.desc())
+    )
+    events = result.scalars().all()
+    return [enhance_event_full(e) for e in events]
 
 
 @router.get("/me", response_model=UserSchema)

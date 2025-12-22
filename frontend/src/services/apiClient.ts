@@ -585,6 +585,18 @@ export async function getUserStats(): Promise<ApiResult<UserStats>> {
   return { data: undefined, error: result.error };
 }
 
+export async function getUserEvents(): Promise<ApiResult<Event[]>> {
+  if (USE_MOCKS) {
+    await delay(300);
+    return { data: events };
+  }
+  const result = await request<ApiEvent[]>('/users/me/events');
+  if (result.data) {
+    return { data: result.data.map(mapEventFromApi) };
+  }
+  return { data: undefined, error: result.error };
+}
+
 // --- Activities ---
 
 function mapActivityFromApi(apiActivity: ApiActivity): Activity {
