@@ -220,6 +220,72 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
     }
   };
 
+  const handleResetProfile = async () => {
+    if (!window.confirm("Bist du sicher? Dies setzt alle Präferenzen, Hobbys und das Profilbild zurück. Name und Email bleiben erhalten.")) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Use explicit null (casted to any) or empty values to clear fields
+      const result = await updateUser({
+        phone: "",
+        department: "",
+        position: "",
+        location: "",
+        birthday: null as any,
+        bio: "",
+        avatarUrl: "",
+        hobbies: [],
+        activityPreferences: {
+          physical: 3,
+          mental: 3,
+          social: 3,
+          creative: 3,
+        },
+        preferredGroupSize: null as any,
+        travelWillingness: null as any,
+        budgetPreference: null as any,
+      });
+
+      if (result.error) {
+        toast.error(result.error.message || "Fehler beim Zurücksetzen");
+        return;
+      }
+
+      // Update local state variables to reflect the reset
+      setPhone("");
+      setDepartment("");
+      setPosition("");
+      setLocation("");
+      setBirthday(undefined);
+      setBirthdayInput("");
+      setBio("");
+      setHobbies([]);
+      setPhysical([3]);
+      setMental([3]);
+      setSocial([3]);
+      setCreative([3]);
+      setPreferredGroupSize(undefined);
+      setTravelWillingness(undefined);
+      setBudgetPreference(undefined);
+      setAvatarUrl("");
+      
+      // Update parent/global state
+      if (result.data) {
+        onProfileUpdated?.(result.data);
+      }
+      refreshAuth();
+
+      toast.success("Profil erfolgreich zurückgesetzt!");
+    } catch (error) {
+      console.error("Reset profile error:", error);
+      toast.error("Fehler beim Zurücksetzen des Profils");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -523,13 +589,24 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
             </ScrollArea>
           </Tabs>
 
-          <DialogFooter className="mt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-xl">
-              Abbrechen
+          <DialogFooter className="mt-4 flex sm:justify-between flex-col-reverse sm:flex-row gap-2">
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleResetProfile}
+              disabled={loading}
+              className="rounded-xl sm:mr-auto"
+            >
+              Profil zurücksetzen
             </Button>
-            <Button type="submit" disabled={loading} className="rounded-xl">
-              {loading ? "Speichern..." : "Speichern"}
-            </Button>
+            <div className="flex gap-2 justify-end">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-xl">
+                Abbrechen
+              </Button>
+              <Button type="submit" disabled={loading} className="rounded-xl">
+                {loading ? "Speichern..." : "Speichern"}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

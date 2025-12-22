@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Calendar as CalendarIcon, ArrowUpDown, UserX, CheckCircle, Trophy } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -235,15 +234,11 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
                 <p className="text-muted-foreground">Schlage den ersten Termin vor!</p>
             </div>
         ) : (
-            <AnimatePresence>
+            <div className="space-y-4">
                 {sortedDates.map((option, index) => (
-                    <motion.div
-                        layout
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
+                    <div
                         key={option.id}
+                        className="relative"
                     >
                         <DateVotingCard 
                             event={event} 
@@ -259,9 +254,9 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
                                 </Badge>
                             </div>
                         )}
-                    </motion.div>
+                    </div>
                 ))}
-            </AnimatePresence>
+            </div>
         )}
       </div>
     </div>

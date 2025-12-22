@@ -1372,12 +1372,22 @@ async def delete_date_option(
     if event.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only event creator can delete date options")
         
+    event_id_str = str(event.id)
+
+    # Delete associated responses first to satisfy FK constraints
+    await db.execute(
+        delete(DateResponse).where(DateResponse.date_option_id == date_option_id)
+    )
+
     await db.execute(
         delete(DateOption).where(DateOption.id == date_option_id, DateOption.event_id == event.id)
     )
     await db.commit()
     
-    return await get_event(str(event.id), db)
+    # Force refresh of the event object to reflect the deletion
+    db.expire(event)
+
+    return await get_event(event_id_str, db)
 
 @router.post("/events/{event_identifier}/date-options/{date_option_id}/response", response_model=EventSchema)
 async def respond_to_date(
@@ -1435,8 +1445,12 @@ async def respond_to_date(
         
     await db.commit()
     
+    event_id_str = str(event.id)
+    # Refresh event to reflect bulk updates to DateResponse
+    db.expire(event)
+    
     updated_event = await resolve_event_identifier(
-        str(event.id),
+        event_id_str,
         db,
         options=[
             selectinload(Event.votes).selectinload(Vote.user),

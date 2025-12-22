@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Check, ArrowRight, ChevronDown, Info, MoreVertical } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -509,16 +508,9 @@ export default function EventDetailPage() {
             </p>
           </div>
           {sortedActivities.length > 0 ? (
-            <AnimatePresence>
+            <div className="space-y-4">
               {sortedActivities.map((activity, index) => (
-                <motion.div
-                  key={activity.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
+                <div key={activity.id}>
                   <VotingCard
                     activity={activity}
                     votes={event.activityVotes.find((v) => v.activityId === activity.id)}
@@ -531,9 +523,9 @@ export default function EventDetailPage() {
                     rank={index + 1}
                     participants={event.participants}
                   />
-                </motion.div>
+                </div>
               ))}
-            </AnimatePresence>
+            </div>
           ) : (
             <EmptyState
               icon={Users}
