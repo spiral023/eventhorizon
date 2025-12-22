@@ -1,37 +1,38 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { 
-  ArrowLeft, 
-  Euro, 
-  Clock, 
-  Users, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Globe, 
+import {
+  ArrowLeft,
+  Euro,
+  Clock,
+  Users,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
   Star,
   Zap,
   Brain,
   Heart,
-  AlertTriangle,
+  Sparkles,
   Car,
   FootprintsIcon,
   Calendar,
   BookOpen,
   Target,
   Accessibility,
-  CloudSun
-  ,
+  CloudSun,
   Facebook,
   Instagram,
-  Trash2
+  Trash2,
+  MessageCircle,
+  Send,
+  Loader2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { ScaleBar } from "@/components/shared/ScaleBar";
 import { ActivityMiniMap } from "@/components/shared/ActivityMiniMap";
 import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
@@ -59,6 +60,91 @@ const PrimaryGoalLabels: Record<string, string> = {
   networking: "Networking",
 };
 
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.15,
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 24 }
+  }
+};
+
+// Helper component for detail rows
+function DetailRow({
+  icon: Icon,
+  label,
+  value
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | undefined;
+}) {
+  if (!value) return null;
+  return (
+    <div className="flex items-center gap-3 py-2">
+      <Icon className="h-4 w-4 text-primary flex-shrink-0" />
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium ml-auto">{value}</span>
+    </div>
+  );
+}
+
+// Enhanced scale row component
+function ScaleRow({
+  icon: Icon,
+  iconColor,
+  label,
+  value,
+  max = 5,
+  gradientFrom,
+  gradientTo,
+}: {
+  icon: React.ElementType;
+  iconColor: string;
+  label: string;
+  value: number;
+  max?: number;
+  gradientFrom: string;
+  gradientTo: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className={cn("p-1.5 rounded-lg", iconColor.replace("text-", "bg-").replace("-500", "-100"), "dark:" + iconColor.replace("text-", "bg-").replace("-500", "-950/30"))}>
+            <Icon className={cn("h-4 w-4", iconColor)} />
+          </div>
+          <span className="text-sm font-medium">{label}</span>
+        </div>
+        <span className="text-sm font-semibold text-muted-foreground">
+          {value}/{max}
+        </span>
+      </div>
+      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${(value / max) * 100}%` }}
+          transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          className={cn("h-full rounded-full bg-gradient-to-r", gradientFrom, gradientTo)}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Force HMR update
 export default function ActivityDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [activity, setActivity] = useState<Activity | null>(null);
@@ -110,7 +196,6 @@ export default function ActivityDetailPage() {
     setIsFav(isFavorite);
     setFavoriteCount(count);
     setActivity((prev) => (prev ? { ...prev, favoritesCount: count } : prev));
-    // Only show toast on desktop
     if (window.innerWidth >= 768) {
       toast.success(isFavorite ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
     }
@@ -144,26 +229,39 @@ export default function ActivityDetailPage() {
     toast.success("Kommentar gelöscht");
   };
 
+  // Loading skeleton
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-48 bg-secondary/60 dark:bg-secondary/40 rounded animate-pulse" />
-        <div className="h-[400px] bg-secondary/40 dark:bg-secondary/30 rounded-2xl animate-pulse" />
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 w-32 bg-secondary/60 rounded-lg" />
+        <div className="h-[400px] bg-secondary/40 rounded-2xl" />
+        <div className="h-24 bg-secondary/30 rounded-2xl -mt-12 mx-4" />
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="h-48 bg-secondary/30 rounded-2xl" />
+            <div className="h-64 bg-secondary/30 rounded-2xl" />
+          </div>
+          <div className="space-y-6">
+            <div className="h-48 bg-secondary/30 rounded-2xl" />
+            <div className="h-64 bg-secondary/30 rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!activity) {
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Aktivität nicht gefunden"
-          description="Die gesuchte Aktivität existiert nicht."
-        />
-        <Button asChild variant="secondary">
+      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center px-4">
+        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+          <Target className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h1 className="text-xl font-semibold mb-2">Aktivität nicht gefunden</h1>
+        <p className="text-muted-foreground mb-6">Die gesuchte Aktivität existiert nicht oder wurde entfernt.</p>
+        <Button asChild variant="default" className="rounded-xl">
           <Link to="/activities">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Zurück zu Aktivitäten
+            Alle Aktivitäten
           </Link>
         </Button>
       </div>
@@ -173,532 +271,498 @@ export default function ActivityDetailPage() {
   const rating = activity.externalRating || activity.rating;
 
   return (
-    <div className="space-y-6 pb-24 md:pb-0">
+    <div className="pb-32 md:pb-8">
       {/* Back Button */}
-      <Button asChild variant="ghost" size="sm" className="gap-2">
-        <Link to="/activities">
-          <ArrowLeft className="h-4 w-4" />
-          Alle Aktivitäten
-        </Link>
-      </Button>
+      <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="mb-6"
+      >
+        <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2 text-muted-foreground hover:text-foreground">
+          <Link to="/activities">
+            <ArrowLeft className="h-4 w-4" />
+            Alle Aktivitäten
+          </Link>
+        </Button>
+      </motion.div>
 
-      {/* Hero Section */}
+      {/* Hero Section - Enhanced */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative -mx-4 sm:-mx-6 lg:mx-0 lg:rounded-2xl overflow-hidden"
+      >
+        {/* Hero Image Container */}
+        <div className="relative h-[320px] sm:h-[380px] md:h-[420px] lg:h-[480px]">
+          <img
+            src={activity.imageUrl}
+            alt={activity.title}
+            className="w-full h-full object-cover"
+          />
+
+          {/* Layered gradients for depth */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />
+
+          {/* Hero Content */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-16 sm:px-6 sm:pt-20 sm:pb-20 lg:px-8 lg:pt-24 lg:pb-24 flex flex-col justify-center">
+            <div className="max-w-4xl">
+              {/* Badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Badge
+                  className={cn(
+                    CategoryColors[activity.category],
+                    "text-sm px-3 py-1"
+                  )}
+                >
+                  {CategoryLabels[activity.category]}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="bg-white/15 backdrop-blur-md text-white border-white/30 text-sm px-3 py-1"
+                >
+                  {SeasonLabels[activity.season]}
+                </Badge>
+                {rating && (
+                  <Badge
+                    variant="outline"
+                    className="bg-white/15 backdrop-blur-md text-white border-white/30 text-sm px-3 py-1"
+                  >
+                    <Star className="h-3.5 w-3.5 fill-warning text-warning mr-1" />
+                    {rating.toFixed(1)}
+                  </Badge>
+                )}
+              </div>
+
+              {/* Title */}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white">
+                {activity.title}
+              </h1>
+            </div>
+          </div>
+
+          {/* Desktop Favorite Button */}
+          <div className="hidden lg:flex absolute top-4 right-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleFavoriteToggle}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md transition-all",
+                isFav
+                  ? "bg-red-500/90 text-white"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              )}
+            >
+              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
+              {favoriteCount > 0 && <span className="font-medium">{favoriteCount}</span>}
+            </motion.button>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Quick Stats Bar - Floating */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative rounded-2xl overflow-hidden"
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="relative z-10 -mt-12 mx-2 sm:mx-4 lg:mx-0"
       >
-        <img
-          src={activity.imageUrl}
-          alt={activity.title}
-          className="w-full h-[300px] md:h-[400px] object-cover"
-        />
-        {/* Enhanced gradient overlay for better text readability in both light and dark mode */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10 dark:from-background dark:via-background/80 dark:to-background/30" />
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <Badge className={cn(CategoryColors[activity.category], "shadow-lg")}>
-              {CategoryLabels[activity.category]}
-            </Badge>
-            <Badge variant="outline" className="bg-black/50 dark:bg-white/20 text-white border-white/40 dark:border-white/50 shadow-lg backdrop-blur-sm">
-              {SeasonLabels[activity.season]}
-            </Badge>
-          </div>
-          <h1 className="text-2xl md:text-4xl font-bold mb-2 text-foreground drop-shadow-lg">{activity.title}</h1>
-          <p className="hidden md:block text-foreground/80 dark:text-foreground/90 text-lg drop-shadow-md">{activity.shortDescription}</p>
-        </div>
+        <Card className="bg-card/95 backdrop-blur-sm border-border/50 shadow-xl rounded-2xl overflow-hidden">
+          <CardContent className="p-0">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/50">
+              {/* Price */}
+              <div className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="flex items-center justify-center text-primary mb-1">
+                  <Euro className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold">ab {activity.estPricePerPerson}€</p>
+                <p className="text-xs text-muted-foreground">pro Person</p>
+              </div>
 
-        {/* Hero Actions Overlay - Improved contrast for dark mode - Hidden on mobile */}
-        <div className="hidden md:flex absolute top-4 right-4 items-center gap-2">
-          <div className="flex items-center gap-1 bg-black/30 dark:bg-white/20 backdrop-blur-md border border-white/20 dark:border-white/30 rounded-full pl-1 pr-1 h-10 hover:bg-black/40 dark:hover:bg-white/30 transition-all shadow-lg">
-            <Button
-              size="icon"
-              variant="ghost"
-              className={cn(
-                "h-8 w-8 rounded-full text-white hover:text-white hover:bg-white/10 dark:hover:bg-white/20",
-                isFav && "text-red-500 hover:text-red-400 dark:text-red-400 dark:hover:text-red-300"
-              )}
-              onClick={handleFavoriteToggle}
-            >
-              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
-            </Button>
-            {favoriteCount > 0 && (
-              <span className="text-white dark:text-white text-sm font-medium pr-3 select-none drop-shadow-md">
-                {favoriteCount}
-              </span>
-            )}
-          </div>
-        </div>
+              {/* Duration */}
+              <div className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="flex items-center justify-center text-primary mb-1">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold">
+                  {activity.typicalDurationHours ? `${activity.typicalDurationHours}h` : "Flexibel"}
+                </p>
+                <p className="text-xs text-muted-foreground">Dauer</p>
+              </div>
+
+              {/* Group Size */}
+              <div className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="flex items-center justify-center text-primary mb-1">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold">
+                  {activity.recommendedGroupSizeMin || 2}-{activity.recommendedGroupSizeMax || 20}
+                </p>
+                <p className="text-xs text-muted-foreground">Personen</p>
+              </div>
+
+              {/* Location */}
+              <div className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="flex items-center justify-center text-primary mb-1">
+                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold truncate">
+                  {activity.locationCity || RegionLabels[activity.locationRegion]}
+                </p>
+                <p className="text-xs text-muted-foreground">Standort</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Description */}
+      {/* Main Content Grid */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="mt-8 grid gap-8 lg:grid-cols-3 lg:gap-10"
+      >
+        {/* Primary Content Column */}
+        <div className="lg:col-span-2 space-y-8">
+
+          {/* Description Section */}
           {activity.longDescription && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg">Beschreibung</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground dark:text-muted-foreground/90 leading-relaxed">
-                    {activity.longDescription}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <motion.section variants={itemVariants}>
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold">Über diese Aktivität</h2>
+              </div>
+              <p className="text-muted-foreground leading-7">
+                {activity.longDescription}
+              </p>
+            </motion.section>
           )}
 
-          {/* Scales */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-lg">Aktivitätsprofil</CardTitle>
+          {/* Activity Profile */}
+          <motion.section variants={itemVariants}>
+            <Card className="border-border/50 rounded-2xl overflow-hidden">
+              <CardHeader className="bg-muted/30 border-b border-border/50 pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Aktivitätsprofil
+                </CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2">
-                {activity.physicalIntensity !== undefined && (
-                  <ScaleBar
-                    label="Körperliche Intensität"
-                    value={activity.physicalIntensity}
-                    max={5}
-                  />
-                )}
-                {activity.mentalChallenge !== undefined && (
-                  <ScaleBar
-                    label="Mentale Herausforderung"
-                    value={activity.mentalChallenge}
-                    max={5}
-                  />
-                )}
-                {activity.socialInteractionLevel !== undefined && (
-                  <ScaleBar
-                    label="Soziale Interaktion"
-                    value={activity.socialInteractionLevel}
-                    max={5}
-                  />
-                )}
-                {activity.competitionLevel !== undefined && (
-                  <ScaleBar
-                    label="Wettbewerbslevel"
-                    value={activity.competitionLevel}
-                    max={5}
-                  />
-                )}
-                {activity.teamworkLevel !== undefined && (
-                  <ScaleBar
-                    label="Teamwork"
-                    value={activity.teamworkLevel}
-                    max={5}
-                  />
-                )}
-                {activity.creativityLevel !== undefined && (
-                  <ScaleBar
-                    label="Kreativität"
-                    value={activity.creativityLevel}
-                    max={5}
-                  />
-                )}
+              <CardContent className="p-6">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {activity.physicalIntensity !== undefined && (
+                    <ScaleRow
+                      icon={Zap}
+                      iconColor="text-orange-500"
+                      label="Körperliche Intensität"
+                      value={activity.physicalIntensity}
+                      gradientFrom="from-orange-400"
+                      gradientTo="to-orange-500"
+                    />
+                  )}
+                  {activity.mentalChallenge !== undefined && (
+                    <ScaleRow
+                      icon={Brain}
+                      iconColor="text-purple-500"
+                      label="Mentale Herausforderung"
+                      value={activity.mentalChallenge}
+                      gradientFrom="from-purple-400"
+                      gradientTo="to-purple-500"
+                    />
+                  )}
+                  {activity.socialInteractionLevel !== undefined && (
+                    <ScaleRow
+                      icon={Users}
+                      iconColor="text-blue-500"
+                      label="Soziale Interaktion"
+                      value={activity.socialInteractionLevel}
+                      gradientFrom="from-blue-400"
+                      gradientTo="to-blue-500"
+                    />
+                  )}
+                  {activity.competitionLevel !== undefined && (
+                    <ScaleRow
+                      icon={Target}
+                      iconColor="text-red-500"
+                      label="Wettbewerbslevel"
+                      value={activity.competitionLevel}
+                      gradientFrom="from-red-400"
+                      gradientTo="to-red-500"
+                    />
+                  )}
+                  {activity.teamworkLevel !== undefined && (
+                    <ScaleRow
+                      icon={Heart}
+                      iconColor="text-pink-500"
+                      label="Teamwork"
+                      value={activity.teamworkLevel}
+                      gradientFrom="from-pink-400"
+                      gradientTo="to-pink-500"
+                    />
+                  )}
+                  {activity.creativityLevel !== undefined && (
+                    <ScaleRow
+                      icon={Sparkles}
+                      iconColor="text-emerald-500"
+                      label="Kreativität"
+                      value={activity.creativityLevel}
+                      gradientFrom="from-emerald-400"
+                      gradientTo="to-emerald-500"
+                    />
+                  )}
+                </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </motion.section>
 
           {/* Tags */}
           {activity.tags.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg">Tags</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {activity.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="rounded-full">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <motion.section variants={itemVariants}>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                Schlagwörter
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {activity.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="rounded-full px-4 py-1.5 text-sm font-normal"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </motion.section>
           )}
 
           {/* Comments Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-lg">Kommentare</CardTitle>
+          <motion.section variants={itemVariants}>
+            <Card className="border-border/50 rounded-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                  Kommentare
+                  {comments.length > 0 && (
+                    <Badge variant="secondary" className="ml-2 rounded-full text-xs">
+                      {comments.length}
+                    </Badge>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Comment Input */}
                 {user ? (
-                  <div className="flex gap-4">
-                    <Avatar className="h-10 w-10 ring-2 ring-border/50">
+                  <div className="flex gap-3 sm:gap-4">
+                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10 ring-2 ring-primary/20 flex-shrink-0">
                       <AvatarImage src={user.avatarUrl} alt={user.name} />
-                      <AvatarFallback>{user.firstName?.[0]}{user.lastName?.[0]}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                        {user.firstName?.[0]}{user.lastName?.[0]}
+                      </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 space-y-2">
+                    <div className="flex-1 space-y-3">
                       <Textarea
-                        placeholder="Schreibe einen Kommentar..."
+                        placeholder="Teile deine Erfahrung oder stelle eine Frage..."
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        className="min-h-[100px]"
+                        className="min-h-[100px] resize-none rounded-xl border-border/50 focus:border-primary/50"
                       />
-                      <Button
-                        onClick={handleSubmitComment}
-                        disabled={!newComment.trim() || submittingComment}
-                        className="ml-auto"
-                      >
-                        {submittingComment ? "Sende..." : "Kommentieren"}
-                      </Button>
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleSubmitComment}
+                          disabled={!newComment.trim() || submittingComment}
+                          className="rounded-xl gap-2"
+                        >
+                          {submittingComment ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Sende...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="h-4 w-4" />
+                              Kommentieren
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center p-4 bg-muted/60 dark:bg-muted/40 rounded-lg">
-                    <p className="text-sm text-muted-foreground dark:text-muted-foreground/90">
-                      Bitte <Link to="/login" className="text-primary hover:underline font-medium">anmelden</Link>, um zu kommentieren.
+                  <div className="text-center py-6 px-4 bg-muted/30 rounded-xl border border-dashed border-border/50">
+                    <p className="text-sm text-muted-foreground">
+                      <Link to="/login" className="text-primary hover:underline font-medium">
+                        Anmelden
+                      </Link>
+                      {" "}um einen Kommentar zu schreiben
                     </p>
                   </div>
                 )}
 
+                {/* Separator */}
+                {user && comments.length > 0 && <Separator />}
+
                 {/* Comments List */}
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {comments.length === 0 ? (
-                    <p className="text-center text-muted-foreground dark:text-muted-foreground/90 py-8">
-                      Noch keine Kommentare vorhanden. Sei der Erste!
-                    </p>
+                    <div className="text-center py-10">
+                      <MessageCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                      <p className="text-muted-foreground">Noch keine Kommentare vorhanden.</p>
+                      <p className="text-sm text-muted-foreground/70">Sei der Erste!</p>
+                    </div>
                   ) : (
-                    comments.map((comment) => (
-                      <div key={comment.id} className="flex gap-4">
-                         <Avatar className="h-10 w-10 ring-2 ring-border/50">
+                    comments.map((comment, index) => (
+                      <motion.div
+                        key={comment.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="flex gap-3 sm:gap-4 group"
+                      >
+                        <Avatar className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
                           <AvatarImage src={comment.userAvatar} alt={comment.userName} />
                           <AvatarFallback>{comment.userName?.[0]}</AvatarFallback>
                         </Avatar>
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold">{comment.userName}</span>
-                            <span className="text-xs text-muted-foreground dark:text-muted-foreground/80">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="font-semibold text-sm">{comment.userName}</span>
+                            <span className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: de })}
                             </span>
                             {comment.userId === user?.id && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 px-2 text-xs text-muted-foreground dark:text-muted-foreground/80 hover:text-destructive dark:hover:text-destructive"
+                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() => handleDeleteComment(comment.id)}
                               >
-                                <Trash2 className="h-3.5 w-3.5 mr-1" />
-                                Löschen
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             )}
                           </div>
-                          <p className="text-sm text-foreground/90 dark:text-foreground/95 leading-relaxed">
+                          <p className="text-sm text-foreground/90 leading-relaxed">
                             {comment.content}
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
                     ))
                   )}
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </motion.section>
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Booking Request - Hidden on mobile */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="hidden md:block"
-          >
-            <BookingRequestDialog activity={activity}>
-              <Button
-                variant="default"
-                className="w-full rounded-xl h-12 text-base gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-500/40"
-              >
-                <Mail className="h-5 w-5" />
-                Buchungsanfrage
-              </Button>
-            </BookingRequestDialog>
-          </motion.div>
+        <aside className="space-y-6 lg:sticky lg:top-6 self-start">
 
-          {/* Quick Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="bg-card/80 dark:bg-card/90 border-primary/40 dark:border-primary/30 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-lg">Auf einen Blick</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Price */}
-                <div className="flex items-start gap-3">
-                  <Euro className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <p className="font-semibold">ab {activity.estPricePerPerson}€ p.P.</p>
-                    {activity.priceComment && (
-                      <p className="text-xs text-muted-foreground dark:text-muted-foreground/90 mt-1">
-                        {activity.priceComment}
-                      </p>
-                    )}
-                  </div>
+          {/* Primary CTA - Desktop */}
+          <motion.div variants={itemVariants} className="hidden md:block">
+            <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 rounded-2xl overflow-hidden">
+              <CardContent className="p-5 space-y-4">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-0.5">Interesse geweckt?</p>
+                  <p className="font-semibold">Jetzt unverbindlich anfragen</p>
                 </div>
+                <BookingRequestDialog activity={activity}>
+                  <Button
+                    size="lg"
+                    className="w-full h-12 rounded-xl font-semibold gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-0.5"
+                  >
+                    <Mail className="h-5 w-5" />
+                    Buchungsanfrage
+                  </Button>
+                </BookingRequestDialog>
 
-                <Separator />
-
-                {/* Duration */}
-                {(activity.typicalDurationHours || activity.duration) && (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-medium">
-                          {activity.typicalDurationHours 
-                            ? `ca. ${activity.typicalDurationHours} Stunden`
-                            : activity.duration
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <Separator />
-                  </>
-                )}
-
-                {/* Group Size */}
-                {(activity.recommendedGroupSizeMin || activity.recommendedGroupSizeMax) && (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-medium">
-                          {activity.recommendedGroupSizeMin}–{activity.recommendedGroupSizeMax} Personen
-                        </p>
-                        {activity.minParticipants && (
-                          <p className="text-xs text-muted-foreground dark:text-muted-foreground/90">
-                            Min. {activity.minParticipants} Teilnehmer
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Separator />
-                  </>
-                )}
-
-                {/* Rating */}
-                {rating && (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <Star className="h-5 w-5 text-warning fill-warning" />
-                      <p className="font-medium">{rating.toFixed(1)} / 5.0</p>
-                    </div>
-                    <Separator />
-                  </>
-                )}
-
-                {/* Primary Goal */}
-                {activity.primaryGoal && (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <Target className="h-5 w-5 text-primary" />
-                      <p className="font-medium">{PrimaryGoalLabels[activity.primaryGoal]}</p>
-                    </div>
-                    <Separator />
-                  </>
-                )}
-
-                {/* Weather Dependent */}
-                {activity.weatherDependent !== undefined && (
-                  <div className="flex items-center gap-3">
-                    <CloudSun className="h-5 w-5 text-primary" />
-                    <p className="font-medium">
-                      {activity.weatherDependent ? "Wetterabhängig" : "Wetterunabhängig"}
-                    </p>
-                  </div>
-                )}
-
-                {/* Accessibility */}
-                {activity.accessibilityFlags && activity.accessibilityFlags.length > 0 && (
-                  <>
-                    <Separator />
-                    <div className="flex items-start gap-3">
-                      <Accessibility className="h-5 w-5 text-primary mt-0.5" />
-                      <div className="flex flex-wrap gap-1">
-                        {activity.accessibilityFlags.map((flag) => (
-                          <Badge key={flag} variant="outline" className="text-xs">
-                            {flag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
+                {/* Favorite Button */}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className={cn(
+                    "w-full h-11 rounded-xl gap-2 transition-all duration-300",
+                    isFav && "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400"
+                  )}
+                  onClick={handleFavoriteToggle}
+                >
+                  <Heart className={cn("h-5 w-5 transition-transform", isFav && "fill-current scale-110")} />
+                  {isFav ? "Gespeichert" : "Merken"}
+                  {favoriteCount > 0 && (
+                    <span className="ml-1 text-muted-foreground">({favoriteCount})</span>
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Location & Contact */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="bg-card/80 dark:bg-card/90 border-border/60 dark:border-border/40 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-lg">Standort & Kontakt</CardTitle>
+          {/* Location Card */}
+          <motion.div variants={itemVariants}>
+            <Card className="border-border/50 rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Standort
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Location */}
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
+              <CardContent className="p-0">
+                <div className="h-[200px] sm:h-[220px] w-full">
+                  <ActivityMiniMap activity={activity} className="h-full w-full rounded-none" />
+                </div>
+
+                <div className="p-4 space-y-3 border-t border-border/50">
                   <div>
                     <p className="font-medium">{activity.locationCity || RegionLabels[activity.locationRegion]}</p>
                     {activity.locationAddress && (
-                      <p className="text-sm text-muted-foreground dark:text-muted-foreground/90">{activity.locationAddress}</p>
+                      <p className="text-sm text-muted-foreground">{activity.locationAddress}</p>
                     )}
                   </div>
-                </div>
-                
-                <div className="rounded-lg overflow-hidden">
-                  <ActivityMiniMap activity={activity} className="h-[200px] w-full" />
-                </div>
 
-                {/* Travel Time */}
-                {(activity.travelTimeMinutes || activity.travelTimeMinutesWalking) && (
-                  <>
-                    <Separator />
-                    <div className="space-y-2">
+                  {(activity.travelTimeMinutes || activity.travelTimeMinutesWalking) && (
+                    <div className="flex gap-4 text-sm text-muted-foreground">
                       {activity.travelTimeMinutes && (
-                        <div className="flex items-center gap-3 text-sm text-foreground/90">
-                          <Car className="h-4 w-4 text-muted-foreground dark:text-muted-foreground/90" />
-                          <span>ca. {activity.travelTimeMinutes} Min. mit Auto</span>
-                        </div>
+                        <span className="flex items-center gap-1.5">
+                          <Car className="h-4 w-4" />
+                          {activity.travelTimeMinutes} Min.
+                        </span>
                       )}
                       {activity.travelTimeMinutesWalking && (
-                        <div className="flex items-center gap-3 text-sm text-foreground/90">
-                          <FootprintsIcon className="h-4 w-4 text-muted-foreground dark:text-muted-foreground/90" />
-                          <span>ca. {activity.travelTimeMinutesWalking} Min. zu Fuß</span>
-                        </div>
+                        <span className="flex items-center gap-1.5">
+                          <FootprintsIcon className="h-4 w-4" />
+                          {activity.travelTimeMinutesWalking} Min.
+                        </span>
                       )}
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-                {/* Lead Time */}
-                {activity.leadTimeMinDays && (
-                  <>
-                    <Separator />
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-primary" />
-                      <p className="text-sm">
-                        Mind. {activity.leadTimeMinDays} Tage Vorlauf
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {/* Capacity */}
-                {typeof activity.maxCapacity === "number" && (
-                  <>
-                    <Separator />
-                    <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-primary" />
-                      <p className="text-sm">
-                        Max. {activity.maxCapacity} Personen gleichzeitig
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {/* Outdoor seating */}
-                {activity.outdoorSeating !== undefined && (
-                  <>
-                    <Separator />
-                    <div className="flex items-center gap-3">
-                      <CloudSun className="h-5 w-5 text-primary" />
-                      <p className="text-sm">
-                        {activity.outdoorSeating
-                          ? "Sitzplätze im Freien verfügbar"
-                          : "Keine Sitzplätze im Freien"}
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                <Separator />
-
-                {/* Provider */}
+          {/* Contact Card */}
+          <motion.div variants={itemVariants}>
+            <Card className="border-border/50 rounded-2xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Kontakt & Links</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {activity.provider && (
                   <div>
-                    <p className="text-xs text-muted-foreground dark:text-muted-foreground/90 mb-1">Anbieter</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Anbieter</p>
                     <p className="font-medium">{activity.provider}</p>
                   </div>
                 )}
 
-                {/* Contact Links */}
-                <div className="flex flex-wrap gap-2 pt-2">
+                <div className="grid grid-cols-2 gap-2">
                   {activity.website && (
-                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
+                    <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl justify-start h-9">
                       <a href={activity.website} target="_blank" rel="noopener noreferrer">
                         <Globe className="h-4 w-4" />
                         Website
                       </a>
                     </Button>
                   )}
-                  {activity.reservationUrl && (
-                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
-                      <a href={activity.reservationUrl} target="_blank" rel="noopener noreferrer">
-                        <Calendar className="h-4 w-4" />
-                        Reservierung
-                      </a>
-                    </Button>
-                  )}
-                  {activity.menuUrl && (
-                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
-                      <a href={activity.menuUrl} target="_blank" rel="noopener noreferrer">
-                        <BookOpen className="h-4 w-4" />
-                        Speisekarte
-                      </a>
-                    </Button>
-                  )}
-                  {activity.facebook && (
-                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
-                      <a href={activity.facebook} target="_blank" rel="noopener noreferrer">
-                        <Facebook className="h-4 w-4" />
-                        Facebook
-                      </a>
-                    </Button>
-                  )}
-                  {activity.instagram && (
-                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
-                      <a href={activity.instagram} target="_blank" rel="noopener noreferrer">
-                        <Instagram className="h-4 w-4" />
-                        Instagram
-                      </a>
-                    </Button>
-                  )}
                   {activity.contactPhone && (
-                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
+                    <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl justify-start h-9">
                       <a href={`tel:${activity.contactPhone}`}>
                         <Phone className="h-4 w-4" />
                         Anrufen
@@ -706,10 +770,34 @@ export default function ActivityDetailPage() {
                     </Button>
                   )}
                   {activity.contactEmail && (
-                    <Button asChild variant="secondary" size="sm" className="gap-2 rounded-xl">
+                    <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl justify-start h-9">
                       <a href={`mailto:${activity.contactEmail}`}>
                         <Mail className="h-4 w-4" />
                         E-Mail
+                      </a>
+                    </Button>
+                  )}
+                  {activity.reservationUrl && (
+                    <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl justify-start h-9">
+                      <a href={activity.reservationUrl} target="_blank" rel="noopener noreferrer">
+                        <Calendar className="h-4 w-4" />
+                        Reservieren
+                      </a>
+                    </Button>
+                  )}
+                  {activity.instagram && (
+                    <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl justify-start h-9">
+                      <a href={activity.instagram} target="_blank" rel="noopener noreferrer">
+                        <Instagram className="h-4 w-4" />
+                        Instagram
+                      </a>
+                    </Button>
+                  )}
+                  {activity.facebook && (
+                    <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl justify-start h-9">
+                      <a href={activity.facebook} target="_blank" rel="noopener noreferrer">
+                        <Facebook className="h-4 w-4" />
+                        Facebook
                       </a>
                     </Button>
                   )}
@@ -717,48 +805,94 @@ export default function ActivityDetailPage() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
-      </div>
 
-      {/* Mobile Sticky Bottom Action Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999]">
-        <div className="bg-background/95 dark:bg-background/95 backdrop-blur-lg border-t border-border/50 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.3)]">
-          <div className="container max-w-screen-xl mx-auto px-4 py-3">
-            <div className="flex items-center gap-3">
-              {/* Favorite Button with Count */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className={cn(
-                    "h-12 w-12 rounded-xl",
-                    isFav && "bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/50"
-                  )}
-                  onClick={handleFavoriteToggle}
-                >
-                  <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
-                </Button>
-                {favoriteCount > 0 && (
-                  <span className="text-sm font-medium text-foreground/70 dark:text-foreground/80">
-                    {favoriteCount}
-                  </span>
+          {/* Additional Details Card */}
+          <motion.div variants={itemVariants}>
+            <Card className="border-border/50 rounded-2xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Weitere Details</CardTitle>
+              </CardHeader>
+              <CardContent className="divide-y divide-border/50">
+                {activity.primaryGoal && (
+                  <DetailRow icon={Target} label="Hauptziel" value={PrimaryGoalLabels[activity.primaryGoal]} />
                 )}
-              </div>
+                {activity.weatherDependent !== undefined && (
+                  <DetailRow
+                    icon={CloudSun}
+                    label="Wetter"
+                    value={activity.weatherDependent ? "Wetterabhängig" : "Wetterunabhängig"}
+                  />
+                )}
+                {activity.leadTimeMinDays && (
+                  <DetailRow icon={Calendar} label="Vorlauf" value={`Mind. ${activity.leadTimeMinDays} Tage`} />
+                )}
+                {activity.maxCapacity && (
+                  <DetailRow icon={Users} label="Max. Kapazität" value={`${activity.maxCapacity} Personen`} />
+                )}
+                {activity.accessibilityFlags && activity.accessibilityFlags.length > 0 && (
+                  <div className="py-2">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Accessibility className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">Barrierefreiheit</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 ml-7">
+                      {activity.accessibilityFlags.map((flag) => (
+                        <Badge key={flag} variant="outline" className="text-xs">
+                          {flag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </aside>
+      </motion.div>
 
-              {/* Booking Request Button */}
-              <BookingRequestDialog activity={activity}>
-                <Button
-                  size="lg"
-                  variant="default"
-                  className="flex-1 h-12 rounded-xl gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-500/40"
-                >
-                  <Mail className="h-5 w-5" />
-                  Buchungsanfrage
-                </Button>
-              </BookingRequestDialog>
+      {/* Mobile Sticky Bottom Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[1002]">
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+          className="bg-background/95 backdrop-blur-xl border-t border-border shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.4)]"
+        >
+          <div className="px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            {/* Price and favorite row */}
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <span className="text-xs text-muted-foreground">Ab </span>
+                <span className="text-xl font-bold">{activity.estPricePerPerson}€</span>
+                <span className="text-sm text-muted-foreground"> / Person</span>
+              </div>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleFavoriteToggle}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all",
+                  isFav
+                    ? "bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
+                {favoriteCount > 0 && <span className="text-sm font-medium">{favoriteCount}</span>}
+              </motion.button>
             </div>
+
+            {/* CTA Button */}
+            <BookingRequestDialog activity={activity}>
+              <Button
+                size="lg"
+                className="w-full h-12 rounded-xl font-semibold gap-2 bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20"
+              >
+                <Mail className="h-5 w-5" />
+                Buchungsanfrage senden
+              </Button>
+            </BookingRequestDialog>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

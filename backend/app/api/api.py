@@ -29,7 +29,7 @@ from app.services.event_avatar_service import (
     generate_event_avatar_upload_url,
     process_event_avatar_upload,
 )
-from app.api.helpers import enhance_event_full
+from app.api.helpers import enhance_event_full, enhance_event_with_user_names_helper
 
 router = APIRouter()
 

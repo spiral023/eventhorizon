@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Bell, User, LogOut, Menu, UserPlus } from "lucide-react";
+import { Search, User, LogOut, Menu, UserPlus } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -75,11 +75,6 @@ export function Header() {
             }
           />
           
-          <Button variant="ghost" size="icon" className="relative" aria-label="Benachrichtigungen">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary" />
-          </Button>
-          
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -125,7 +120,7 @@ export function Header() {
               </Button>
               <Button
                 variant="outline"
-                className="gap-2 rounded-full pl-2 pr-3"
+                className="gap-2 rounded-full p-1 sm:pl-2 sm:pr-3"
                 onClick={() => navigate("/login?mode=register")}
               >
                 <Avatar className="h-7 w-7 ring-2 ring-transparent">
@@ -133,7 +128,7 @@ export function Header() {
                     <UserPlus className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
-                <span>Registrieren</span>
+                <span className="hidden sm:inline">Registrieren</span>
               </Button>
             </div>
           )}
