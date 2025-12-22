@@ -12,6 +12,7 @@ import { getActivities } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { getActivityDurationMinutes, formatDuration as formatDurationUtil } from "@/utils/activityUtils";
 import "leaflet/dist/leaflet.css";
 
 // Helper function to get color based on walking time
@@ -207,16 +208,10 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [geocodeCache, setGeocodeCache] = useState<Record<string, [number, number]>>({});
 
-  const formatDuration = (activity: Activity) => {
+  const getDisplayDuration = (activity: Activity) => {
     if (activity.duration) return activity.duration;
-    if (typeof activity.typicalDurationHours === "number") {
-      const hours = activity.typicalDurationHours;
-      const formatted = hours % 1 === 0
-        ? hours.toString()
-        : hours.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-      return `${formatted}h`;
-    }
-    return "-";
+    const mins = getActivityDurationMinutes(activity);
+    return mins ? formatDurationUtil(mins) : "-";
   };
 
   useEffect(() => {
@@ -413,7 +408,7 @@ export default function MapPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      <span>{formatDuration(selectedActivity)}</span>
+                      <span>{getDisplayDuration(selectedActivity)}</span>
                     </div>
                     {selectedActivity.travelTimeMinutesWalking && (
                       <div className="flex items-center gap-1">

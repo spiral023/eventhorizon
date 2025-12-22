@@ -1,19 +1,28 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
-import { PageLoading } from "@/components/shared/PageLoading";
 import { PageError } from "@/components/shared/PageError";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ActivityFilterPanel, defaultFilters, type ActivityFilters } from "@/components/activities/ActivityFilterPanel";
+import { ActivityFilterPanel } from "@/components/activities/ActivityFilterPanel";
+import { ActivityCardSkeleton } from "@/components/activities/ActivityCardSkeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
+import { useDebounce } from "@/hooks/use-debounce";
+import { 
+  getActivityDurationMinutes, 
+  getActiveFilterCount, 
+  isIndoor, 
+  isOutdoor,
+  type ActivityFilters,
+  defaultFilters
+} from "@/utils/activityUtils";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,28 +37,12 @@ export default function ActivitiesPage() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
 
-  const activeFilterCount =
-    (filters.categories?.length || 0) +
-    (filters.regions?.length || 0) +
-    (filters.seasons?.length || 0) +
-    (filters.riskLevels?.length || 0) +
-    (filters.primaryGoals?.length || 0) +
-    ((filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 200) ? 1 : 0) +
-    ((filters.groupSizeRange?.[0] > 1 || filters.groupSizeRange?.[1] < 100) ? 1 : 0) +
-    ((filters.durationRange?.[0] > 0 || filters.durationRange?.[1] < 480) ? 1 : 0) +
-    ((filters.travelTimeRange?.[0] > 0 || filters.travelTimeRange?.[1] < 60) ? 1 : 0) +
-    ((filters.travelTimeWalkingRange?.[0] > 0 || filters.travelTimeWalkingRange?.[1] < 60) ? 1 : 0) +
-    ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
-    ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
-    ((filters.teamworkLevel?.[0] > 1 || filters.teamworkLevel?.[1] < 5) ? 1 : 0) +
-    (filters.indoorOnly ? 1 : 0) +
-    (filters.outdoorOnly ? 1 : 0) +
-    (filters.weatherIndependent ? 1 : 0) +
-    (filters.favoritesOnly ? 1 : 0);
+  const activeFilterCount = useMemo(() => getActiveFilterCount(filters), [filters]);
 
   const loadData = useCallback(async () => {
     setIsLoadingActivities(true);
@@ -75,130 +68,125 @@ export default function ActivitiesPage() {
     loadData();
   }, [authLoading, loadData]);
 
-  const filteredActivities = activities.filter((activity) => {
-    const durationMinutes = (() => {
-      if (typeof activity.typicalDurationHours === "number") {
-        return activity.typicalDurationHours * 60;
+  const filteredActivities = useMemo(() => {
+    return activities.filter((activity) => {
+      const durationMinutes = getActivityDurationMinutes(activity);
+
+      // Search Query
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase();
+        const matchesSearch = (
+          activity.title.toLowerCase().includes(query) ||
+          (activity.shortDescription?.toLowerCase().includes(query) ?? false) ||
+          (activity.longDescription?.toLowerCase().includes(query) ?? false) ||
+          (activity.description?.toLowerCase().includes(query) ?? false) ||
+          activity.locationRegion.toLowerCase().includes(query) ||
+          activity.tags.some((tag) => tag.toLowerCase().includes(query))
+        );
+        if (!matchesSearch) return false;
       }
-      if (typeof activity.duration === "string") {
-        const match = activity.duration.match(/(\d+(?:\.\d+)?)/);
-        if (match) {
-          return parseFloat(match[1]) * 60;
-        }
+
+      // Category Filter
+      if (filters.categories.length > 0 && !filters.categories.includes(activity.category)) {
+        return false;
       }
-      return undefined;
-    })();
 
-    // Search Query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch = (
-        activity.title.toLowerCase().includes(query) ||
-        (activity.shortDescription?.toLowerCase().includes(query) ?? false) ||
-        (activity.longDescription?.toLowerCase().includes(query) ?? false) ||
-        (activity.description?.toLowerCase().includes(query) ?? false) ||
-        activity.locationRegion.toLowerCase().includes(query) ||
-        activity.tags.some((tag) => tag.toLowerCase().includes(query))
-      );
-      if (!matchesSearch) return false;
-    }
+      // Region Filter
+      if (filters.regions.length > 0 && !filters.regions.includes(activity.locationRegion)) {
+        return false;
+      }
 
-    // Category Filter
-    if (filters.categories.length > 0 && !filters.categories.includes(activity.category)) {
-      return false;
-    }
+      // Season Filter
+      if (filters.seasons.length > 0 && !filters.seasons.includes(activity.season)) {
+        return false;
+      }
 
-    // Region Filter
-    if (filters.regions.length > 0 && !filters.regions.includes(activity.locationRegion)) {
-      return false;
-    }
+      // Risk Level Filter
+      if (filters.riskLevels.length > 0 && !filters.riskLevels.includes(activity.riskLevel)) {
+        return false;
+      }
 
-    // Season Filter
-    if (filters.seasons.length > 0 && !filters.seasons.includes(activity.season)) {
-      return false;
-    }
+      // Primary Goal Filter
+      if (filters.primaryGoals.length > 0 && (!activity.primaryGoal || !filters.primaryGoals.includes(activity.primaryGoal))) {
+        return false;
+      }
 
-    // Risk Level Filter
-    if (filters.riskLevels.length > 0 && !filters.riskLevels.includes(activity.riskLevel)) {
-      return false;
-    }
+      // Price Range
+      if (activity.estPricePerPerson !== undefined) {
+        if (activity.estPricePerPerson < filters.priceRange[0]) return false;
+        if (filters.priceRange[1] < 200 && activity.estPricePerPerson > filters.priceRange[1]) return false;
+      }
 
-    // Primary Goal Filter
-    if (filters.primaryGoals.length > 0 && (!activity.primaryGoal || !filters.primaryGoals.includes(activity.primaryGoal))) {
-      return false;
-    }
+      // Group Size
+      if (activity.groupSizeMin !== undefined && activity.groupSizeMax !== undefined) {
+         if (activity.groupSizeMax < filters.groupSizeRange[0]) return false;
+         if (filters.groupSizeRange[1] < 100 && activity.groupSizeMin > filters.groupSizeRange[1]) return false;
+      }
 
-    // Price Range
-    if (activity.estPricePerPerson !== undefined) {
-      if (activity.estPricePerPerson < filters.priceRange[0]) return false;
-      if (filters.priceRange[1] < 200 && activity.estPricePerPerson > filters.priceRange[1]) return false;
-    }
+      // Duration
+      if (durationMinutes !== undefined) {
+        if (durationMinutes < filters.durationRange[0]) return false;
+        if (filters.durationRange[1] < 480 && durationMinutes > filters.durationRange[1]) return false;
+      }
 
-    // Group Size
-    if (activity.groupSizeMin !== undefined && activity.groupSizeMax !== undefined) {
-       // Check if ranges overlap
-       if (activity.groupSizeMax < filters.groupSizeRange[0]) return false;
-       if (filters.groupSizeRange[1] < 100 && activity.groupSizeMin > filters.groupSizeRange[1]) return false;
-    }
+      // Travel Time Driving
+      if (activity.travelTimeMinutes !== undefined) {
+        if (activity.travelTimeMinutes < filters.travelTimeRange[0]) return false;
+        if (filters.travelTimeRange[1] < 60 && activity.travelTimeMinutes > filters.travelTimeRange[1]) return false;
+      }
 
-    // Duration
-    if (durationMinutes !== undefined) {
-      if (durationMinutes < filters.durationRange[0]) return false;
-      if (filters.durationRange[1] < 480 && durationMinutes > filters.durationRange[1]) return false;
-    }
+      // Travel Time Walking
+      if (activity.travelTimeMinutesWalking !== undefined) {
+        if (activity.travelTimeMinutesWalking < filters.travelTimeWalkingRange[0]) return false;
+        if (filters.travelTimeWalkingRange[1] < 60 && activity.travelTimeMinutesWalking > filters.travelTimeWalkingRange[1]) return false;
+      }
 
-    // Travel Time Driving
-    if (activity.travelTimeMinutes !== undefined) {
-      if (activity.travelTimeMinutes < filters.travelTimeRange[0]) return false;
-      if (filters.travelTimeRange[1] < 60 && activity.travelTimeMinutes > filters.travelTimeRange[1]) return false;
-    }
+      // Physical intensity
+      if (activity.physicalIntensity !== undefined) {
+        if (activity.physicalIntensity < filters.physicalIntensity[0]) return false;
+        if (activity.physicalIntensity > filters.physicalIntensity[1]) return false;
+      }
 
-    // Travel Time Walking
-    if (activity.travelTimeMinutesWalking !== undefined) {
-      if (activity.travelTimeMinutesWalking < filters.travelTimeWalkingRange[0]) return false;
-      if (filters.travelTimeWalkingRange[1] < 60 && activity.travelTimeMinutesWalking > filters.travelTimeWalkingRange[1]) return false;
-    }
+      // Mental challenge
+      if (activity.mentalChallenge !== undefined) {
+        if (activity.mentalChallenge < filters.mentalChallenge[0]) return false;
+        if (activity.mentalChallenge > filters.mentalChallenge[1]) return false;
+      }
 
-    // Physical intensity
-    if (activity.physicalIntensity !== undefined) {
-      if (activity.physicalIntensity < filters.physicalIntensity[0]) return false;
-      if (activity.physicalIntensity > filters.physicalIntensity[1]) return false;
-    }
+      // Teamwork level
+      if (activity.teamworkLevel !== undefined) {
+        if (activity.teamworkLevel < filters.teamworkLevel[0]) return false;
+        if (activity.teamworkLevel > filters.teamworkLevel[1]) return false;
+      }
 
-    // Mental challenge
-    if (activity.mentalChallenge !== undefined) {
-      if (activity.mentalChallenge < filters.mentalChallenge[0]) return false;
-      if (activity.mentalChallenge > filters.mentalChallenge[1]) return false;
-    }
+      // Favorites Only
+      if (filters.favoritesOnly && !favoriteIds.includes(activity.id)) {
+        return false;
+      }
 
-    // Teamwork level
-    if (activity.teamworkLevel !== undefined) {
-      if (activity.teamworkLevel < filters.teamworkLevel[0]) return false;
-      if (activity.teamworkLevel > filters.teamworkLevel[1]) return false;
-    }
+      // Indoor/Outdoor
+      if (filters.indoorOnly && isOutdoor(activity)) return false;
+      if (filters.outdoorOnly && isIndoor(activity)) return false;
 
-    // Favorites Only
-    if (filters.favoritesOnly && !favoriteIds.includes(activity.id)) {
-      return false;
-    }
+      // Weather Independent
+      if (filters.weatherIndependent && activity.weatherDependent) {
+        return false;
+      }
 
-    // Indoor/Outdoor
-    if (filters.indoorOnly && activity.tags.includes("outdoor")) return false; // Simple heuristic, better if explicit field
-    if (filters.outdoorOnly && activity.tags.includes("indoor")) return false;
+      return true;
+    });
+  }, [activities, debouncedSearchQuery, filters, favoriteIds]);
 
-    // Weather Independent
-    if (filters.weatherIndependent && activity.weatherDependent) {
-      return false;
-    }
+  const sortedActivities = useMemo(() => {
+    return [...filteredActivities].sort(
+      (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
+    );
+  }, [filteredActivities]);
 
-    return true;
-  });
+  const visibleActivities = useMemo(() => {
+    return sortedActivities.slice(0, visibleCount);
+  }, [sortedActivities, visibleCount]);
 
-  const sortedActivities = [...filteredActivities].sort(
-    (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
-  );
-
-  const visibleActivities = sortedActivities.slice(0, visibleCount);
   const hasMore = visibleCount < sortedActivities.length;
 
   const loadMore = () => {
@@ -208,19 +196,7 @@ export default function ActivitiesPage() {
   // Reset visible count when filters or search changes
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [searchQuery, filters]);
-
-  if (isLoadingActivities) {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Aktivitäten"
-          description="Finde Inspiration für dein nächstes Teamevent"
-        />
-        <PageLoading />
-      </div>
-    );
-  }
+  }, [debouncedSearchQuery, filters]);
 
   if (error) {
     return (
@@ -241,117 +217,160 @@ export default function ActivitiesPage() {
         description="Finde Inspiration für dein nächstes Teamevent"
       />
 
-      <div className="flex flex-col gap-4 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Suchen nach Titel, Region oder Tags..."
-            className="pl-9"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <Sheet open={showFilters} onOpenChange={setShowFilters}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
-              Filter
-              {activeFilterCount > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center h-5 min-w-[1.5rem] rounded-full bg-primary/10 text-primary text-xs px-2">
-                  {activeFilterCount}
-                </span>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Filter</SheetTitle>
-            </SheetHeader>
-            <div className="py-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+        {/* Desktop Sidebar Filter */}
+        <aside className="hidden lg:block space-y-4">
+          <div className="sticky top-24 space-y-6">
+            <div>
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4" />
+                Filter
+              </h3>
               <ActivityFilterPanel
                 filters={filters}
                 onChange={setFilters}
                 onReset={() => setFilters(defaultFilters)}
               />
             </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+          </div>
+        </aside>
 
-      {filteredActivities.length === 0 ? (
-        <EmptyState
-          icon={Search}
-          title="Keine Aktivitäten gefunden"
-          description="Versuche es mit einem anderen Suchbegriff oder ändere die Filter."
-          action={
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setSearchQuery("")}>
-                Suche zurücksetzen
-              </Button>
-              <Button variant="outline" onClick={() => setFilters(defaultFilters)}>
-                Filter zurücksetzen
-              </Button>
-            </div>
-          }
-        />
-      ) : (
         <div className="space-y-6">
-          <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence>
-              {visibleActivities.map((activity) => (
-                <motion.div
-                  layout
-                  key={activity.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
+          {/* Search & Mobile Filter Toggle */}
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Titel, Region oder Tags suchen..."
+                className="pl-10 h-11 bg-card/50 border-border/50 focus:bg-card transition-colors rounded-xl"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent text-muted-foreground hover:text-foreground"
+                  onClick={() => setSearchQuery("")}
                 >
-                  <ActivityCard
-                    activity={activity}
-                    isFavorite={favoriteIds.includes(activity.id)}
-                    onFavoriteToggle={async (id) => {
-                      if (!isAuthenticated) {
-                        toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
-                        return;
-                      }
-                      const result = await toggleFavorite(id);
-                      if (result.error) {
-                        toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
-                        return;
-                      }
-                      const isFav = result.data?.isFavorite;
-                      setFavoriteIds((prev) =>
-                        isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
-                      );
-                      setActivities((prev) =>
-                        prev.map((a) =>
-                          a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
-                        )
-                      );
-                    }}
-                    showTags={false}
-                    onClick={() => navigate(`/activities/${activity.slug}`)}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            
+            <Sheet open={showFilters} onOpenChange={setShowFilters}>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="lg:hidden gap-2 h-11 px-4 rounded-xl border-border/50 bg-card/50">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filter
+                  {activeFilterCount > 0 && (
+                    <span className="inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-primary text-primary-foreground text-[10px] font-bold px-1.5">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+                <SheetHeader className="mb-4">
+                  <SheetTitle>Filter</SheetTitle>
+                </SheetHeader>
+                <ActivityFilterPanel
+                  filters={filters}
+                  onChange={setFilters}
+                  onReset={() => setFilters(defaultFilters)}
+                />
+              </SheetContent>
+            </Sheet>
+          </div>
 
-          {hasMore && (
-            <div className="flex justify-center pt-4">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={loadMore}
-                className="min-w-[200px]"
-              >
-                Weitere laden ({sortedActivities.length - visibleCount} verbleibend)
-              </Button>
+          {isLoadingActivities ? (
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <ActivityCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : filteredActivities.length === 0 ? (
+            <EmptyState
+              icon={Search}
+              title="Keine Aktivitäten gefunden"
+              description="Versuche es mit einem anderen Suchbegriff oder ändere die Filter."
+              action={
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setSearchQuery("")}>
+                    Suche zurücksetzen
+                  </Button>
+                  <Button variant="outline" onClick={() => setFilters(defaultFilters)}>
+                    Filter zurücksetzen
+                  </Button>
+                </div>
+              }
+            />
+          ) : (
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{sortedActivities.length}</span> Aktivitäten gefunden
+                </p>
+              </div>
+
+              <motion.div layout className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                <AnimatePresence mode="popLayout">
+                  {visibleActivities.map((activity) => (
+                    <motion.div
+                      layout
+                      key={activity.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                    >
+                      <ActivityCard
+                        activity={activity}
+                        isFavorite={favoriteIds.includes(activity.id)}
+                        onFavoriteToggle={async (id) => {
+                          if (!isAuthenticated) {
+                            toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
+                            return;
+                          }
+                          const result = await toggleFavorite(id);
+                          if (result.error) {
+                            toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
+                            return;
+                          }
+                          const isFav = result.data?.isFavorite;
+                          setFavoriteIds((prev) =>
+                            isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
+                          );
+                          setActivities((prev) =>
+                            prev.map((a) =>
+                              a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
+                            )
+                          );
+                        }}
+                        showTags={false}
+                        onClick={() => navigate(`/activities/${activity.slug}`)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+
+              {hasMore && (
+                <div className="flex justify-center pt-4">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={loadMore}
+                    className="min-w-[240px] h-12 rounded-xl border-border/50 hover:bg-card hover:border-primary/30 transition-all shadow-sm"
+                  >
+                    Weitere laden ({sortedActivities.length - visibleCount} verbleibend)
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { MapPin, Euro, Clock, Users, Heart, Star, Zap, Brain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import { ScaleBar } from "@/components/shared/ScaleBar";
 import type { Activity } from "@/types/domain";
 import { CategoryLabels, RegionLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { getActivityDurationMinutes, formatDuration as formatDurationUtil } from "@/utils/activityUtils";
 
 interface ActivityCardProps {
   activity: Activity;
@@ -24,17 +26,11 @@ export function ActivityCard({
   showDetails = false,
   showTags = true
 }: ActivityCardProps) {
-  const formatDuration = () => {
+  const displayDuration = useMemo(() => {
     if (activity.duration) return activity.duration;
-    if (typeof activity.typicalDurationHours === "number") {
-      const hours = activity.typicalDurationHours;
-      const formatted = hours % 1 === 0
-        ? hours.toString()
-        : hours.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-      return `${formatted}h`;
-    }
-    return "-";
-  };
+    const mins = getActivityDurationMinutes(activity);
+    return mins ? formatDurationUtil(mins) : "-";
+  }, [activity]);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -118,7 +114,7 @@ export function ActivityCard({
           </div>
           <div className="flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
-            <span>{formatDuration()}</span>
+            <span>{displayDuration}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Users className="h-3.5 w-3.5" />

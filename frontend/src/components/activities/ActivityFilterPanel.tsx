@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Check, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro, Heart } from "lucide-react";
+import { X, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -11,26 +11,7 @@ import {
 import type { EventCategory, Region, Season, RiskLevel, PrimaryGoal } from "@/types/domain";
 import { CategoryLabels, RegionLabels, SeasonLabels, RiskLevelLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
-
-export interface ActivityFilters {
-  categories: EventCategory[];
-  regions: Region[];
-  seasons: Season[];
-  riskLevels: RiskLevel[];
-  priceRange: [number, number];
-  groupSizeRange: [number, number];
-  durationRange: [number, number];
-  travelTimeRange: [number, number];
-  travelTimeWalkingRange: [number, number];
-  physicalIntensity: [number, number];
-  mentalChallenge: [number, number];
-  teamworkLevel: [number, number];
-  primaryGoals: PrimaryGoal[];
-  indoorOnly: boolean;
-  outdoorOnly: boolean;
-  weatherIndependent: boolean;
-  favoritesOnly: boolean;
-}
+import { getActiveFilterCount, formatDuration, type ActivityFilters, defaultFilters } from "@/utils/activityUtils";
 
 interface ActivityFilterPanelProps {
   filters: ActivityFilters;
@@ -38,26 +19,6 @@ interface ActivityFilterPanelProps {
   onReset: () => void;
   className?: string;
 }
-
-export const defaultFilters: ActivityFilters = {
-  categories: [],
-  regions: [],
-  seasons: [],
-  riskLevels: [],
-  priceRange: [0, 200],
-  groupSizeRange: [1, 100],
-  durationRange: [0, 480], // in minutes
-  travelTimeRange: [0, 60], // in minutes
-  travelTimeWalkingRange: [0, 60], // in minutes
-  physicalIntensity: [1, 5],
-  mentalChallenge: [1, 5],
-  teamworkLevel: [1, 5],
-  primaryGoals: [],
-  indoorOnly: false,
-  outdoorOnly: false,
-  weatherIndependent: false,
-  favoritesOnly: false,
-};
 
 const PrimaryGoalLabels: Record<PrimaryGoal, string> = {
   teambuilding: "Teambuilding",
@@ -123,41 +84,16 @@ export function ActivityFilterPanel({
     onChange({ ...filters, primaryGoals: newGoals });
   };
 
-  const activeFilterCount =
-    (filters.categories?.length || 0) +
-    (filters.regions?.length || 0) +
-    (filters.seasons?.length || 0) +
-    (filters.riskLevels?.length || 0) +
-    (filters.primaryGoals?.length || 0) +
-    ((filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 200) ? 1 : 0) +
-    ((filters.groupSizeRange?.[0] > 1 || filters.groupSizeRange?.[1] < 100) ? 1 : 0) +
-    ((filters.durationRange?.[0] > 0 || filters.durationRange?.[1] < 480) ? 1 : 0) +
-    ((filters.travelTimeRange?.[0] > 0 || filters.travelTimeRange?.[1] < 60) ? 1 : 0) +
-    ((filters.travelTimeWalkingRange?.[0] > 0 || filters.travelTimeWalkingRange?.[1] < 60) ? 1 : 0) +
-    ((filters.physicalIntensity?.[0] > 1 || filters.physicalIntensity?.[1] < 5) ? 1 : 0) +
-    ((filters.mentalChallenge?.[0] > 1 || filters.mentalChallenge?.[1] < 5) ? 1 : 0) +
-    // ((filters.teamworkLevel?.[0] > 1 || filters.teamworkLevel?.[1] < 5) ? 1 : 0) +
-    (filters.indoorOnly ? 1 : 0) +
-    (filters.outdoorOnly ? 1 : 0) +
-    (filters.weatherIndependent ? 1 : 0) +
-    (filters.favoritesOnly ? 1 : 0);
-  const formatDuration = (minutes: number) => {
-    if (minutes >= 60) {
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-    }
-    return `${minutes}m`;
-  };
+  const activeCount = getActiveFilterCount(filters);
 
   return (
     <div className={cn("space-y-4", className)}>
       {/* Header */}
       <div className="flex items-center justify-end">
-        {activeFilterCount > 0 && (
+        {activeCount > 0 && (
           <Button variant="ghost" size="sm" onClick={onReset} className="gap-1 text-xs h-7">
             <X className="h-3 w-3" />
-            Zurücksetzen ({activeFilterCount})
+            Zurücksetzen ({activeCount})
           </Button>
         )}
       </div>
