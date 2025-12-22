@@ -110,13 +110,13 @@ export function VotingCard({
                 {/* Vote Buttons */}
                 <div className="flex items-center gap-2">
                   <Button
-                    variant={userVote === "for" ? "ghost" : "outline"}
+                    variant={userVote === "for" ? "default" : "outline"}
                     size="sm"
                     className={cn(
                       "gap-1.5 rounded-lg border-2 transition-all",
                       userVote === "for"
-                        ? "!border-success !bg-success !text-success-foreground hover:!bg-success/90 shadow-sm"
-                        : "border-border bg-secondary/70 text-foreground hover:border-success/40 hover:bg-success/10 hover:text-success"
+                        ? "!border-green-600 !bg-green-600 !text-white hover:!bg-green-700 shadow-sm"
+                        : "border-border bg-secondary/70 text-foreground hover:border-green-500/40 hover:bg-green-500/10 hover:text-green-600"
                     )}
                     onClick={() => onVote(activity.id, "for")}
                     disabled={isLoading || disabled}
@@ -127,13 +127,13 @@ export function VotingCard({
                     {userVote === "for" && <Check className="h-3 w-3 ml-1" />}
                   </Button>
                   <Button
-                    variant={userVote === "against" ? "ghost" : "outline"}
+                    variant={userVote === "against" ? "default" : "outline"}
                     size="sm"
                     className={cn(
                       "gap-1.5 rounded-lg border-2 transition-all",
                       userVote === "against"
-                        ? "!border-destructive !bg-destructive !text-destructive-foreground hover:!bg-destructive/90 shadow-sm"
-                        : "border-border bg-secondary/70 text-foreground hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                        ? "!border-red-600 !bg-red-600 !text-white hover:!bg-red-700 shadow-sm"
+                        : "border-border bg-secondary/70 text-foreground hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-600"
                     )}
                     onClick={() => onVote(activity.id, "against")}
                     disabled={isLoading || disabled}
@@ -144,13 +144,13 @@ export function VotingCard({
                     {userVote === "against" && <Check className="h-3 w-3 ml-1" />}
                   </Button>
                   <Button
-                    variant={userVote === "abstain" ? "ghost" : "outline"}
+                    variant={userVote === "abstain" ? "secondary" : "outline"}
                     size="sm"
                     className={cn(
                       "gap-1.5 rounded-lg border-2 transition-all",
                       userVote === "abstain"
-                        ? "!border-secondary !bg-secondary !text-secondary-foreground hover:!bg-secondary/80 shadow-sm"
-                        : "border-border bg-secondary/70 text-foreground hover:border-muted-foreground/40 hover:bg-muted/30 hover:text-muted-foreground"
+                        ? "!border-gray-500 !bg-gray-500 !text-white hover:!bg-gray-600 shadow-sm"
+                        : "border-border bg-secondary/70 text-foreground hover:border-gray-500/40 hover:bg-gray-500/10 hover:text-gray-600"
                     )}
                     onClick={() => onVote(activity.id, "abstain")}
                     disabled={isLoading || disabled}

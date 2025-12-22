@@ -1019,12 +1019,7 @@ function mapEventFromApi(apiEvent: ApiEvent): Event {
     // Convert map to array
     activityVotes = Array.from(votesByActivity.entries()).map(([activityId, votes]) => ({
       activityId,
-      votes: votes.map(v => ({
-        userId: v.user_id,
-        userName: v.user_name,
-        vote: v.vote as VoteType,
-        votedAt: v.voted_at,
-      })),
+      votes: votes,
     }));
   }
 

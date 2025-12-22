@@ -92,13 +92,78 @@ export default function EventDetailPage() {
   }, [event?.phase]);
 
   const handleVote = async (activityId: string, vote: VoteType) => {
-    if (!eventCode) return;
-    setActionLoading(true);
-    const result = await voteOnActivity(eventCode, activityId, vote);
-    if (result.data) {
-      setEvent(result.data);
+    if (!eventCode || !event || !currentUser) return;
+    
+    // Optimistic Update
+    const previousEvent = { ...event };
+    
+    setEvent((prev) => {
+      if (!prev) return null;
+      
+      const newActivityVotes = prev.activityVotes.map((av) => {
+        if (av.activityId !== activityId) return av;
+        
+        // Remove existing vote by this user
+        const filteredVotes = av.votes.filter((v) => v.userId !== currentUser.id);
+        
+        // Add new vote
+        filteredVotes.push({
+          userId: currentUser.id,
+          userName: currentUser.name,
+          vote: vote,
+          votedAt: new Date().toISOString(),
+        });
+        
+        return {
+          ...av,
+          votes: filteredVotes,
+        };
+      });
+
+      // If this activity had no votes entry yet, create it
+      if (!prev.activityVotes.find(av => av.activityId === activityId)) {
+        newActivityVotes.push({
+          activityId,
+          votes: [{
+            userId: currentUser.id,
+            userName: currentUser.name,
+            vote: vote,
+            votedAt: new Date().toISOString(),
+          }]
+        });
+      }
+
+      // Also update participant hasVoted status
+      const newParticipants = prev.participants.map(p => 
+        p.userId === currentUser.id ? { ...p, hasVoted: true } : p
+      );
+
+      return {
+        ...prev,
+        activityVotes: newActivityVotes,
+        participants: newParticipants
+      };
+    });
+
+    // We don't setActionLoading(true) here to avoid disabling the button immediately/flickering
+    // or we can set it but the optimistic update makes it look done.
+    // If we disable, we prevent spam.
+    setActionLoading(true); 
+
+    try {
+      const result = await voteOnActivity(eventCode, activityId, vote);
+      if (result.data) {
+        setEvent(result.data);
+      } else {
+        // Revert on failure (no data returned usually means error in this client pattern if not caught)
+         setEvent(previousEvent);
+      }
+    } catch (error) {
+      // Revert on error
+      setEvent(previousEvent);
+    } finally {
+      setActionLoading(false);
     }
-    setActionLoading(false);
   };
 
   const handleAdvancePhase = async () => {
