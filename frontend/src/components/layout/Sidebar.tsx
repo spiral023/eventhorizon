@@ -18,19 +18,21 @@ import {
 
   Calendar,
 
-  Settings,
+    Settings,
 
-  LogOut,
+    LogOut,
 
-  Sparkles,
+    Sparkles,
 
-  ChevronRight,
+    ShieldCheck,
 
-  ChevronDown,
+    ChevronRight,
 
-  Lock,
+    ChevronDown,
 
-} from "lucide-react";
+    Lock,
+
+  } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -43,6 +45,8 @@ import { getRooms, getEventsByAccessCode } from "@/services/apiClient";
 import type { Room, Event } from "@/types/domain";
 
 import { cn } from "@/lib/utils";
+
+import { LegalNoticeDialog } from "@/components/shared/LegalNoticeDialog";
 
 
 
@@ -563,33 +567,61 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
           <>
 
-            {bottomNavItems.map((item) => (
+                        {bottomNavItems.map((item) => (
 
-              <NavItemComponent key={item.to} item={item} onNavigate={onNavigate} />
+                          <NavItemComponent key={item.to} item={item} onNavigate={onNavigate} />
 
-            ))}
+                        ))}
 
-            <Button
+                        <LegalNoticeDialog
 
-              variant="ghost"
+                          trigger={
 
-              className={cn(
+                            <Button
 
-                "w-full justify-start gap-3 px-4 py-2.5 h-auto rounded-xl text-sm font-medium",
+                              variant="ghost"
 
-                "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              className={cn(
 
-              )}
+                                "w-full justify-start gap-3 px-4 py-2.5 h-auto rounded-xl text-sm font-medium",
 
-              onClick={handleLogout}
+                                "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
 
-            >
+                              )}
 
-              <LogOut className="h-5 w-5" />
+                            >
 
-              <span>Abmelden</span>
+                              <ShieldCheck className="h-5 w-5" />
 
-            </Button>
+                              <span>Impressum</span>
+
+                            </Button>
+
+                          }
+
+                        />
+
+                        <Button
+
+                          variant="ghost"
+
+                          className={cn(
+
+                            "w-full justify-start gap-3 px-4 py-2.5 h-auto rounded-xl text-sm font-medium",
+
+                            "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+
+                          )}
+
+                          onClick={handleLogout}
+
+                        >
+
+                          <LogOut className="h-5 w-5" />
+
+                          <span>Abmelden</span>
+
+                        </Button>
 
           </>
 

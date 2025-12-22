@@ -98,18 +98,52 @@ export default function TeamPage() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-500">
-        <div className="space-y-2">
-          <div className="h-10 w-64 bg-secondary/30 rounded-lg animate-pulse" />
-          <div className="h-4 w-96 bg-secondary/20 rounded animate-pulse" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-in fade-in duration-700">
+        <div className="relative">
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+            }}
+            transition={{ 
+              duration: 4, 
+              repeat: Infinity,
+              ease: "easeInOut" 
+            }}
+            className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center"
+          >
+            <Brain className="w-12 h-12 text-primary opacity-50" />
+          </motion.div>
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 bg-primary/20 rounded-full blur-2xl -z-10"
+          />
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-2 h-48 bg-secondary/30 rounded-3xl animate-pulse" />
-          <div className="h-48 bg-secondary/30 rounded-3xl animate-pulse" />
+        
+        <div className="text-center space-y-3 max-w-sm">
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            KI-Analyse läuft...
+          </h3>
+          <p className="text-muted-foreground animate-pulse">
+            Wir werten die Präferenzen deines Teams aus, um die perfekte Strategie zu berechnen.
+          </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="h-64 bg-secondary/30 rounded-2xl animate-pulse" />
-          <div className="h-64 bg-secondary/30 rounded-2xl animate-pulse" />
+
+        <div className="grid gap-4 w-full max-w-md">
+          <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+              className="h-full bg-primary"
+            />
+          </div>
+          <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
+            <span>Datenabgleich</span>
+            <span>Profil-Mapping</span>
+            <span>Synergie-Check</span>
+          </div>
         </div>
       </div>
     );
