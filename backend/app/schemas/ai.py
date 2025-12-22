@@ -10,6 +10,7 @@ class CategoryDistribution(BaseModel):
     """Kategorie-Verteilung im Team"""
     category: str
     percentage: float = Field(ge=0, le=100, description="Prozentanteil der Kategorie")
+    count: int = Field(ge=0, description="Anzahl der Favoriten in dieser Kategorie")
 
 
 class TeamPreferenceSummary(BaseModel):

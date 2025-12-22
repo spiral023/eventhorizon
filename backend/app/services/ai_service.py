@@ -130,9 +130,10 @@ class AIService:
                                 "type": "object",
                                 "properties": {
                                     "category": {"type": "string"},
-                                    "percentage": {"type": "number"}
+                                    "percentage": {"type": "number"},
+                                    "count": {"type": "integer"}
                                 },
-                                "required": ["category", "percentage"],
+                                "required": ["category", "percentage", "count"],
                                 "additionalProperties": False
                             }
                         },

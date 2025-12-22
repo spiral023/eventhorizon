@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Users, LogIn, Plus } from "lucide-react";
+import { Users, LogIn, Plus, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { RoomCard } from "@/components/shared/RoomCard";
+import { RoomCard, RoomCardSkeleton } from "@/components/shared/RoomCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
 import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
@@ -30,24 +30,27 @@ export default function RoomsPage() {
   };
 
   const actionButtons = (
-    <div className="flex w-full max-w-md flex-col gap-2">
+    <div className="flex items-center gap-2">
       <JoinRoomDialog
         trigger={
           <Button
             variant="outline"
-            className="w-full justify-center gap-2 rounded-xl"
+            size="sm"
+            className="gap-2 rounded-xl"
           >
             <LogIn className="h-4 w-4" />
-            Raum beitreten
+            <span className="hidden sm:inline">Raum beitreten</span>
+            <span className="sm:hidden">Beitreten</span>
           </Button>
         }
       />
       <CreateRoomDialog
         onRoomCreated={handleRoomCreated}
         trigger={
-          <Button className="w-full justify-center gap-2 rounded-xl">
+          <Button size="sm" className="gap-2 rounded-xl">
             <Plus className="h-4 w-4" />
-            Neuer Raum
+            <span className="hidden sm:inline">Neuer Raum</span>
+            <span className="sm:hidden">Neu</span>
           </Button>
         }
       />
@@ -63,23 +66,40 @@ export default function RoomsPage() {
       />
 
       {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-32 rounded-2xl bg-secondary/30 animate-pulse"
-            />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <RoomCardSkeleton key={i} />
           ))}
         </div>
       ) : rooms.length === 0 ? (
         <EmptyState
           icon={Users}
           title="Noch keine Räume"
-          description="Erstelle deinen ersten Raum, um mit der Event-Planung zu starten."
-          action={<CreateRoomDialog onRoomCreated={handleRoomCreated} />}
+          description="Erstelle deinen ersten Raum oder tritt einem bestehenden bei, um mit der Event-Planung zu starten."
+          action={
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <JoinRoomDialog
+                trigger={
+                  <Button variant="outline" className="gap-2 rounded-xl w-full sm:w-auto">
+                    <LogIn className="h-4 w-4" />
+                    Bestehendem Raum beitreten
+                  </Button>
+                }
+              />
+              <CreateRoomDialog
+                onRoomCreated={handleRoomCreated}
+                trigger={
+                  <Button className="gap-2 rounded-xl w-full sm:w-auto">
+                    <Sparkles className="h-4 w-4" />
+                    Ersten Raum erstellen
+                  </Button>
+                }
+              />
+            </div>
+          }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room, index) => (
             <div
               key={room.id}
@@ -95,16 +115,17 @@ export default function RoomsPage() {
         </div>
       )}
 
-      <div className="fixed bottom-5 right-5 sm:hidden">
+      {/* Mobile Floating Action Button */}
+      <div className="fixed bottom-20 right-4 sm:hidden z-40">
         <CreateRoomDialog
           onRoomCreated={handleRoomCreated}
           trigger={
             <Button
               size="icon"
-              className="h-14 w-14 rounded-full shadow-lg shadow-primary/30"
+              className="h-14 w-14 rounded-full shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-shadow duration-300"
               aria-label="Neuen Raum erstellen"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-6 w-6" />
             </Button>
           }
         />

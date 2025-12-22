@@ -292,7 +292,12 @@ export default function TeamPage() {
                       <span className={cn("w-2 h-2 rounded-full", CategoryColors[cat.category])} />
                       {CategoryLabels[cat.category]}
                     </span>
-                    <span className="text-muted-foreground font-mono">{cat.percentage}%</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground">
+                        {cat.count} {cat.count === 1 ? 'Favorit' : 'Favoriten'}
+                      </span>
+                      <span className="text-muted-foreground font-mono">{cat.percentage}%</span>
+                    </div>
                   </div>
                   <div className="h-2 rounded-full bg-secondary overflow-hidden">
                     <motion.div

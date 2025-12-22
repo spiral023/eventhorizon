@@ -130,7 +130,8 @@ async def get_team_recommendations(
             percentage = round((count / total_favorites) * 100, 1)
             real_distribution.append({
                 "category": cat,
-                "percentage": percentage
+                "percentage": percentage,
+                "count": count
             })
         # Sort by percentage descending
         real_distribution.sort(key=lambda x: x["percentage"], reverse=True)

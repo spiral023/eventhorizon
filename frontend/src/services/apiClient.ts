@@ -1787,7 +1787,7 @@ export async function deleteActivityComment(activityId: string, commentId: strin
 // --- AI / Extras ---
 
 export interface TeamPreferenceSummary {
-  categoryDistribution: { category: EventCategory; percentage: number }[];
+  categoryDistribution: { category: EventCategory; percentage: number; count: number }[];
   preferredGoals: PrimaryGoal[];
   recommendedActivityIds: string[];
   teamVibe: "action" | "relax" | "mixed";
