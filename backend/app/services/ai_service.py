@@ -94,7 +94,8 @@ class AIService:
         self,
         room_id: str,
         members: List[Dict],
-        activities: List[Dict]
+        activities: List[Dict],
+        current_distribution: Optional[List[Dict]] = None
     ) -> Dict[str, Any]:
         """
         Analysiere Team-Präferenzen für einen Room
@@ -103,6 +104,7 @@ class AIService:
             room_id: Room UUID
             members: Liste von User-Objekten mit Präferenzen
             activities: Verfügbare Aktivitäten aus der Datenbank
+            current_distribution: Optionale Liste der echten Kategorie-Verteilung [{category, percentage}]
 
         Returns:
             TeamPreferenceSummary als Dict mit:
@@ -166,6 +168,11 @@ class AIService:
         # Prepare context
         members_summary = self._summarize_members(members)
         activities_summary = self._summarize_activities(activities)
+        distribution_context = ""
+        if current_distribution:
+            distribution_context = "\n**Tatsächliches Abstimmungsverhalten (Favoriten):**\n"
+            for item in current_distribution:
+                distribution_context += f"- {item['category']}: {item['percentage']}%\n"
 
         messages = [
             {
@@ -180,15 +187,15 @@ class AIService:
 
 **Team-Mitglieder ({len(members)} Personen):**
 {members_summary}
-
+{distribution_context}
 **Verfügbare Aktivitäten:**
 {activities_summary}
 
 Aufgabe:
-1. Ermittle die bevorzugten Aktivitätskategorien (als Prozentverteilung)
+1. Ermittle die bevorzugten Aktivitätskategorien (als Prozentverteilung). ORIENTIERE DICH DABEI STARK AN DEN TATSÄCHLICHEN FAVORITEN, falls vorhanden.
 2. Identifiziere die Haupt-Ziele (z.B. teambuilding, fun, relax)
-3. Empfehle die 3-5 besten Aktivitäten (IDs aus der Liste)
-4. Bestimme den Team-Vibe (action/relax/mixed)
+3. Empfehle die 3-5 besten Aktivitäten (IDs aus der Liste), die am besten zu den Favoriten passen.
+4. Bestimme den Team-Vibe (action/relax/mixed) basierend auf den Daten.
 5. Gib 2-3 prägnante Insights über die Team-Dynamik
 
 Berücksichtige:

@@ -10,9 +10,13 @@ Provides AI-powered features:
 
 from fastapi import APIRouter, Depends, HTTPException
 import logging
+import hashlib
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
+
+# Simple in-memory cache: {cache_key: TeamPreferenceSummary}
+TEAM_ANALYSIS_CACHE = {}
 
 from sqlalchemy.future import select
 from sqlalchemy import or_
@@ -96,6 +100,19 @@ async def get_team_recommendations(
     members = members_result.scalars().all()
 
 
+    # Generate Cache Key based on members and their favorites
+    fingerprint_parts = [str(room_id)]
+    for m in members:
+        fav_ids = sorted([str(a.id) for a in m.favorite_activities])
+        fingerprint_parts.append(f"{m.id}:{','.join(fav_ids)}")
+    fingerprint_parts.sort()
+    
+    cache_key = hashlib.md5("|".join(fingerprint_parts).encode()).hexdigest()
+    
+    if cache_key in TEAM_ANALYSIS_CACHE:
+        logger.info(f"Returning cached team analysis for room {room_id}")
+        return TEAM_ANALYSIS_CACHE[cache_key]
+
     # Calculate real category distribution from favorites
     category_counts = {}
     total_favorites = 0
@@ -157,7 +174,8 @@ async def get_team_recommendations(
         ai_result = ai_service.analyze_team_preferences(
             room_id=str(room_id),
             members=members_data,
-            activities=activities_data
+            activities=activities_data,
+            current_distribution=real_distribution if total_favorites > 0 else None
         )
     except Exception as e:
         ai_error = str(e)
@@ -183,6 +201,7 @@ async def get_team_recommendations(
     if total_favorites > 0:
         result["categoryDistribution"] = real_distribution
         
+    TEAM_ANALYSIS_CACHE[cache_key] = result
     return result
 
 
