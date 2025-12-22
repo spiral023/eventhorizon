@@ -3,17 +3,28 @@ import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { DivIcon, LatLngBounds } from "leaflet";
 import { motion } from "framer-motion";
-import { MapPin, Euro, Clock, ExternalLink, Car, FootprintsIcon } from "lucide-react";
+import { MapPin, Euro, Clock, ExternalLink, Car, FootprintsIcon, X, Zap, UtensilsCrossed, Sparkles, PartyPopper, Landmark, TreePine, Palette } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { getActivities } from "@/services/apiClient";
-import type { Activity } from "@/types/domain";
+import type { Activity, EventCategory } from "@/types/domain";
 import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
-import { getActivityDurationMinutes, formatDuration as formatDurationUtil } from "@/utils/activityUtils";
+import { getActivityDurationMinutes, formatDuration as formatDurationUtil, type ActivityFilters, defaultFilters } from "@/utils/activityUtils";
 import "leaflet/dist/leaflet.css";
+
+// Category icons for quick filters
+const CategoryIcons: Record<EventCategory, React.ReactNode> = {
+  action: <Zap className="h-4 w-4" />,
+  food: <UtensilsCrossed className="h-4 w-4" />,
+  relax: <Sparkles className="h-4 w-4" />,
+  party: <PartyPopper className="h-4 w-4" />,
+  culture: <Landmark className="h-4 w-4" />,
+  outdoor: <TreePine className="h-4 w-4" />,
+  creative: <Palette className="h-4 w-4" />,
+};
 
 // Helper function to get color based on walking time
 function getMarkerColor(walkingTime: number | undefined): string {
@@ -207,6 +218,25 @@ export default function MapPage() {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [geocodeCache, setGeocodeCache] = useState<Record<string, [number, number]>>({});
+  const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
+
+  // Filter handlers
+  const toggleCategory = (category: EventCategory) => {
+    setFilters((prev) => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter((c) => c !== category)
+        : [...prev.categories, category],
+    }));
+  };
+
+  const clearFilters = () => setFilters(defaultFilters);
+
+  // Filtered activities based on category selection
+  const filteredActivities = useMemo(() => {
+    if (filters.categories.length === 0) return activities;
+    return activities.filter((a) => filters.categories.includes(a.category));
+  }, [activities, filters.categories]);
 
   const getDisplayDuration = (activity: Activity) => {
     if (activity.duration) return activity.duration;
@@ -272,7 +302,7 @@ export default function MapPage() {
 
   const activityMarkers = useMemo(
     () =>
-      activities.reduce((markers, activity) => {
+      filteredActivities.reduce((markers, activity) => {
         const position =
           activity.coordinates ||
           geocodeCache[activity.id] ||
@@ -283,7 +313,7 @@ export default function MapPage() {
         }
         return markers;
       }, [] as { activity: Activity; position: [number, number] }[]),
-    [activities, geocodeCache]
+    [filteredActivities, geocodeCache]
   );
 
   const mapCenter = activityMarkers[0]?.position || AUSTRIA_CENTER;
@@ -306,6 +336,38 @@ export default function MapPage() {
         title="Aktivitäten-Karte"
         description="Entdecke Aktivitäten in deiner Region direkt auf der Karte"
       />
+
+      {/* Quick Category Filters */}
+      <div className="flex items-center gap-3 overflow-x-auto pb-2 hide-scrollbar">
+        {filters.categories.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="shrink-0 gap-1 text-xs h-8 rounded-lg"
+          >
+            <X className="h-3.5 w-3.5" />
+            Zurücksetzen
+          </Button>
+        )}
+        {(Object.keys(CategoryLabels) as EventCategory[]).map((category) => (
+          <Button
+            key={category}
+            variant={filters.categories.includes(category) ? "default" : "secondary"}
+            size="sm"
+            onClick={() => toggleCategory(category)}
+            className={cn(
+              "shrink-0 gap-2 h-9 px-4 rounded-xl transition-all",
+              filters.categories.includes(category)
+                ? "shadow-md"
+                : "hover:bg-secondary/80 hover:border-primary/30"
+            )}
+          >
+            {CategoryIcons[category]}
+            {CategoryLabels[category]}
+          </Button>
+        ))}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Map */}
@@ -446,11 +508,35 @@ export default function MapPage() {
           ) : (
             // Activity List
             <>
-              <h3 className="font-semibold">
-                {activities.length} Aktivitäten auf der Karte
-              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">
+                  {filteredActivities.length === activities.length
+                    ? `${activities.length} Aktivitäten`
+                    : `${filteredActivities.length} von ${activities.length}`}
+                </h3>
+                {filters.categories.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {filters.categories.length} Filter
+                  </Badge>
+                )}
+              </div>
+
+              {filteredActivities.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <MapPin className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground">Keine Aktivitäten für diese Kategorie.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="mt-4 rounded-xl"
+                  >
+                    Filter zurücksetzen
+                  </Button>
+                </div>
+              ) : (
               <div className="space-y-3 max-h-[540px] overflow-y-auto pr-2">
-                {activities.map((activity, index) => (
+                {filteredActivities.map((activity, index) => (
                   <motion.div
                     key={activity.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -494,6 +580,7 @@ export default function MapPage() {
                   </motion.div>
                 ))}
               </div>
+              )}
             </>
           )}
         </motion.div>
