@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RoomCard } from "@/components/shared/RoomCard";
 import { ActivityCard } from "@/components/shared/ActivityCard";
 import { EventCard } from "@/components/events/EventCard";
+import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { 
@@ -150,12 +151,14 @@ export default function HomePage() {
                       Event erstellen
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="rounded-2xl gap-2 bg-background/50 backdrop-blur-sm" asChild>
-                    <Link to="/rooms/join">
-                      <Users className="h-5 w-5" />
-                      Raum beitreten
-                    </Link>
-                  </Button>
+                  <JoinRoomDialog
+                    trigger={
+                      <Button size="lg" variant="outline" className="rounded-2xl gap-2 bg-background/50 backdrop-blur-sm">
+                        <Users className="h-5 w-5" />
+                        Raum beitreten
+                      </Button>
+                    }
+                  />
                 </>
               ) : (
                 <>
