@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Calendar as CalendarIcon, Users, Clock, Mail, Phone, User, CheckCircle2, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
@@ -18,9 +18,20 @@ import { Activity } from "@/types/domain";
 interface BookingRequestDialogProps {
   activity: Activity;
   children: React.ReactNode;
+  defaultDate?: string | Date;
+  defaultStartTime?: string;
+  defaultEndTime?: string;
+  defaultParticipants?: number;
 }
 
-export function BookingRequestDialog({ activity, children }: BookingRequestDialogProps) {
+export function BookingRequestDialog({
+  activity,
+  children,
+  defaultDate,
+  defaultStartTime,
+  defaultEndTime,
+  defaultParticipants,
+}: BookingRequestDialogProps) {
   const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -35,6 +46,38 @@ export function BookingRequestDialog({ activity, children }: BookingRequestDialo
   const [contactName, setContactName] = useState(user?.name || "");
   const [contactEmail, setContactEmail] = useState(user?.email || "");
   const [contactPhone, setContactPhone] = useState(user?.phone || "");
+
+  const parseDefaultDate = (value?: string | Date) => {
+    if (!value) return undefined;
+    const parsed = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  };
+
+  const applyDefaults = useCallback(() => {
+    setStep(1);
+    setDate(parseDefaultDate(defaultDate));
+    setStartTime(defaultStartTime ?? "");
+    setEndTime(defaultEndTime ?? "");
+    setParticipants(defaultParticipants && defaultParticipants > 0 ? String(defaultParticipants) : "");
+    setNotes("");
+    setContactName(user?.name || "");
+    setContactEmail(user?.email || "");
+    setContactPhone(user?.phone || "");
+  }, [
+    defaultDate,
+    defaultStartTime,
+    defaultEndTime,
+    defaultParticipants,
+    user?.name,
+    user?.email,
+    user?.phone,
+  ]);
+
+  useEffect(() => {
+    if (open) {
+      applyDefaults();
+    }
+  }, [open, applyDefaults]);
 
   const handleNext = () => {
     if (step === 1) {
@@ -82,15 +125,7 @@ export function BookingRequestDialog({ activity, children }: BookingRequestDialo
   };
 
   const resetForm = () => {
-    setStep(1);
-    setDate(undefined);
-    setStartTime("");
-    setEndTime("");
-    setParticipants("");
-    setNotes("");
-    setContactName(user?.name || "");
-    setContactEmail(user?.email || "");
-    setContactPhone(user?.phone || "");
+    applyDefaults();
     setOpen(false);
   };
 

@@ -20,6 +20,7 @@ import { VotingCard } from "@/components/events/VotingCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
 import { EventActionsPanel } from "@/components/events/EventActionsPanel";
+import { BookingRequestDialog } from "@/components/activities/BookingRequestDialog";
 import {
   getEventByCode,
   getActivities,
@@ -262,6 +263,9 @@ export default function EventDetailPage() {
   const finalDateOption = event.finalDateOptionId
     ? event.dateOptions.find((d) => d.id === event.finalDateOptionId)
     : null;
+  const finalDateParticipantsCount = finalDateOption
+    ? finalDateOption.responses.filter((response) => response.response === "yes").length
+    : undefined;
 
   const formatDuration = (activity: Activity | null) => {
     if (!activity) return "–";
@@ -701,18 +705,30 @@ export default function EventDetailPage() {
                     )}
                   </div>
                   
-                  {(chosenActivity.website || chosenActivity.reservationUrl) && (
+                  {(chosenActivity.website || chosenActivity.reservationUrl || isCreator) && (
                      <div className="flex gap-2 pt-2">
                         {chosenActivity.website && (
                           <Button variant="outline" className="flex-1 rounded-xl" asChild>
                             <a href={chosenActivity.website} target="_blank" rel="noopener noreferrer">Webseite</a>
                           </Button>
                         )}
-                        {chosenActivity.reservationUrl && (
+                        {isCreator ? (
+                          <BookingRequestDialog
+                            activity={chosenActivity}
+                            defaultDate={finalDateOption?.date}
+                            defaultStartTime={finalDateOption?.startTime}
+                            defaultEndTime={finalDateOption?.endTime}
+                            defaultParticipants={finalDateParticipantsCount}
+                          >
+                            <Button className="flex-1 rounded-xl">
+                              Buchungsanfrage senden
+                            </Button>
+                          </BookingRequestDialog>
+                        ) : chosenActivity.reservationUrl ? (
                           <Button className="flex-1 rounded-xl" asChild>
                             <a href={chosenActivity.reservationUrl} target="_blank" rel="noopener noreferrer">Reservieren</a>
                           </Button>
-                        )}
+                        ) : null}
                      </div>
                   )}
                 </CardContent>

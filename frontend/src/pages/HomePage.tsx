@@ -91,7 +91,7 @@ export default function HomePage() {
     }
 
     // Sort by favorites count
-    return result.sort((a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)).slice(0, 4);
+    return result.sort((a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)).slice(0, 1);
   }, [allActivities, debouncedSearch]);
 
   const handleFavoriteToggle = async (activityId: string) => {
@@ -275,7 +275,7 @@ export default function HomePage() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">
-                {debouncedSearch ? "Gefundene Aktivitäten" : "Beliebt"}
+                {debouncedSearch ? "Gefundene Aktivität" : "Beliebteste Aktivität"}
               </h3>
               <Button variant="link" size="sm" asChild className="text-primary p-0">
                 <Link to="/activities">Mehr</Link>
@@ -287,7 +287,7 @@ export default function HomePage() {
                 [1, 2].map(i => <Skeleton key={i} className="h-64 rounded-2xl" />)
               ) : filteredActivities.length > 0 ? (
                 <AnimatePresence mode="popLayout">
-                  {filteredActivities.slice(0, 3).map((activity) => (
+                  {filteredActivities.map((activity) => (
                     <motion.div
                       key={activity.id}
                       initial={{ opacity: 0, scale: 0.95 }}
