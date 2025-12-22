@@ -9,8 +9,13 @@ Provides AI-powered features:
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
+
 from sqlalchemy.future import select
+from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 from datetime import datetime
@@ -28,96 +33,12 @@ from app.schemas.ai import (
     EventInvite,
     VotingReminder
 )
-from app.models.domain import Room, Event, Activity, User, RoomRole
+from app.models.domain import Room, Event, Activity, User, RoomRole, RoomMember
 
 router = APIRouter(prefix="/ai", tags=["ai"])
+# ... (rest of imports)
 
-
-# Test endpoint for OpenRouter API
-AIModel = Literal[
-    "deepseek/deepseek-v3.2-exp",
-    "x-ai/grok-4.1-fast:free",
-    "x-ai/grok-4-fast",
-    "qwen/qwen3-235b-a22b-thinking-2507",
-    "z-ai/glm-4.5-air:free",
-    "openai/gpt-5-nano"
-]
-
-class TestAIRequest(BaseModel):
-    """Request model for AI test endpoint"""
-    message: str = Field(
-        description="Your message to the AI",
-        example="Erzähl mir einen Witz über Teambuilding"
-    )
-    model: AIModel = Field(
-        default="deepseek/deepseek-v3.2-exp",
-        description="OpenRouter model to use"
-    )
-
-
-class TestAIResponse(BaseModel):
-    """Response model for AI test endpoint"""
-    response: str = Field(description="AI's response")
-    ai_model_used: str = Field(description="Model that was used")
-
-
-@router.post("/test", response_model=TestAIResponse)
-async def test_ai_connection(
-    request: TestAIRequest,
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Test-Endpoint für OpenRouter API
-
-    Sendet eine einfache Nachricht an OpenRouter und gibt die Antwort zurück.
-    Nützlich zum Testen ob der API-Key funktioniert und die Verbindung steht.
-
-    Args:
-        request: TestAIRequest mit message und optional model
-
-    Returns:
-        TestAIResponse mit der AI-Antwort
-
-    Raises:
-        HTTPException: Wenn AI-Service nicht konfiguriert ist oder API-Call fehlschlägt
-    """
-
-    if not ai_service.client:
-        raise HTTPException(
-            status_code=503,
-            detail="AI Service nicht konfiguriert - OPENROUTER_API_KEY fehlt in den Environment-Variablen"
-        )
-
-    try:
-        messages = [
-            {
-                "role": "system",
-                "content": "Du bist ein hilfreicher Assistent. Antworte kurz und prägnant auf Deutsch."
-            },
-            {
-                "role": "user",
-                "content": request.message
-            }
-        ]
-
-        response = ai_service._make_completion(
-            model=request.model,
-            messages=messages,
-            temperature=0.7,
-            max_tokens=500
-        )
-
-        return TestAIResponse(
-            response=response,
-            ai_model_used=request.model
-        )
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"OpenRouter API Fehler: {str(e)}"
-        )
-
+# ... (TestAIRequest, TestAIResponse, test_ai_connection)
 
 @router.get("/rooms/{room_id}/recommendations", response_model=TeamPreferenceSummary)
 async def get_team_recommendations(
@@ -144,23 +65,58 @@ async def get_team_recommendations(
     if not room:
         raise HTTPException(status_code=404, detail="Room nicht gefunden")
 
-    # Check if user is member
-    member_result = await db.execute(
-        select(RoomRole).where(
-            RoomRole.room_id == room_id,
-            RoomRole.user_id == current_user.id
+    # Check if user is member or creator
+    is_creator = room.created_by_user_id == current_user.id
+    is_member = False
+    if not is_creator:
+        member_result = await db.execute(
+            select(RoomMember).where(
+                RoomMember.room_id == room_id,
+                RoomMember.user_id == current_user.id
+            )
         )
-    )
-    if not member_result.scalar_one_or_none():
+        is_member = member_result.scalar_one_or_none() is not None
+
+    if not (is_creator or is_member):
         raise HTTPException(status_code=403, detail="Kein Zugriff auf diesen Room")
 
-    # Get all members with their profiles
+    # Get all members (including creator) with their profiles and favorites
     members_result = await db.execute(
         select(User)
-        .join(RoomRole, RoomRole.user_id == User.id)
-        .where(RoomRole.room_id == room_id)
+        .options(selectinload(User.favorite_activities))
+        .where(
+            or_(
+                User.id.in_(
+                    select(RoomMember.user_id).where(RoomMember.room_id == room_id)
+                ),
+                User.id == room.created_by_user_id
+            )
+        )
     )
     members = members_result.scalars().all()
+
+
+    # Calculate real category distribution from favorites
+    category_counts = {}
+    total_favorites = 0
+
+    for member in members:
+        for activity in member.favorite_activities:
+            # activity.category is an Enum, get its value
+            cat_val = activity.category.value if hasattr(activity.category, 'value') else str(activity.category)
+            category_counts[cat_val] = category_counts.get(cat_val, 0) + 1
+            total_favorites += 1
+
+    real_distribution = []
+    if total_favorites > 0:
+        for cat, count in category_counts.items():
+            percentage = round((count / total_favorites) * 100, 1)
+            real_distribution.append({
+                "category": cat,
+                "percentage": percentage
+            })
+        # Sort by percentage descending
+        real_distribution.sort(key=lambda x: x["percentage"], reverse=True)
 
     # Convert to dict for AI service
     members_data = [
@@ -183,7 +139,7 @@ async def get_team_recommendations(
             "id": str(a.id),
             "title": a.title,
             "category": a.category,
-            "est_price_pp": a.est_price_pp,
+            "est_price_pp": a.est_price_per_person,
             "location_region": a.location_region,
             "season": a.season,
             "primary_goal": a.primary_goal,
@@ -194,15 +150,40 @@ async def get_team_recommendations(
     ]
 
     # Call AI service
+    ai_result = None
+    ai_error = None
+    
     try:
-        result = ai_service.analyze_team_preferences(
+        ai_result = ai_service.analyze_team_preferences(
             room_id=str(room_id),
             members=members_data,
             activities=activities_data
         )
-        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI-Analyse fehlgeschlagen: {str(e)}")
+        ai_error = str(e)
+        logger.error(f"AI analysis failed: {e}")
+
+    # Fallback if AI failed but we have real data
+    if not ai_result:
+        if total_favorites > 0:
+            ai_result = {
+                "categoryDistribution": [], # Will be overwritten
+                "preferredGoals": ["teambuilding"],
+                "recommendedActivityIds": [],
+                "teamVibe": "mixed",
+                "insights": ["KI-Analyse nicht verfügbar. Anzeige basiert auf echten Nutzerdaten."]
+            }
+        else:
+            # No AI and no Data -> Error
+            raise HTTPException(status_code=500, detail=f"AI-Analyse fehlgeschlagen: {ai_error}")
+
+    result = ai_result
+    
+    # Overwrite with real data if available
+    if total_favorites > 0:
+        result["categoryDistribution"] = real_distribution
+        
+    return result
 
 
 @router.get("/events/{event_id}/suggestions", response_model=List[AiRecommendation])
@@ -233,14 +214,24 @@ async def get_activity_suggestions(
     if not event:
         raise HTTPException(status_code=404, detail="Event nicht gefunden")
 
-    # Verify access (must be room member)
-    member_result = await db.execute(
-        select(RoomRole).where(
-            RoomRole.room_id == event.room_id,
-            RoomRole.user_id == current_user.id
+    # Verify access (must be room member or creator of the room)
+    # Fetch room creator ID first
+    room_result = await db.execute(select(Room.created_by_user_id).where(Room.id == event.room_id))
+    room_creator_id = room_result.scalar_one_or_none()
+
+    is_creator = room_creator_id == current_user.id
+    is_member = False
+    
+    if not is_creator:
+        member_result = await db.execute(
+            select(RoomMember).where(
+                RoomMember.room_id == event.room_id,
+                RoomMember.user_id == current_user.id
+            )
         )
-    )
-    if not member_result.scalar_one_or_none():
+        is_member = member_result.scalar_one_or_none() is not None
+
+    if not (is_creator or is_member):
         raise HTTPException(status_code=403, detail="Kein Zugriff auf dieses Event")
 
     # Get event data
@@ -272,7 +263,7 @@ async def get_activity_suggestions(
             "id": str(a.id),
             "title": a.title,
             "category": a.category,
-            "est_price_pp": a.est_price_pp,
+            "est_price_pp": a.est_price_per_person,
             "location_region": a.location_region,
             "season": a.season,
             "primary_goal": a.primary_goal,

@@ -14,7 +14,7 @@ export interface AvatarUploadInfo {
 // CONFIG & HELPERS
 // ============================================ 
 
-const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
+const USE_MOCKS = false; // import.meta.env.VITE_USE_MOCKS === 'true';
 const API_BASE = '/api/v1';
 type CachedBearer = { token: string; expiresAt: number };
 let cachedBearer: CachedBearer | null = null;
@@ -1794,23 +1794,28 @@ export interface AiRecommendation {
 }
 
 export async function getTeamRecommendations(roomId: string): Promise<ApiResult<TeamPreferenceSummary>> {
-  await delay(600);
-  const summary: TeamPreferenceSummary = {
-    categoryDistribution: [
-      { category: "action", percentage: 35 },
-      { category: "food", percentage: 25 },
-      { category: "outdoor", percentage: 20 },
-      { category: "relax", percentage: 15 },
-      { category: "creative", percentage: 5 },
-    ],
-    preferredGoals: ["teambuilding", "fun"],
-    recommendedActivityIds: ["act-1"],
-    teamVibe: "action",
-    insights: [
-      "Euer Team bevorzugt aktive Erlebnisse mit Wettbewerbscharakter.",
-    ],
-  };
-  return { data: summary };
+  if (USE_MOCKS) {
+    await delay(600);
+    const summary: TeamPreferenceSummary = {
+      categoryDistribution: [
+        { category: "action", percentage: 35 },
+        { category: "food", percentage: 25 },
+        { category: "outdoor", percentage: 20 },
+        { category: "relax", percentage: 15 },
+        { category: "creative", percentage: 5 },
+      ],
+      preferredGoals: ["teambuilding", "fun"],
+      recommendedActivityIds: ["act-1"],
+      teamVibe: "action",
+      insights: [
+        "Euer Team bevorzugt aktive Erlebnisse mit Wettbewerbscharakter.",
+      ],
+    };
+    return { data: summary };
+  }
+
+  const result = await request<TeamPreferenceSummary>(`/ai/rooms/${roomId}/recommendations`);
+  return { data: result.data, error: result.error };
 }
 
 export async function getActivitySuggestionsForEvent(eventCode: string): Promise<ApiResult<AiRecommendation[]>> {

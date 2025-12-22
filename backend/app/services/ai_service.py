@@ -82,6 +82,7 @@ class AIService:
 
             content = completion.choices[0].message.content
             logger.info(f"OpenRouter response received: {len(content)} chars")
+            logger.debug(f"OpenRouter raw content: {content}")
 
             return content
 
@@ -200,7 +201,7 @@ Berücksichtige:
         ]
 
         response = self._make_completion(
-            model="anthropic/claude-3.5-sonnet",
+            model="deepseek/deepseek-chat",
             messages=messages,
             response_format=schema,
             temperature=0.5

@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
-import { getTeamRecommendations, getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
+import { getTeamRecommendations, getActivities, getFavoriteActivityIds, toggleFavorite, getRooms } from "@/services/apiClient";
 import type { TeamPreferenceSummary } from "@/services/apiClient";
-import type { Activity } from "@/types/domain";
+import type { Activity, Room } from "@/types/domain";
 import { CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -36,8 +36,22 @@ export default function TeamPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      let currentRoomId = roomId;
+
+      if (!currentRoomId) {
+        const roomsResult = await getRooms();
+        if (roomsResult.data && roomsResult.data.length > 0) {
+          currentRoomId = roomsResult.data[0].id;
+        }
+      }
+
+      if (!currentRoomId) {
+          setLoading(false);
+          return;
+      }
+
       const [recsResult, activitiesResult, favoritesResult] = await Promise.all([
-        getTeamRecommendations(roomId || "room-1"),
+        getTeamRecommendations(currentRoomId),
         getActivities(),
         getFavoriteActivityIds(),
       ]);
