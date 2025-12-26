@@ -53,6 +53,14 @@ EventHorizon führt Gruppen strukturiert durch den Planungsprozess:
 
 ---
 
+## Hinweis zu UTF-8 (Windows)
+
+Falls Umlaute oder Emojis im Terminal verstümmelt erscheinen, stelle die PowerShell-Ausgabe auf UTF-8:
+
+```powershell
+$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
+
 ## 🚀 Quick Start (Development)
 
 Führe die App lokal in einer Entwicklungsumgebung aus.
