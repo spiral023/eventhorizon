@@ -26,9 +26,9 @@ def test_ai():
     try:
         # Simple test
         response = ai_service._make_completion(
-            model="deepseek/deepseek-chat",
+            model="deepseek/deepseek-v3.2",
             messages=[{"role": "user", "content": "Say 'Hello'"}],
-            max_tokens=10
+            max_tokens=10,
         )
         print(f"Response: '{response}'")
     except Exception as e:

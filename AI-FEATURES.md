@@ -41,7 +41,7 @@ EventHorizon nutzt eine Multi-Modell-Strategie über **OpenRouter**, um für jed
 
 | Feature | Modell | Fokus |
 | :--- | :--- | :--- |
-| **Team-Analyse** | DeepSeek Chat | Komplexe Datenanalyse & Reasoning |
+| **Team-Analyse** | DeepSeek | Komplexe Datenanalyse & Reasoning |
 | **Vorschläge** | GPT-4o | Präzises Ranking & Matching |
 | **Copywriting** | Gemini 2.0 Flash | Kreativität & Geschwindigkeit |
 

@@ -238,10 +238,10 @@ Berücksichtige:
         ]
 
         response = self._make_completion(
-            model="deepseek/deepseek-chat",
+            model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
-            temperature=0.5
+            temperature=0.5,
         )
 
         return json.loads(response)
