@@ -623,6 +623,7 @@ function mapActivityFromApi(apiActivity: ApiActivity): Activity {
     weatherDependent: apiActivity.weather_dependent,
     externalRating: apiActivity.external_rating,
     favoritesCount: apiActivity.favorites_count || apiActivity.favoritesCount || 0,
+    favoritesInRoomCount: apiActivity.favorites_in_room_count ?? apiActivity.favoritesInRoomCount,
     primaryGoal: apiActivity.primary_goal as PrimaryGoal,
     travelTimeMinutes: apiActivity.travel_time_from_office_minutes,
     travelTimeMinutesWalking: apiActivity.travel_time_from_office_minutes_walking,
@@ -640,12 +641,16 @@ function mapActivityFromApi(apiActivity: ApiActivity): Activity {
   };
 }
 
-export async function getActivities(): Promise<ApiResult<Activity[]>> {
+export async function getActivities(roomId?: string): Promise<ApiResult<Activity[]>> {
   if (USE_MOCKS) {
     await delay(400);
     return { data: mockActivities };
   }
-  const result = await request<ApiActivity[]>('/activities');
+  let url = '/activities';
+  if (roomId) {
+    url += `?room_id=${roomId}`;
+  }
+  const result = await request<ApiActivity[]>(url);
   if (result.data) {
     return { data: result.data.map(mapActivityFromApi) };
   }

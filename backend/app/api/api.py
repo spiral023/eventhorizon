@@ -431,18 +431,61 @@ async def resolve_event_identifier(event_identifier: str, db: AsyncSession, opti
 
 # --- Activities ---
 @router.get("/activities", response_model=List[ActivitySchema])
-async def get_activities(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def get_activities(
+    skip: int = 0, 
+    limit: int = 100, 
+    room_id: Optional[str] = None, 
+    db: AsyncSession = Depends(get_db)
+):
     result = await db.execute(select(Activity).offset(skip).limit(limit))
     activities = result.scalars().all()
 
-    # Attach favorites counts in bulk
+    # Attach favorites counts in bulk (Global)
     counts_result = await db.execute(
         select(user_favorites.c.activity_id, func.count().label("cnt"))
         .group_by(user_favorites.c.activity_id)
     )
     counts_map = {row.activity_id: row.cnt for row in counts_result}
+    
+    # If room_id is provided, calculate favorites from room members
+    room_counts_map = {}
+    if room_id:
+        try:
+            # Resolve room UUID (handle invite code or uuid)
+            room = await resolve_room_identifier(room_id, db)
+            
+            # Count favorites for activities ONLY from users who are members of this room
+            # (including creator who might not be in room_member table implicitly? 
+            #  No, our logic adds creator to counts usually, but let's stick to user_favorites join room_members)
+            
+            from app.models.domain import RoomMember
+            from sqlalchemy import or_
+            
+            # Count favorites for activities from users who are members of this room OR the creator
+            
+            # Subquery for valid user IDs in this room (Members)
+            member_subquery = select(RoomMember.user_id).where(RoomMember.room_id == room.id)
+            
+            stmt = (
+                select(user_favorites.c.activity_id, func.count().label("cnt"))
+                .where(
+                    or_(
+                        user_favorites.c.user_id.in_(member_subquery),
+                        user_favorites.c.user_id == room.created_by_user_id
+                    )
+                )
+                .group_by(user_favorites.c.activity_id)
+            )
+            
+            room_counts_result = await db.execute(stmt)
+            room_counts_map = {row.activity_id: row.cnt for row in room_counts_result}
+            
+        except HTTPException:
+            pass # Invalid room_id, ignore
+
     for activity in activities:
         activity.favorites_count = counts_map.get(activity.id, 0)
+        activity.favorites_in_room_count = room_counts_map.get(activity.id, 0)
 
     return activities
 

@@ -1,4 +1,4 @@
-import { ThumbsUp, ThumbsDown, Minus, Check, Trophy } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Minus, Check, Trophy, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +101,15 @@ export function VotingCard({
                 <span>ab {activity.estPricePerPerson} € p.P.</span>
                 <span>•</span>
                 <span>{activity.duration}</span>
+                {activity.favoritesInRoomCount !== undefined && activity.favoritesInRoomCount > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 text-pink-500 font-medium">
+                      <Heart className="h-3 w-3 fill-current" />
+                      {activity.favoritesInRoomCount} {activity.favoritesInRoomCount === 1 ? "Favorit" : "Favoriten"}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 

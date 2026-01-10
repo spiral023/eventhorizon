@@ -97,7 +97,7 @@ class ActivityBase(BaseSchema):
 
     title: str
     category: str
-    tags: List[str] = []
+    tags: Optional[List[str]] = []
     location_region: str
     location_city: Optional[str] = None
     address: Optional[str] = Field(None, validation_alias="location_address", serialization_alias="address")
@@ -105,7 +105,7 @@ class ActivityBase(BaseSchema):
     est_price_pp: Optional[float] = Field(None, validation_alias="est_price_per_person", serialization_alias="est_price_pp")
     price_comment: Optional[str] = None
     
-    accessibility_flags: List[str] = []
+    accessibility_flags: Optional[List[str]] = []
     weather_dependent: bool = False
     
     image_url: Optional[str] = None
@@ -152,6 +152,7 @@ class Activity(ActivityBase):
     slug: str
     created_at: datetime
     favorites_count: int = 0
+    favorites_in_room_count: int = 0
 
 # --- EventParticipant ---
 class EventParticipant(BaseSchema):

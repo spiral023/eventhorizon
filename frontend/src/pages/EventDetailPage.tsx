@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Check, ArrowRight, ChevronDown, Info, MoreVertical } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Check, ArrowRight, ChevronDown, Info, MoreVertical, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -70,17 +70,19 @@ export default function EventDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!eventCode) return;
-      const [eventResult, activitiesResult] = await Promise.all([
-        getEventByCode(eventCode),
-        getActivities(),
-      ]);
-      setEvent(eventResult.data);
-      setActivities(activitiesResult.data);
       
-      // Initial tab set
-      if (eventResult.data) {
-        setActiveTab(eventResult.data.phase);
-        prevPhaseRef.current = eventResult.data.phase;
+      const eventResult = await getEventByCode(eventCode);
+      const fetchedEvent = eventResult.data;
+      setEvent(fetchedEvent || null);
+      
+      if (fetchedEvent) {
+        // Initial tab set
+        setActiveTab(fetchedEvent.phase);
+        prevPhaseRef.current = fetchedEvent.phase;
+        
+        // Fetch activities with room context
+        const activitiesResult = await getActivities(fetchedEvent.roomId);
+        setActivities(activitiesResult.data || []);
       }
       
       setLoading(false);
@@ -593,8 +595,16 @@ export default function EventDetailPage() {
                     />
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-start justify-between gap-2">
-                         <h4 className="font-semibold line-clamp-1">{activity.title}</h4>
-                         <Badge variant="secondary" className="text-[10px] h-5">{CategoryLabels[activity.category]}</Badge>
+                         <div className="flex flex-col gap-1">
+                            <h4 className="font-semibold line-clamp-1">{activity.title}</h4>
+                            {activity.favoritesInRoomCount !== undefined && activity.favoritesInRoomCount > 0 && (
+                              <span className="flex items-center gap-1 text-[10px] text-pink-500 font-medium">
+                                <Heart className="h-3 w-3 fill-current" />
+                                {activity.favoritesInRoomCount} {activity.favoritesInRoomCount === 1 ? "Favorit" : "Favoriten"}
+                              </span>
+                            )}
+                         </div>
+                         <Badge variant="secondary" className="text-[10px] h-5 shrink-0">{CategoryLabels[activity.category]}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">{activity.shortDescription}</p>
                       {isExcluded && <Badge variant="destructive" className="h-5 text-[10px]">Ausgeschlossen</Badge>}

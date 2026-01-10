@@ -121,6 +121,7 @@ export const ActivitySchema = z.object({
   externalRating: z.number().min(0).max(5).optional(),
   reviewCount: z.number().optional(),
   favoritesCount: z.number().optional(),
+  favoritesInRoomCount: z.number().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
