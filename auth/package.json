@@ -16,6 +16,7 @@
     "resend": "^6.6.0"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "tsup": "^8.0.1",
     "tsx": "^4.7.0",
     "typescript": "^5.6.3"
