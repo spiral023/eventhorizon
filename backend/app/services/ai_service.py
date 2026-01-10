@@ -206,7 +206,10 @@ class AIService:
                 "content": """Du bist ein Experte für Team-Psychologie, Gruppendynamik und Event-Planung.
                 Deine Aufgabe ist es, aus den individuellen Profilen eines Teams ein tiefgreifendes Gesamtprofil zu erstellen.
                 Analysiere die Präferenzen der Team-Mitglieder und erstelle eine strategische Analyse.
-                Antworte auf Deutsch mit inspirierenden, präzisen und psychologisch fundierten Einblicken."""
+                Antworte auf Deutsch mit inspirierenden, präzisen und psychologisch fundierten Einblicken.
+                WICHTIG: Erstelle ein Gesamtprofil des Teams, ohne auf einzelne Individuen namentlich einzugehen.
+                Behandle das Team als eine Einheit.
+                HALTE DICH AN DIE LÄNGENVORGABEN."""
             },
             {
                 "role": "user",
@@ -218,22 +221,27 @@ class AIService:
 **Verfügbare Aktivitäten:**
 {activities_summary}
 
-Aufgabe:
+Aufgabe (STRIKTE LÄNGENVORGABEN):
 1. Ermittle die bevorzugten Aktivitätskategorien (Prozentverteilung). Nutze die Favoritendaten als primäre Quelle, falls vorhanden.
-2. Identifiziere die 3 wichtigsten Team-Ziele.
+2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!).
 3. Empfehle 3-5 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
 4. Bestimme den Team-Vibe (action/relax/mixed).
 5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
-6. Identifiziere 2-3 konkrete Stärken des Teams in der Zusammenarbeit.
-7. Benenne 2 Herausforderungen, die bei der Planung auftreten könnten.
-8. Gib dem Team ein prägnantes "Personality Profile" (z.B. 'Die Dynamischen Entdecker').
+6. Identifiziere 2-3 Stärken (jeweils ca. 10 Wörter!).
+7. Benenne 2 Herausforderungen (jeweils ca. 15 Wörter!).
+8. Gib dem Team ein "Personality Profile" (ca. 6 Wörter!).
 9. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
-10. Gib 3 tiefgreifende Insights zur Teamdynamik.
+10. Gib 3 Insights zur Teamdynamik (jeweils ca. 25 Wörter!).
 
 Berücksichtige:
 - Gemeinsamkeiten und starke Kontraste in den Profilen.
 - Die Balance zwischen Budget-Realität und Wünschen.
-- Physische Anforderungen vs. angegebene Hobbys."""
+- Physische Anforderungen vs. angegebene Hobbys.
+
+WICHTIG:
+- Analysiere das Team als Gesamtheit.
+- Nenne NIEMALS einzelne Namen.
+- Formuliere alles auf die Gruppe bezogen."""
             }
         ]
 

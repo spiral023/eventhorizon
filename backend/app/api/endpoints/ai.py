@@ -11,6 +11,7 @@ Provides AI-powered features:
 from fastapi import APIRouter, Depends, HTTPException
 import logging
 import hashlib
+import json
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -100,11 +101,15 @@ async def get_team_recommendations(
     members = members_result.scalars().all()
 
 
-    # Generate Cache Key based on members and their favorites
+    # Generate Cache Key based on members, their favorites, preferences and hobbies
     fingerprint_parts = [str(room_id)]
     for m in members:
         fav_ids = sorted([str(a.id) for a in m.favorite_activities])
-        fingerprint_parts.append(f"{m.id}:{','.join(fav_ids)}")
+        # Include preferences and hobbies in cache key
+        prefs_str = json.dumps(m.activity_preferences, sort_keys=True) if m.activity_preferences else ""
+        hobbies_str = ",".join(sorted(m.hobbies)) if m.hobbies else ""
+        
+        fingerprint_parts.append(f"{m.id}:{','.join(fav_ids)}:{prefs_str}:{hobbies_str}")
     fingerprint_parts.sort()
     
     cache_key = hashlib.md5("|".join(fingerprint_parts).encode()).hexdigest()

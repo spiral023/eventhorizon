@@ -255,11 +255,11 @@ export default function TeamPage() {
                 <span className="absolute text-3xl font-black">{Math.round(recommendations.synergyScore)}%</span>
               </div>
               <p className="text-sm text-muted-foreground px-4">
-                {recommendations.synergyScore > 80 ? "Perfekte Harmonie im Team!" : recommendations.synergyScore > 50 ? "Gute Basis für gemeinsame Events." : "Diverse Interessen erfordern Kompromisse."}
+                {recommendations.synergyScore > 80 ? "Spitzen-Synergie im Team!" : recommendations.synergyScore > 50 ? "Gute Basis für Events." : "Diverse Profile, hohe Flexibilität."}
               </p>
               <div className="pt-2">
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
-                   {recommendations.synergyScore > 75 ? "High Synergy" : "Flexible Team"}
+                   {recommendations.synergyScore > 75 ? "Hohe Synergie" : "Flexibles Team"}
                 </Badge>
               </div>
             </div>
