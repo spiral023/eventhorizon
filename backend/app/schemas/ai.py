@@ -54,6 +54,11 @@ class TeamPreferenceSummary(BaseModel):
     insights: List[str] = Field(
         description="Insights über die Team-Dynamik"
     )
+    member_count: int = Field(
+        alias="memberCount",
+        ge=1,
+        description="Anzahl der analysierten Teammitglieder"
+    )
 
     class Config:
         populate_by_name = True

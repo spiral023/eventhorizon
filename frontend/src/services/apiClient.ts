@@ -1788,6 +1788,7 @@ export interface TeamPreferenceSummary {
   teamPersonality: string;
   socialVibe: "low" | "medium" | "high";
   insights: string[];
+  memberCount: number;
 }
 
 export interface AiRecommendation {
@@ -1813,6 +1814,12 @@ export async function getTeamRecommendations(roomId: string): Promise<ApiResult<
       insights: [
         "Euer Team bevorzugt aktive Erlebnisse mit Wettbewerbscharakter.",
       ],
+      memberCount: 8,
+      socialVibe: "medium",
+      synergyScore: 85,
+      teamPersonality: "Die Action-Helden",
+      strengths: ["Schnelle Entscheidungen"],
+      challenges: ["Ruhige Momente"],
     };
     return { data: summary };
   }

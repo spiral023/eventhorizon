@@ -11,9 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getTeamRecommendations, getActivities, getFavoriteActivityIds, toggleFavorite, getRooms } from "@/services/apiClient";
 import type { TeamPreferenceSummary } from "@/services/apiClient";
-import type { Activity } from "@/types/domain";
+import type { Activity, Room } from "@/types/domain";
 import { CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -42,34 +49,49 @@ export default function TeamPage() {
   const [recommendations, setRecommendations] = useState<TeamPreferenceSummary | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      let currentRoomId = roomId;
+      
+      // Fetch rooms to populate the dropdown
+      const roomsResult = await getRooms();
+      const availableRooms = roomsResult.data || [];
+      setRooms(availableRooms);
 
-      if (!currentRoomId) {
-        const roomsResult = await getRooms();
-        if (roomsResult.data && roomsResult.data.length > 0) {
-          currentRoomId = roomsResult.data[0].id;
-        }
+      let targetRoomId = roomId;
+
+      // If no room in URL, try to use first available room
+      if (!targetRoomId && availableRooms.length > 0) {
+        targetRoomId = availableRooms[0].id;
       }
+      
+      const foundRoom = availableRooms.find(r => r.id === targetRoomId);
+      setCurrentRoom(foundRoom || null);
 
-      if (!currentRoomId) {
+      if (!targetRoomId) {
           setLoading(false);
           return;
       }
 
-      const [recsResult, activitiesResult, favoritesResult] = await Promise.all([
-        getTeamRecommendations(currentRoomId),
-        getActivities(),
-        getFavoriteActivityIds(),
-      ]);
-      setRecommendations(recsResult.data);
-      setActivities(activitiesResult.data);
-      setFavoriteIds(favoritesResult.data || []);
-      setLoading(false);
+      try {
+        const [recsResult, activitiesResult, favoritesResult] = await Promise.all([
+          getTeamRecommendations(targetRoomId),
+          getActivities(),
+          getFavoriteActivityIds(),
+        ]);
+        setRecommendations(recsResult.data);
+        setActivities(activitiesResult.data);
+        setFavoriteIds(favoritesResult.data || []);
+      } catch (error) {
+        console.error("Failed to fetch team data:", error);
+        toast.error("Fehler beim Laden der Team-Daten");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, [roomId]);
@@ -90,6 +112,10 @@ export default function TeamPage() {
         a.id === activityId ? { ...a, favoritesCount: count ?? a.favoritesCount } : a
       )
     );
+  };
+
+  const handleRoomChange = (newRoomId: string) => {
+    navigate(`/team/${newRoomId}`);
   };
 
   const recommendedActivities = activities.filter((a) =>
@@ -149,6 +175,23 @@ export default function TeamPage() {
     );
   }
 
+  // If loading is done but no room/recommendations found (e.g. user has no rooms)
+  if (!loading && (!currentRoom || !recommendations)) {
+    return (
+      <div className="p-8 text-center">
+        <PageHeader title="Team-Analyse" />
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">
+              Du bist noch keinem Raum beigetreten. Erstelle oder trete einem Raum bei, um die Team-Analyse zu nutzen.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Safe check for recommendations existence (typescript satisfaction)
   if (!recommendations) return null;
 
   const VibeIcon = vibeIcons[recommendations.teamVibe];
@@ -157,7 +200,25 @@ export default function TeamPage() {
     <div className="space-y-8 pb-12">
       <PageHeader
         title="Team-Analyse"
-        description="Strategische KI-Einblicke in die DNA deines Teams"
+        description={`Strategische KI-Einblicke in die DNA von "${currentRoom?.name}"`}
+        action={
+            rooms.length > 0 ? (
+                <div className="w-full sm:w-[250px]">
+                     <Select value={currentRoom?.id} onValueChange={handleRoomChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Raum auswählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {rooms.map((room) => (
+                          <SelectItem key={room.id} value={room.id}>
+                            {room.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                </div>
+            ) : null
+        }
       />
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -189,7 +250,7 @@ export default function TeamPage() {
                 Euer Team zeichnet sich durch eine {recommendations.teamVibe === 'action' ? 'hohe Dynamik' : recommendations.teamVibe === 'relax' ? 'gelassene Atmosphäre' : 'ausgewogene Mischung'} aus.
               </p>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                 <div className="space-y-1">
                   <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Team Vibe</span>
                   <div className="flex items-center gap-2 text-foreground font-semibold">
@@ -202,6 +263,13 @@ export default function TeamPage() {
                   <div className="flex items-center gap-2 text-foreground font-semibold">
                     <MessageSquare className="w-4 h-4 text-primary" />
                     {socialVibeLabels[recommendations.socialVibe]}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Mitglieder</span>
+                  <div className="flex items-center gap-2 text-foreground font-semibold">
+                    <Users2 className="w-4 h-4 text-primary" />
+                    {recommendations.memberCount} {recommendations.memberCount === 1 ? 'Person' : 'Personen'}
                   </div>
                 </div>
                 <div className="space-y-1">

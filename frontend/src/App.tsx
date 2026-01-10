@@ -123,6 +123,7 @@ function AppRoutes() {
           }
         >
           <Route path="team" element={<PageTransition><TeamPage /></PageTransition>} />
+          <Route path="team/:roomId" element={<PageTransition><TeamPage /></PageTransition>} />
         </Route>
 
         {/* Strictly protected routes */}

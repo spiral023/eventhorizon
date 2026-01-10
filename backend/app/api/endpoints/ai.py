@@ -197,7 +197,8 @@ async def get_team_recommendations(
                 "challenges": ["KI-Analyse aktuell eingeschränkt"],
                 "teamPersonality": "Die Datensammler",
                 "socialVibe": "medium",
-                "insights": ["KI-Analyse nicht verfügbar. Anzeige basiert auf echten Nutzerdaten."]
+                "insights": ["KI-Analyse nicht verfügbar. Anzeige basiert auf echten Nutzerdaten."],
+                "memberCount": len(members)
             }
         else:
             # No AI and no Data -> Error
@@ -208,6 +209,9 @@ async def get_team_recommendations(
     # Overwrite with real data if available
     if total_favorites > 0:
         result["categoryDistribution"] = real_distribution
+    
+    # Ensure memberCount is set
+    result["memberCount"] = len(members)
         
     TEAM_ANALYSIS_CACHE[cache_key] = result
     return result
