@@ -223,13 +223,13 @@ class AIService:
 
 Aufgabe (STRIKTE LÄNGENVORGABEN):
 1. Ermittle die bevorzugten Aktivitätskategorien (Prozentverteilung). Nutze die Favoritendaten als primäre Quelle, falls vorhanden.
-2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!).
-3. Empfehle 3-5 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
+2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
+3. Empfehle 6-9 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
 4. Bestimme den Team-Vibe (action/relax/mixed).
 5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
 6. Identifiziere 2-3 Stärken (jeweils ca. 10 Wörter!).
 7. Benenne 2 Herausforderungen (jeweils ca. 15 Wörter!).
-8. Gib dem Team ein "Personality Profile" (ca. 6 Wörter!).
+8. Gib dem Team ein "Personality Profile" (ca. 6 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets").
 9. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
 10. Gib 3 Insights zur Teamdynamik (jeweils ca. 25 Wörter!).
 
@@ -241,7 +241,8 @@ Berücksichtige:
 WICHTIG:
 - Analysiere das Team als Gesamtheit.
 - Nenne NIEMALS einzelne Namen.
-- Formuliere alles auf die Gruppe bezogen."""
+- Formuliere alles auf die Gruppe bezogen.
+- Stelle sicher, dass "Personality Profile" und "Team-Ziele" unterschiedlich sind!"""
             }
         ]
 
