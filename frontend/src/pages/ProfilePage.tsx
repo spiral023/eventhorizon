@@ -32,9 +32,6 @@ export interface UserProfile {
     social: number;
     creative: number;
   };
-  preferredGroupSize: "small" | "medium" | "large" | "any";
-  travelWillingness: "local" | "regional" | "national";
-  budgetPreference: "low" | "medium" | "high" | "any";
   bio?: string;
 }
 
@@ -73,9 +70,6 @@ export default function ProfilePage() {
           dietaryRestrictions: result.data.dietaryRestrictions || [],
           allergies: result.data.allergies || [],
           activityPreferences: result.data.activityPreferences,
-          preferredGroupSize: result.data.preferredGroupSize || "medium",
-          travelWillingness: result.data.travelWillingness || "regional",
-          budgetPreference: result.data.budgetPreference || "medium",
         });
       }
     } catch (err) {
@@ -93,26 +87,6 @@ export default function ProfilePage() {
         ...updatedUser,
       };
     });
-  };
-
-  const groupSizeLabels = {
-    small: "Klein (2-5)",
-    medium: "Mittel (6-15)",
-    large: "Groß (16+)",
-    any: "Egal",
-  };
-
-  const travelLabels = {
-    local: "Lokal (< 30 min)",
-    regional: "Regional (< 2h)",
-    national: "National",
-  };
-
-  const budgetLabels = {
-    low: "Günstig (< 30€)",
-    medium: "Mittel (30-80€)",
-    high: "Premium (80€+)",
-    any: "Egal",
   };
 
   const profileCompleteness = () => {
@@ -299,21 +273,6 @@ export default function ProfilePage() {
               ) : (
                 <p className="text-sm text-muted-foreground">Noch keine Präferenzen angegeben.</p>
               )}
-
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Badge variant="outline" className="rounded-lg">
-                  <Users className="h-3 w-3 mr-1" />
-                  {groupSizeLabels[user.preferredGroupSize]}
-                </Badge>
-                <Badge variant="outline" className="rounded-lg">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  {travelLabels[user.travelWillingness]}
-                </Badge>
-                <Badge variant="outline" className="rounded-lg">
-                  <Star className="h-3 w-3 mr-1" />
-                  {budgetLabels[user.budgetPreference]}
-                </Badge>
-              </div>
             </CardContent>
           </Card>
 

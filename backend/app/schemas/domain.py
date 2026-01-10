@@ -23,9 +23,6 @@ class UserBase(BaseSchema):
     activity_preferences: Optional[Any] = None
     dietary_restrictions: Optional[List[str]] = None
     allergies: Optional[List[str]] = None
-    preferred_group_size: Optional[str] = None
-    travel_willingness: Optional[str] = None
-    budget_preference: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -43,9 +40,6 @@ class UserUpdate(BaseSchema):
     activity_preferences: Optional[Any] = None
     dietary_restrictions: Optional[List[str]] = None
     allergies: Optional[List[str]] = None
-    preferred_group_size: Optional[str] = None
-    travel_willingness: Optional[str] = None
-    budget_preference: Optional[str] = None
     avatar_url: Optional[str] = None
 
 class User(UserBase):

@@ -14,9 +14,6 @@ export interface ApiUser {
   activity_preferences?: unknown; // This will need further refinement if 'any' is not desired
   dietary_restrictions?: string[];
   allergies?: string[];
-  preferred_group_size?: string;
-  travel_willingness?: string;
-  budget_preference?: string;
   created_at?: string;
   is_active?: boolean;
   favorite_activity_ids?: string[];
@@ -227,9 +224,6 @@ export interface ApiUserUpdate {
   activity_preferences?: unknown;
   dietary_restrictions?: string[];
   allergies?: string[];
-  preferred_group_size?: string;
-  travel_willingness?: string;
-  budget_preference?: string;
   avatar_url?: string;
 }
 

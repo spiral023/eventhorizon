@@ -62,9 +62,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [mental, setMental] = useState([user.activityPreferences?.mental ?? 3]);
   const [social, setSocial] = useState([user.activityPreferences?.social ?? 3]);
   const [creative, setCreative] = useState([user.activityPreferences?.creative ?? 3]);
-  const [preferredGroupSize, setPreferredGroupSize] = useState(user.preferredGroupSize);
-  const [travelWillingness, setTravelWillingness] = useState(user.travelWillingness);
-  const [budgetPreference, setBudgetPreference] = useState(user.budgetPreference);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || "");
 
   const [loading, setLoading] = useState(false);
@@ -176,9 +173,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
           social: social[0],
           creative: creative[0],
         },
-        preferredGroupSize: preferredGroupSize,
-        travelWillingness: travelWillingness,
-        budgetPreference: budgetPreference,
       });
 
       if (result.error) {
@@ -205,9 +199,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
           creative: creative[0],
         },
         avatarUrl: avatarUrl || undefined,
-        preferredGroupSize,
-        travelWillingness,
-        budgetPreference,
       };
 
       toast.success("Profil erfolgreich aktualisiert!");
@@ -243,9 +234,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
           social: 3,
           creative: 3,
         },
-        preferredGroupSize: null as any,
-        travelWillingness: null as any,
-        budgetPreference: null as any,
       });
 
       if (result.error) {
@@ -266,9 +254,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
       setMental([3]);
       setSocial([3]);
       setCreative([3]);
-      setPreferredGroupSize(undefined);
-      setTravelWillingness(undefined);
-      setBudgetPreference(undefined);
       setAvatarUrl("");
       
       // Update parent/global state
@@ -456,7 +441,10 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                     rows={3}
                   />
                 </div>
+              </TabsContent>
 
+              {/* Preferences */}
+              <TabsContent value="preferences" className="space-y-6 mt-0 p-1">
                 <div className="grid gap-2">
                   <Label htmlFor="profile-hobbies">Hobbys</Label>
                   <div className="flex gap-2">
@@ -498,10 +486,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                     </div>
                   )}
                 </div>
-              </TabsContent>
 
-              {/* Preferences */}
-              <TabsContent value="preferences" className="space-y-6 mt-0 p-1">
                 <div className="space-y-4">
                   <Label>Aktivitäts-Präferenzen</Label>
                   
@@ -540,51 +525,6 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="grid gap-2">
-                    <Label>Gruppengröße</Label>
-                    <Select value={preferredGroupSize} onValueChange={(v) => setPreferredGroupSize(v)}>
-                      <SelectTrigger className="rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="small">Klein (2-5)</SelectItem>
-                        <SelectItem value="medium">Mittel (6-15)</SelectItem>
-                        <SelectItem value="large">Groß (16+)</SelectItem>
-                        <SelectItem value="any">Egal</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label>Reisebereitschaft</Label>
-                    <Select value={travelWillingness} onValueChange={(v) => setTravelWillingness(v)}>
-                      <SelectTrigger className="rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="local">Lokal (&lt; 30 min)</SelectItem>
-                        <SelectItem value="regional">Regional (&lt; 2h)</SelectItem>
-                        <SelectItem value="national">National</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label>Budget-Präferenz</Label>
-                    <Select value={budgetPreference} onValueChange={(v) => setBudgetPreference(v)}>
-                      <SelectTrigger className="rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Günstig (&lt; 30€)</SelectItem>
-                        <SelectItem value="medium">Mittel (30-80€)</SelectItem>
-                        <SelectItem value="high">Premium (80€+)</SelectItem>
-                        <SelectItem value="any">Egal</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
               </TabsContent>
             </ScrollArea>
           </Tabs>

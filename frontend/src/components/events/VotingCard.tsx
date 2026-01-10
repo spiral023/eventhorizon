@@ -118,6 +118,7 @@ export function VotingCard({
                         ? "!border-green-600 !bg-green-600 !text-white hover:!bg-green-700 shadow-sm"
                         : "border-border bg-secondary/70 text-foreground hover:border-green-500/40 hover:bg-green-500/10 hover:text-green-600"
                     )}
+                    type="button"
                     onClick={() => onVote(activity.id, "for")}
                     disabled={isLoading || disabled}
                     aria-pressed={userVote === "for"}
@@ -135,6 +136,7 @@ export function VotingCard({
                         ? "!border-red-600 !bg-red-600 !text-white hover:!bg-red-700 shadow-sm"
                         : "border-border bg-secondary/70 text-foreground hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-600"
                     )}
+                    type="button"
                     onClick={() => onVote(activity.id, "against")}
                     disabled={isLoading || disabled}
                     aria-pressed={userVote === "against"}
@@ -152,6 +154,7 @@ export function VotingCard({
                         ? "!border-gray-500 !bg-gray-500 !text-white hover:!bg-gray-600 shadow-sm"
                         : "border-border bg-secondary/70 text-foreground hover:border-gray-500/40 hover:bg-gray-500/10 hover:text-gray-600"
                     )}
+                    type="button"
                     onClick={() => onVote(activity.id, "abstain")}
                     disabled={isLoading || disabled}
                     aria-pressed={userVote === "abstain"}
@@ -209,7 +212,7 @@ export function VotingCard({
                 <div className="mt-4 pt-4 border-t border-border/50">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button className="w-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
+                            <Button type="button" className="w-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
                                 <Trophy className="mr-2 h-4 w-4" />
                                 Diese Aktivität auswählen
                             </Button>

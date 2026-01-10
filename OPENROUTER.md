@@ -100,7 +100,7 @@ backend/app/
 
 **Input**:
 - Room Members (aus Datenbank)
-- User Profile Data (Hobbies, Activity Preferences, Budget, Travel Willingness)
+- User Profile Data (Hobbies, Activity Preferences)
 - Bisherige Event-Historie
 
 **Output** (Structured):
@@ -351,11 +351,8 @@ Aufgabe:
 5. Gib 2-3 prägnante Insights über die Team-Dynamik
 
 Berücksichtige:
-- Budget-Präferenzen der Mitglieder
-- Reisebereitschaft
-- Physische Intensität vs. Team-Fitness
-- Saisonale Verfügbarkeit
-- Gruppengröße"""
+
+"""
             }
         ]
 
@@ -606,9 +603,8 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen"""
             prefs = m.get('activity_preferences', {})
             lines.append(
                 f"- {m.get('name', 'Unknown')}: "
-                f"Budget={m.get('budget_preference', '?')}, "
-                f"Reise={m.get('travel_willingness', '?')}, "
                 f"Präferenzen={prefs}"
+                
             )
         return "\n".join(lines)
 
@@ -764,11 +760,7 @@ async def get_team_recommendations(
     members_data = [
         {
             "name": m.name,
-            "budget_preference": m.budget_preference,
-            "travel_willingness": m.travel_willingness,
             "activity_preferences": m.activity_preferences,
-            "hobbies": m.hobbies,
-            "preferred_group_size": m.preferred_group_size
         }
         for m in members
     ]

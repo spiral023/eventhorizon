@@ -140,11 +140,8 @@ async def get_team_recommendations(
     members_data = [
         {
             "name": m.name,
-            "budget_preference": m.budget_preference,
-            "travel_willingness": m.travel_willingness,
             "activity_preferences": m.activity_preferences,
             "hobbies": m.hobbies or [],
-            "preferred_group_size": m.preferred_group_size
         }
         for m in members
     ]

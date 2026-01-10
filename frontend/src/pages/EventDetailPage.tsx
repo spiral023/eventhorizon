@@ -31,7 +31,7 @@ import {
   excludeActivity,
   includeActivity,
 } from "@/services/apiClient";
-import type { Event, Activity, VoteType, EventPhase } from "@/types/domain";
+import type { Event, Activity, VoteType, EventPhase, ActivityVote } from "@/types/domain";
 import { 
   RegionLabels, 
   formatTimeWindow, 
@@ -55,11 +55,15 @@ export default function EventDetailPage() {
   const [phaseMenuOpen, setPhaseMenuOpen] = useState(false);
   const [missingActivityDialogOpen, setMissingActivityDialogOpen] = useState(false);
   const [missingDateDialogOpen, setMissingDateDialogOpen] = useState(false);
+  const [pendingVoteIds, setPendingVoteIds] = useState<Set<string>>(() => new Set());
   
   // Track previous phase to only auto-switch tab when phase actually changes
   const prevPhaseRef = useRef<EventPhase | null>(null);
+  const activityOrderRef = useRef<string[]>([]);
+  const lastActivityOrderKeyRef = useRef<string>("");
 
   const currentUser = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const currentUserId = currentUser?.id ?? "";
   const isCreator = !!(event?.createdByUserId && currentUserId === event.createdByUserId);
 
@@ -93,77 +97,97 @@ export default function EventDetailPage() {
   }, [event?.phase]);
 
   const handleVote = async (activityId: string, vote: VoteType) => {
-    if (!eventCode || !event || !currentUser) return;
+    const resolvedEventCode = event?.shortCode || event?.id || eventCode;
+    if (!resolvedEventCode || !event || !isAuthenticated) return;
+    if (pendingVoteIds.has(activityId)) return;
     
     // Optimistic Update
-    const previousEvent = { ...event };
-    
-    setEvent((prev) => {
-      if (!prev) return null;
-      
-      const newActivityVotes = prev.activityVotes.map((av) => {
-        if (av.activityId !== activityId) return av;
-        
-        // Remove existing vote by this user
-        const filteredVotes = av.votes.filter((v) => v.userId !== currentUser.id);
-        
-        // Add new vote
-        filteredVotes.push({
-          userId: currentUser.id,
-          userName: currentUser.name,
-          vote: vote,
-          votedAt: new Date().toISOString(),
-        });
-        
-        return {
-          ...av,
-          votes: filteredVotes,
-        };
-      });
+    const previousEvent = currentUser ? { ...event } : null;
+    const canOptimisticallyUpdate = Boolean(currentUser);
 
-      // If this activity had no votes entry yet, create it
-      if (!prev.activityVotes.find(av => av.activityId === activityId)) {
-        newActivityVotes.push({
-          activityId,
-          votes: [{
+    setPendingVoteIds((prev) => {
+      const next = new Set(prev);
+      next.add(activityId);
+      return next;
+    });
+    
+    if (canOptimisticallyUpdate) {
+      setEvent((prev) => {
+        if (!prev || !currentUser) return prev;
+      
+        const newActivityVotes = prev.activityVotes.map((av) => {
+          if (av.activityId !== activityId) return av;
+        
+          // Remove existing vote by this user
+          const filteredVotes = av.votes.filter((v) => v.userId !== currentUser.id);
+        
+          // Add new vote
+          filteredVotes.push({
             userId: currentUser.id,
             userName: currentUser.name,
             vote: vote,
             votedAt: new Date().toISOString(),
-          }]
+          });
+        
+          return {
+            ...av,
+            votes: filteredVotes,
+          };
         });
-      }
 
-      // Also update participant hasVoted status
-      const newParticipants = prev.participants.map(p => 
-        p.userId === currentUser.id ? { ...p, hasVoted: true } : p
-      );
+        // If this activity had no votes entry yet, create it
+        if (!prev.activityVotes.find(av => av.activityId === activityId)) {
+          newActivityVotes.push({
+            activityId,
+            votes: [{
+              userId: currentUser.id,
+              userName: currentUser.name,
+              vote: vote,
+              votedAt: new Date().toISOString(),
+            }]
+          });
+        }
 
-      return {
-        ...prev,
-        activityVotes: newActivityVotes,
-        participants: newParticipants
-      };
-    });
+        // Also update participant hasVoted status
+        const newParticipants = prev.participants.map(p => 
+          p.userId === currentUser.id ? { ...p, hasVoted: true } : p
+        );
 
-    // We don't setActionLoading(true) here to avoid disabling the button immediately/flickering
-    // or we can set it but the optimistic update makes it look done.
-    // If we disable, we prevent spam.
-    setActionLoading(true); 
+        return {
+          ...prev,
+          activityVotes: newActivityVotes,
+          participants: newParticipants
+        };
+      });
+    }
 
     try {
-      const result = await voteOnActivity(eventCode, activityId, vote);
+      const result = await voteOnActivity(resolvedEventCode, activityId, vote);
       if (result.data) {
         setEvent(result.data);
       } else {
-        // Revert on failure (no data returned usually means error in this client pattern if not caught)
-         setEvent(previousEvent);
+        const fallback = await getEventByCode(resolvedEventCode);
+        if (fallback.data) {
+          setEvent(fallback.data);
+        } else if (previousEvent) {
+          // Revert on failure (no data returned usually means error in this client pattern if not caught)
+          setEvent(previousEvent);
+        }
       }
     } catch (error) {
       // Revert on error
-      setEvent(previousEvent);
+      const fallback = await getEventByCode(resolvedEventCode);
+      if (fallback.data) {
+        setEvent(fallback.data);
+      } else if (previousEvent) {
+        setEvent(previousEvent);
+      }
     } finally {
-      setActionLoading(false);
+      setPendingVoteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(activityId);
+        return next;
+      });
     }
   };
 
@@ -276,18 +300,53 @@ export default function EventDetailPage() {
     return "–";
   };
 
-  const sortedActivities = [...nonExcludedProposedActivities].sort((a, b) => {
-    const votesA = event.activityVotes.find((v) => v.activityId === a.id);
-    const votesB = event.activityVotes.find((v) => v.activityId === b.id);
-    const scoreA = (votesA?.votes.filter((v) => v.vote === "for").length || 0) -
-                   (votesA?.votes.filter((v) => v.vote === "against").length || 0);
-    const scoreB = (votesB?.votes.filter((v) => v.vote === "for").length || 0) -
-                   (votesB?.votes.filter((v) => v.vote === "against").length || 0);
-    return scoreB - scoreA;
+  const activityVotesById = new Map<string, ActivityVote>();
+  event.activityVotes.forEach((activityVote) => {
+    activityVotesById.set(activityVote.activityId, activityVote);
   });
+
+  const getActivityScore = (activityId: string) => {
+    const votes = activityVotesById.get(activityId)?.votes || [];
+    const forVotes = votes.filter((v) => v.vote === "for").length;
+    const againstVotes = votes.filter((v) => v.vote === "against").length;
+    return forVotes - againstVotes;
+  };
+
+  const rankedActivities = [...nonExcludedProposedActivities].sort((a, b) => {
+    return getActivityScore(b.id) - getActivityScore(a.id);
+  });
+  const rankByActivityId = new Map<string, number>();
+  rankedActivities.forEach((activity, index) => {
+    rankByActivityId.set(activity.id, index + 1);
+  });
+
+  const activityOrderKey = nonExcludedProposedActivities.map((activity) => activity.id).join("|");
+  if (activityOrderKey !== lastActivityOrderKeyRef.current) {
+    if (nonExcludedProposedActivities.length === 0) {
+      activityOrderRef.current = [];
+    } else {
+      const activityIds = nonExcludedProposedActivities.map((activity) => activity.id);
+      const idSet = new Set(activityIds);
+      const kept = activityOrderRef.current.filter((id) => idSet.has(id));
+      const missing = activityIds.filter((id) => !kept.includes(id));
+      const nextOrder = kept.length > 0
+        ? [...kept, ...missing]
+        : rankedActivities.map((activity) => activity.id);
+      activityOrderRef.current = nextOrder;
+    }
+    lastActivityOrderKeyRef.current = activityOrderKey;
+  }
+
+  const orderedActivities = activityOrderRef.current
+    .map((id) => nonExcludedProposedActivities.find((activity) => activity.id === id))
+    .filter((activity): activity is Activity => Boolean(activity));
+  const displayActivities = orderedActivities.length > 0
+    ? orderedActivities
+    : nonExcludedProposedActivities;
 
   const nextPhases = getNextPhases(event.phase);
   const canAdvance = nextPhases.length > 0;
+  const canVote = event.phase === "voting" && isAuthenticated;
   
   // Phase helper
   const phaseOrder: EventPhase[] = ["proposal", "voting", "scheduling", "info"];
@@ -576,20 +635,20 @@ export default function EventDetailPage() {
               Stimme für deine Favoriten. Die beliebtesten Aktivitäten steigen auf.
             </p>
           </div>
-          {sortedActivities.length > 0 ? (
+          {displayActivities.length > 0 ? (
             <div className="space-y-4">
-              {sortedActivities.map((activity, index) => (
+              {displayActivities.map((activity) => (
                 <div key={activity.id}>
                   <VotingCard
                     activity={activity}
-                    votes={event.activityVotes.find((v) => v.activityId === activity.id)}
+                    votes={activityVotesById.get(activity.id)}
                     currentUserId={currentUserId}
                     onVote={handleVote}
-                    isLoading={actionLoading}
-                    disabled={event.phase !== "voting"}
+                    isLoading={pendingVoteIds.has(activity.id)}
+                    disabled={!canVote}
                     isOwner={isCreator}
                     onSelect={() => handleSelectActivity(activity.id)}
-                    rank={index + 1}
+                    rank={rankByActivityId.get(activity.id)}
                     participants={event.participants}
                   />
                 </div>

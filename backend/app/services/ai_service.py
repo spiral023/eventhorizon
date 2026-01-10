@@ -504,8 +504,6 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen"""
             prefs = m.get('activity_preferences', {})
             lines.append(
                 f"- {m.get('name', 'Unknown')}: "
-                f"Budget={m.get('budget_preference', '?')}, "
-                f"Reise={m.get('travel_willingness', '?')}, "
                 f"Präferenzen={prefs}"
             )
         return "\n".join(lines)

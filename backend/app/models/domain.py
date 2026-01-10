@@ -96,9 +96,6 @@ class User(Base):
     activity_preferences = Column(JSON)  # {physical, mental, social, creative}
     dietary_restrictions = Column(ARRAY(String))
     allergies = Column(ARRAY(String))
-    preferred_group_size = Column(String)  # small, medium, large, any
-    travel_willingness = Column(String)  # local, regional, national
-    budget_preference = Column(String)  # low, medium, high, any
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
 

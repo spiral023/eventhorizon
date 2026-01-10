@@ -10,7 +10,7 @@ Die Team-Analyse ist das Herzstück der personalisierten Planung. Sie analysiert
 - **Team Personality Profile:** Die KI ordnet dem Team einen kreativen Typus zu (z.B. "Die Dynamischen Entdecker" oder "Die Entspannten Genießer").
 - **Synergy Score:** Ein berechneter Wert (0-100%), der angibt, wie gut die individuellen Interessen der Teammitglieder harmonieren.
 - **Interessen-Radar:** Eine gewichtete Analyse der bevorzugten Aktivitätskategorien (Action, Food, Outdoor, etc.) basierend auf echten Favoriten und Profil-Daten.
-- **Stärken & Herausforderungen:** Identifikation von Synergien (z.B. "Hohe Reisebereitschaft") und potenziellen Konfliktpunkten (z.B. "Starke Budget-Diskrepanz").
+- **Stärken & Herausforderungen:** Identifikation von Synergien (z.B. "Gemeinsames Interesse an Outdoor") und potenziellen Konfliktpunkten.
 - **Social Vibe:** Einschätzung des gewünschten Levels an sozialer Interaktion (Low/Medium/High).
 
 ---
@@ -46,7 +46,7 @@ EventHorizon nutzt eine Multi-Modell-Strategie über **OpenRouter**, um für jed
 | **Copywriting** | Gemini 2.0 Flash | Kreativität & Geschwindigkeit |
 
 ### Daten-Privacy
-- Es werden nur relevante anonymisierte Profildaten (Hobbys, Präferenzen, Budget-Wünsche) an die KI-Modelle übermittelt.
+- Es werden nur relevante anonymisierte Profildaten (Hobbys, Präferenzen) an die KI-Modelle übermittelt.
 - Es findet kein Training der Modelle mit Nutzerdaten statt (gemäß OpenRouter/API-Standard).
 
 ---
