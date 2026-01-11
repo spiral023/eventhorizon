@@ -165,7 +165,14 @@ export default function EventDetailPage() {
 
     try {
       const result = await voteOnActivity(resolvedEventCode, activityId, vote);
-      if (result.data) {
+      
+      // Force fetch fresh data to ensure we have the latest vote
+      // This fixes an issue where voteOnActivity might return stale data
+      const freshResult = await getEventByCode(resolvedEventCode);
+      
+      if (freshResult.data) {
+        setEvent(freshResult.data);
+      } else if (result.data) {
         setEvent(result.data);
       } else {
         const fallback = await getEventByCode(resolvedEventCode);

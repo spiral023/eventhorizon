@@ -373,7 +373,7 @@ export default function ActivitiesPage() {
                     variant="outline"
                     size="lg"
                     onClick={loadMore}
-                    className="min-w-[240px] h-12 rounded-xl border-border/50 hover:bg-card hover:border-primary/30 transition-all shadow-sm"
+                    className="min-w-[240px] h-12 rounded-xl border-border/50 hover:bg-card hover:border-primary/30 hover:text-foreground transition-all shadow-sm"
                   >
                     Weitere laden ({sortedActivities.length - visibleCount} verbleibend)
                   </Button>
