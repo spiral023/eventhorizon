@@ -10,7 +10,9 @@ import {
   Zap,
   Users,
   Building,
-  CalendarCheck
+  CalendarCheck,
+  Home,
+  Map
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -114,6 +116,58 @@ export function GlobalSearch({ trigger, ...props }: GlobalSearchProps) {
           {!loading && !results && <CommandEmpty>Keine Ergebnisse gefunden.</CommandEmpty>}
           {loading && <CommandEmpty>Suche...</CommandEmpty>}
           
+          <CommandGroup heading="Seiten">
+            <CommandItem
+              value="Übersicht Home Start"
+              onSelect={() => handleSelect(() => navigate("/"))}
+            >
+              <Home className="mr-2 h-4 w-4" />
+              <span>Übersicht</span>
+            </CommandItem>
+            <CommandItem
+              value="Aktivitäten Aktivitaeten"
+              onSelect={() => handleSelect(() => navigate("/activities"))}
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              <span>Aktivitäten</span>
+            </CommandItem>
+            <CommandItem
+              value="Räume Raeume Alle Räume anzeigen"
+              onSelect={() => handleSelect(() => navigate("/rooms"))}
+            >
+              <Building className="mr-2 h-4 w-4" />
+              <span>Räume</span>
+            </CommandItem>
+            <CommandItem
+              value="Karte Map"
+              onSelect={() => handleSelect(() => navigate("/map"))}
+            >
+              <Map className="mr-2 h-4 w-4" />
+              <span>Karte</span>
+            </CommandItem>
+            <CommandItem
+              value="Team-Analyse Team Analyse"
+              onSelect={() => handleSelect(() => navigate("/team"))}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              <span>Team-Analyse</span>
+            </CommandItem>
+            <CommandItem
+              value="Profil"
+              onSelect={() => handleSelect(() => navigate("/profile"))}
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Profil</span>
+            </CommandItem>
+            <CommandItem
+              value="Einstellungen Settings"
+              onSelect={() => handleSelect(() => navigate("/settings"))}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Einstellungen</span>
+            </CommandItem>
+          </CommandGroup>
+
           {results?.activities?.length ? (
             <CommandGroup heading="Aktivitäten">
               {results.activities.map((activity) => (
