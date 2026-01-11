@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro, Heart } from "lucide-react";
+import { X, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro, Heart, Target, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -498,6 +498,76 @@ export function ActivityFilterPanel({
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Einfach ({filters.mentalChallenge[0]})</span>
               <span>Anspruchsvoll ({filters.mentalChallenge[1]})</span>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Competition Level */}
+      <Collapsible open={openSections.includes("competition")}>
+        <CollapsibleTrigger
+          className="flex w-full items-center justify-between py-2 text-sm font-medium"
+          onClick={() => toggleSection("competition")}
+        >
+          <span className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" />
+            Wettbewerbslevel
+          </span>
+          <ChevronDown className={cn(
+            "h-4 w-4 transition-transform",
+            openSections.includes("competition") && "rotate-180"
+          )} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4 pb-2">
+          <div className="px-2">
+            <Slider
+              value={filters.competitionLevel}
+              min={1}
+              max={5}
+              step={1}
+              onValueChange={(value) =>
+                onChange({ ...filters, competitionLevel: value as [number, number] })
+              }
+              className="mb-2"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Entspannt ({filters.competitionLevel[0]})</span>
+              <span>Wettkampforientiert ({filters.competitionLevel[1]})</span>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Social Interaction Level */}
+      <Collapsible open={openSections.includes("social")}>
+        <CollapsibleTrigger
+          className="flex w-full items-center justify-between py-2 text-sm font-medium"
+          onClick={() => toggleSection("social")}
+        >
+          <span className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-primary" />
+            Soziale Interaktion
+          </span>
+          <ChevronDown className={cn(
+            "h-4 w-4 transition-transform",
+            openSections.includes("social") && "rotate-180"
+          )} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4 pb-2">
+          <div className="px-2">
+            <Slider
+              value={filters.socialInteractionLevel}
+              min={1}
+              max={5}
+              step={1}
+              onValueChange={(value) =>
+                onChange({ ...filters, socialInteractionLevel: value as [number, number] })
+              }
+              className="mb-2"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Ruhig ({filters.socialInteractionLevel[0]})</span>
+              <span>Sehr sozial ({filters.socialInteractionLevel[1]})</span>
             </div>
           </div>
         </CollapsibleContent>

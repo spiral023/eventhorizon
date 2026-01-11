@@ -13,6 +13,8 @@ export interface ActivityFilters {
   physicalIntensity: [number, number];
   mentalChallenge: [number, number];
   teamworkLevel: [number, number];
+  competitionLevel: [number, number];
+  socialInteractionLevel: [number, number];
   primaryGoals: PrimaryGoal[];
   indoorOnly: boolean;
   outdoorOnly: boolean;
@@ -33,6 +35,8 @@ export const defaultFilters: ActivityFilters = {
   physicalIntensity: [1, 5],
   mentalChallenge: [1, 5],
   teamworkLevel: [1, 5],
+  competitionLevel: [1, 5],
+  socialInteractionLevel: [1, 5],
   primaryGoals: [],
   indoorOnly: false,
   outdoorOnly: false,
@@ -89,6 +93,8 @@ export const getActiveFilterCount = (filters: ActivityFilters): number => {
   if (filters.physicalIntensity[0] > 1 || filters.physicalIntensity[1] < 5) count += 1;
   if (filters.mentalChallenge[0] > 1 || filters.mentalChallenge[1] < 5) count += 1;
   if (filters.teamworkLevel[0] > 1 || filters.teamworkLevel[1] < 5) count += 1;
+  if (filters.competitionLevel[0] > 1 || filters.competitionLevel[1] < 5) count += 1;
+  if (filters.socialInteractionLevel[0] > 1 || filters.socialInteractionLevel[1] < 5) count += 1;
   
   if (filters.indoorOnly) count += 1;
   if (filters.outdoorOnly) count += 1;

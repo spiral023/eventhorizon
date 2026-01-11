@@ -159,6 +159,18 @@ export default function ActivitiesPage() {
         if (activity.teamworkLevel > filters.teamworkLevel[1]) return false;
       }
 
+      // Competition level
+      if (activity.competitionLevel !== undefined) {
+        if (activity.competitionLevel < filters.competitionLevel[0]) return false;
+        if (activity.competitionLevel > filters.competitionLevel[1]) return false;
+      }
+
+      // Social interaction level
+      if (activity.socialInteractionLevel !== undefined) {
+        if (activity.socialInteractionLevel < filters.socialInteractionLevel[0]) return false;
+        if (activity.socialInteractionLevel > filters.socialInteractionLevel[1]) return false;
+      }
+
       // Favorites Only
       if (filters.favoritesOnly && !favoriteIds.includes(activity.id)) {
         return false;

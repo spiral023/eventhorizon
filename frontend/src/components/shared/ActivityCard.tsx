@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MapPin, Euro, Clock, Users, Heart, Star, Zap, Brain } from "lucide-react";
+import { MapPin, Euro, Clock, Users, Heart, Star, Zap, Brain, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -169,6 +169,13 @@ export function ActivityCard({
                 activity.socialInteractionLevel >= 4 ? "text-primary" : "text-muted-foreground"
               )} />
               <span className="text-xs">{activity.socialInteractionLevel ?? "-"}/5</span>
+            </div>
+            <div className="flex items-center gap-1" title="Wettbewerb">
+              <Target className={cn(
+                "h-4 w-4",
+                activity.competitionLevel >= 4 ? "text-red-500" : "text-muted-foreground"
+              )} />
+              <span className="text-xs">{activity.competitionLevel ?? "-"}/5</span>
             </div>
             <div className="flex items-center gap-3 ml-auto text-xs text-muted-foreground">
               <div className="flex items-center gap-1" title="Favoriten">
