@@ -43,8 +43,8 @@ Für eventhorizon-spezifische Anforderungen:
 | Use Case | Empfohlenes Modell | Begründung |
 |----------|-------------------|------------|
 | Team-Analysen | `anthropic/claude-3.5-sonnet` | Exzellente analytische Fähigkeiten, gute Structured Outputs |
-| Aktivitäts-Matching | `openai/gpt-4o` | Schnell, günstig, gute Reasoning-Fähigkeiten |
-| Text-Generierung (Einladungen) | `google/gemini-2.0-flash-exp` | Sehr schnell, günstig, gute Textqualität |
+| Aktivitäts-Matching | `deepseek/deepseek-v3.2` | Schnell, günstig, gute Reasoning-Fähigkeiten |
+| Text-Generierung (Einladungen) | `deepseek/deepseek-v3.2` | Sehr schnell, günstig, gute Textqualität |
 | Komplexe Multi-Tool-Analysen | `anthropic/claude-opus-4` | Beste Reasoning-Fähigkeiten, Interleaved Thinking |
 
 ---
@@ -458,7 +458,7 @@ Gib eine kurze, überzeugende Begründung auf Deutsch."""
         ]
 
         response = self._make_completion(
-            model="openai/gpt-4o",
+            model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
             temperature=0.3
@@ -523,7 +523,7 @@ Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")"""
         ]
 
         response = self._make_completion(
-            model="google/gemini-2.0-flash-exp",
+            model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
             temperature=0.8
@@ -586,7 +586,7 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen"""
         ]
 
         response = self._make_completion(
-            model="google/gemini-2.0-flash-exp",
+            model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
             temperature=0.7
@@ -1272,7 +1272,7 @@ python -c "import os; print(os.getenv('OPENROUTER_API_KEY'))"
 
 ```python
 # Format: provider/model-name
-"openai/gpt-4o"           # ✓ Correct
+"deepseek/deepseek-v3.2"           # ✓ Correct
 "gpt-4o"                  # ✗ Wrong
 "openai/gpt-4-turbo"      # ✓ Correct
 ```

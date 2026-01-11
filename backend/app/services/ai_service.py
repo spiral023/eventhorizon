@@ -53,7 +53,7 @@ class AIService:
         Basis-Funktion für alle AI-Calls
 
         Args:
-            model: OpenRouter model identifier (e.g., "openai/gpt-4o")
+            model: OpenRouter model identifier (e.g., "deepseek/deepseek-v3.2")
             messages: List of chat messages
             response_format: Optional structured output schema
             temperature: Sampling temperature (0.0-1.0)
@@ -193,7 +193,7 @@ class AIService:
 
         # Prepare context
         members_summary = self._summarize_members(members)
-        activities_summary = self._summarize_activities(activities)
+        activities_summary = self._summarize_activities(activities, include_price=False)
         distribution_context = ""
         if current_distribution:
             distribution_context = "\n**Tatsächliches Abstimmungsverhalten (Favoriten):**\n"
@@ -351,7 +351,7 @@ Gib eine kurze, überzeugende Begründung auf Deutsch."""
         ]
 
         response = self._make_completion(
-            model="openai/gpt-4o",
+            model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
             temperature=0.3
@@ -424,7 +424,7 @@ Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")"""
         ]
 
         response = self._make_completion(
-            model="google/gemini-2.0-flash-exp",
+            model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
             temperature=0.8
@@ -495,7 +495,7 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen"""
         ]
 
         response = self._make_completion(
-            model="google/gemini-2.0-flash-exp",
+            model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
             temperature=0.7
@@ -516,14 +516,15 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen"""
             )
         return "\n".join(lines)
 
-    def _summarize_activities(self, activities: List[Dict]) -> str:
+    def _summarize_activities(self, activities: List[Dict], include_price: bool = True) -> str:
         """Format activities for AI context"""
         lines = []
         for a in activities[:50]:  # Limit to top 50
+            price_part = f"Preis={a.get('est_price_pp')}€, " if include_price else ""
             lines.append(
                 f"- [{a.get('id')}] {a.get('title')}: "
                 f"Kategorie={a.get('category')}, "
-                f"Preis={a.get('est_price_pp')}€, "
+                f"{price_part}"
                 f"Region={a.get('location_region')}, "
                 f"Saison={a.get('season')}"
             )

@@ -1,4 +1,4 @@
 {
   "message": "Erzähl mir einen kurzen Witz über Teambuilding",
-  "model": "openai/gpt-4o"
+  "model": "deepseek/deepseek-v3.2"
 }

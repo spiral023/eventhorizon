@@ -1,4 +1,4 @@
 {
   "message": "Schreibe eine kurze, motivierende Einladung für ein Team-Event in den Bergen",
-  "model": "google/gemini-2.0-flash-exp"
+  "model": "deepseek/deepseek-v3.2"
 }
