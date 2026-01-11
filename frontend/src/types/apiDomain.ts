@@ -20,7 +20,8 @@ export interface ApiUser {
 }
 
 export interface ApiRoomMember {
-  user_id: string;
+  id?: string;
+  user_id?: string;
   user_name?: string;
   name?: string; // Alias for user_name
   avatar_url?: string;

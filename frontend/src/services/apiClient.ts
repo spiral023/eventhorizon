@@ -948,8 +948,8 @@ export async function getRoomMembers(accessCode: string): Promise<ApiResult<Room
   }
   const result = await request<ApiRoomMember[]>(`/rooms/${accessCode}/members`);
   if (result.data) {
-    const members = result.data.map((m: ApiRoomMember) => ({
-      id: m.user_id,
+    const members = result.data.map((m: ApiRoomMember, index) => ({
+      id: m.user_id ?? m.id ?? `member-${index}`,
       name: m.user_name || m.name || "",
       email: "", // Assuming email is not returned here, or needs to be fetched separately
       username: m.user_name || m.name || "",
