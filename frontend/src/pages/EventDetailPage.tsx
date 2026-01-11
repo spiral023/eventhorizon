@@ -681,7 +681,6 @@ export default function EventDetailPage() {
         </TabsContent>
 
         <TabsContent value="scheduling" className="space-y-4 focus-visible:outline-none focus-visible:ring-0">
-          <SchedulingPhase event={event} onUpdate={setEvent} onFinalize={handleFinalizeDate} />
           
            {canAdvance && event.dateOptions.length > 0 && isCreator && (
              <Card className="bg-primary/5 border-primary/20 rounded-2xl mt-6">
@@ -710,7 +709,9 @@ export default function EventDetailPage() {
                 </CardContent>
               </Card>
           )}
-        </TabsContent>
+
+          <SchedulingPhase event={event} onUpdate={setEvent} onFinalize={handleFinalizeDate} />
+</TabsContent>
 
         <TabsContent value="info" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
           <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 rounded-3xl overflow-hidden">
