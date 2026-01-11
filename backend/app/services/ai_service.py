@@ -209,7 +209,7 @@ class AIService:
                 Antworte auf Deutsch mit inspirierenden, präzisen und psychologisch fundierten Einblicken.
                 WICHTIG: Erstelle ein Gesamtprofil des Teams, ohne auf einzelne Individuen namentlich einzugehen.
                 Behandle das Team als eine Einheit.
-                HALTE DICH AN DIE LÄNGENVORGABEN."""
+                HALTE DICH AN DIE LÄNGENVORGABEN.""",
             },
             {
                 "role": "user",
@@ -229,21 +229,20 @@ Aufgabe (STRIKTE LÄNGENVORGABEN):
 5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
 6. Identifiziere 2-3 Stärken (jeweils ca. 10 Wörter!).
 7. Benenne 2 Herausforderungen (jeweils ca. 15 Wörter!).
-8. Gib dem Team ein "Personality Profile" (ca. 6 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets").
+8. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
 9. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
-10. Gib 3 Insights zur Teamdynamik (jeweils ca. 25 Wörter!).
+10. Gib dem Team 3 Insights zur Teamdynamik (jeweils ca. 25 Wörter!).
 
 Berücksichtige:
 - Gemeinsamkeiten und starke Kontraste in den Profilen.
-- Die Balance zwischen Budget-Realität und Wünschen.
 - Physische Anforderungen vs. angegebene Hobbys.
 
 WICHTIG:
 - Analysiere das Team als Gesamtheit.
 - Nenne NIEMALS einzelne Namen.
 - Formuliere alles auf die Gruppe bezogen.
-- Stelle sicher, dass "Personality Profile" und "Team-Ziele" unterschiedlich sind!"""
-            }
+- Stelle sicher, dass "Personality Profile" und "Team-Ziele" unterschiedlich sind!""",
+            },
         ]
 
         response = self._make_completion(

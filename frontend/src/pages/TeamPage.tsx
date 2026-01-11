@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, TrendingUp, Heart, Zap, Coffee, Mountain, 
   Brain, ShieldCheck, AlertTriangle, Trophy, Users2, 
-  BarChart3, Target, Rocket, MessageSquare
+  BarChart3, Rocket, MessageSquare
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -270,13 +270,6 @@ export default function TeamPage() {
                   <div className="flex items-center gap-2 text-foreground font-semibold">
                     <Users2 className="w-4 h-4 text-primary" />
                     {recommendations.memberCount} {recommendations.memberCount === 1 ? 'Person' : 'Personen'}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Haupt-Fokus</span>
-                  <div className="flex items-center gap-2 text-foreground font-semibold">
-                    <Target className="w-4 h-4 text-primary" />
-                    {recommendations.preferredGoals[0] || "Fun"}
                   </div>
                 </div>
               </div>

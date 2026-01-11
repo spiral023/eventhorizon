@@ -37,6 +37,15 @@ const queryClient = new QueryClient();
 function AppShell() {
   const location = useLocation();
 
+  useEffect(() => {
+    const isOverview = location.pathname === "/";
+    const isActivityDetail = /^\/activities\/[^/]+$/.test(location.pathname);
+
+    if (isOverview || isActivityDetail) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [location.pathname]);
+
   return (
     <AppLayout>
       <AnimatePresence mode="wait">
