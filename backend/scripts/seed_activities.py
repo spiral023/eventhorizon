@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from app.models.domain import Activity, EventCategory, Region, Season, RiskLevel
+from app.models.domain import Activity, EventCategory, Region, Season
 from app.core.config import settings
 from app.services.slug_service import generate_unique_slug
 
@@ -28,7 +28,6 @@ FIELD_MAPPING = {
     "long_description": "long_description",
     "image_url": "image_url",
     "season": "season",
-    "risk_level": "risk_level",
     "typical_duration_hours": "typical_duration_hours",
     "provider": "provider",
     "website": "website",
@@ -113,13 +112,6 @@ def map_activity_data(json_activity):
         except KeyError:
             print(f"⚠️  Unknown season: {activity_data['season']}, using 'all_year'")
             activity_data["season"] = Season.all_year
-
-    if "risk_level" in activity_data:
-        try:
-            activity_data["risk_level"] = RiskLevel[activity_data["risk_level"]]
-        except KeyError:
-            print(f"⚠️  Unknown risk_level: {activity_data['risk_level']}, using 'low'")
-            activity_data["risk_level"] = RiskLevel.low
 
     return activity_data
 

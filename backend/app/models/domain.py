@@ -36,11 +36,6 @@ class Region(str, enum.Enum):
     WIE = "WIE"
     BGL = "BGL"
 
-class RiskLevel(str, enum.Enum):
-    low = "low"
-    medium = "medium"
-    high = "high"
-
 class RoomRole(str, enum.Enum):
     owner = "owner"
     admin = "admin"
@@ -166,8 +161,10 @@ class Activity(Base):
     gallery_urls = Column(ARRAY(String))
     
     season = Column(SQLEnum(Season))
-    weather_dependent = Column(Boolean, default=False)
-    risk_level = Column(SQLEnum(RiskLevel))
+    region = Column(SQLEnum(Region))
+    
+    # New intensity fields
+    physical_intensity = Column(String, default="low")  # low, medium, high
     
     accessibility_flags = Column(ARRAY(String))
 

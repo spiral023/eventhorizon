@@ -13,7 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import async_session
-from app.models.domain import Activity, EventCategory, Region, Season, RiskLevel
+from app.models.domain import Activity, EventCategory, Region, Season
 
 
 def map_json_to_model(activity_json: dict) -> Activity:
@@ -43,7 +43,6 @@ def map_json_to_model(activity_json: dict) -> Activity:
 
         season=Season(activity_json.get("season")) if activity_json.get("season") else None,
         weather_dependent=activity_json.get("weather_dependent", False),
-        risk_level=RiskLevel(activity_json.get("risk_level")) if activity_json.get("risk_level") else None,
 
         accessibility_flags=activity_json.get("accessibility_flags", []),
 

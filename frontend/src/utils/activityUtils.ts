@@ -1,10 +1,9 @@
-import type { Activity, EventCategory, Region, Season, RiskLevel, PrimaryGoal } from "@/types/domain";
+import type { Activity, EventCategory, Region, Season, PrimaryGoal } from "@/types/domain";
 
 export interface ActivityFilters {
   categories: EventCategory[];
   regions: Region[];
   seasons: Season[];
-  riskLevels: RiskLevel[];
   priceRange: [number, number];
   groupSizeRange: [number, number];
   durationRange: [number, number];
@@ -26,7 +25,6 @@ export const defaultFilters: ActivityFilters = {
   categories: [],
   regions: [],
   seasons: [],
-  riskLevels: [],
   priceRange: [0, 200],
   groupSizeRange: [1, 100],
   durationRange: [0, 480], // in minutes
@@ -81,7 +79,6 @@ export const getActiveFilterCount = (filters: ActivityFilters): number => {
   if (filters.categories?.length > 0) count += filters.categories.length;
   if (filters.regions?.length > 0) count += filters.regions.length;
   if (filters.seasons?.length > 0) count += filters.seasons.length;
-  if (filters.riskLevels?.length > 0) count += filters.riskLevels.length;
   if (filters.primaryGoals?.length > 0) count += filters.primaryGoals.length;
   
   if (filters.priceRange[0] > 0 || filters.priceRange[1] < 200) count += 1;

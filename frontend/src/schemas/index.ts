@@ -12,7 +12,6 @@ export const SeasonSchema = z.enum(["all_year", "spring", "summer", "autumn", "w
 export const RegionSchema = z.enum([
   "OOE", "TIR", "SBG", "STMK", "KTN", "VBG", "NOE", "WIE", "BGL"
 ]);
-export const RiskLevelSchema = z.enum(["low", "medium", "high"]);
 export const BudgetTypeSchema = z.enum(["total", "per_person"]);
 export const RoomRoleSchema = z.enum(["owner", "admin", "member"]);
 export const VoteTypeSchema = z.enum(["for", "against", "abstain"]);
@@ -77,7 +76,6 @@ export const ActivitySchema = z.object({
   imageUrl: z.string().url(),
   galleryUrls: z.array(z.string().url()).optional(),
   season: SeasonSchema,
-  riskLevel: RiskLevelSchema,
   duration: z.string().optional(),
   typicalDurationHours: z.number().optional(),
   groupSizeMin: z.number().min(1).optional(),

@@ -11,7 +11,6 @@ export type EventPhase = z.infer<typeof Schemas.EventPhaseSchema>;
 export type EventCategory = z.infer<typeof Schemas.EventCategorySchema>;
 export type Season = z.infer<typeof Schemas.SeasonSchema>;
 export type Region = z.infer<typeof Schemas.RegionSchema>;
-export type RiskLevel = z.infer<typeof Schemas.RiskLevelSchema>;
 export type RoomRole = z.infer<typeof Schemas.RoomRoleSchema>;
 export type BudgetType = z.infer<typeof Schemas.BudgetTypeSchema>;
 export type VoteType = z.infer<typeof Schemas.VoteTypeSchema>;
@@ -89,18 +88,6 @@ export const CategoryColors: Record<EventCategory, string> = {
   culture: "bg-purple-600 text-white shadow-sm shadow-purple-500/30 ring-1 ring-white/15 backdrop-blur-sm",
   outdoor: "bg-emerald-600 text-white shadow-sm shadow-emerald-500/30 ring-1 ring-white/15 backdrop-blur-sm",
   creative: "bg-pink-600 text-white shadow-sm shadow-pink-500/30 ring-1 ring-white/15 backdrop-blur-sm",
-};
-
-export const RiskLevelLabels: Record<RiskLevel, string> = {
-  low: "Gering",
-  medium: "Mittel",
-  high: "Hoch",
-};
-
-export const RiskLevelColors: Record<RiskLevel, string> = {
-  low: "bg-success text-success-foreground shadow-sm shadow-success/30 ring-1 ring-white/15 backdrop-blur-sm",
-  medium: "bg-warning text-warning-foreground shadow-sm shadow-warning/30 ring-1 ring-white/15 backdrop-blur-sm",
-  high: "bg-destructive text-destructive-foreground shadow-sm shadow-destructive/30 ring-1 ring-white/15 backdrop-blur-sm",
 };
 
 export const MonthLabels: Record<number, string> = {

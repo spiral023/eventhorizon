@@ -16,7 +16,6 @@ const mockActivity: Activity = {
   imageUrl: "http://test.com/img.jpg",
   shortDescription: "Short desc",
   season: "summer",
-  riskLevel: "medium",
   tags: [],
   // Adding fields that might be required by the Schema-derived type (optional in Schema, but good to be safe)
   rating: 4.5,
@@ -46,7 +45,6 @@ describe("ActivityCard", () => {
       shortDescription: "Short desc",
       imageUrl: "http://test.com/img2.jpg",
       season: "summer",
-      riskLevel: "low",
       groupSizeMin: 1,
       groupSizeMax: 5,
       physicalIntensity: 1,

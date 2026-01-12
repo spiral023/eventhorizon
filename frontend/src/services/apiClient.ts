@@ -198,7 +198,6 @@ const mockActivities: Activity[] = [
     longDescription: "Adrenalin, Teamgeist und Rätselspaß: In dieser Escape Room Challenge wachst Ihr als Team zusammen, kommuniziert besser und feiert gemeinsam den Erfolg.",
     imageUrl: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&h=600&fit=crop",
     season: "all_year",
-    riskLevel: "low",
     typicalDurationHours: 3.5,
     minParticipants: 8,
     recommendedGroupSizeMin: 8,
@@ -609,7 +608,6 @@ function mapActivityFromApi(apiActivity: ApiActivity): Activity {
     imageUrl: apiActivity.image_url,
     galleryUrls: apiActivity.gallery_urls || [],
     season: apiActivity.season as Season,
-    riskLevel: apiActivity.risk_level as RiskLevel,
     typicalDurationHours: apiActivity.typical_duration_hours,
     groupSizeMin: apiActivity.recommended_group_size_min, // Fallback/Alias
     groupSizeMax: apiActivity.recommended_group_size_max, // Fallback/Alias

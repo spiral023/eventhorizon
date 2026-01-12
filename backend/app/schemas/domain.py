@@ -119,7 +119,6 @@ class ActivityBase(BaseSchema):
     mental_challenge: Optional[int] = None
     social_interaction_level: Optional[int] = None
     competition_level: Optional[int] = None
-    risk_level: Optional[str] = "low"
     
     external_rating: Optional[float] = None
     primary_goal: Optional[str] = None

@@ -101,11 +101,6 @@ export default function ActivitiesPage() {
         return false;
       }
 
-      // Risk Level Filter
-      if (filters.riskLevels.length > 0 && !filters.riskLevels.includes(activity.riskLevel)) {
-        return false;
-      }
-
       // Primary Goal Filter
       if (filters.primaryGoals.length > 0 && (!activity.primaryGoal || !filters.primaryGoals.includes(activity.primaryGoal))) {
         return false;

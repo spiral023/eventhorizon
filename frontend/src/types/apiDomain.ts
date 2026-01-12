@@ -66,7 +66,6 @@ export interface ApiActivity {
   image_url: string;
   gallery_urls?: string[];
   season: string;
-  risk_level: string;
   duration?: string;
   typical_duration_hours?: number;
   group_size_min?: number;

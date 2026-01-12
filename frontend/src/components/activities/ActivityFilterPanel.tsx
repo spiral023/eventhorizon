@@ -8,8 +8,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { EventCategory, Region, Season, RiskLevel, PrimaryGoal } from "@/types/domain";
-import { CategoryLabels, RegionLabels, SeasonLabels, RiskLevelLabels } from "@/types/domain";
+import type { EventCategory, Region, Season, PrimaryGoal } from "@/types/domain";
+import { CategoryLabels, RegionLabels, SeasonLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { getActiveFilterCount, formatDuration, type ActivityFilters, defaultFilters } from "@/utils/activityUtils";
 
@@ -66,14 +66,6 @@ export function ActivityFilterPanel({
       ? current.filter((s) => s !== season)
       : [...current, season];
     onChange({ ...filters, seasons: newSeasons });
-  };
-
-  const toggleRiskLevel = (level: RiskLevel) => {
-    const current = filters.riskLevels || [];
-    const newLevels = current.includes(level)
-      ? current.filter((l) => l !== level)
-      : [...current, level];
-    onChange({ ...filters, riskLevels: newLevels });
   };
 
   const togglePrimaryGoal = (goal: PrimaryGoal) => {
@@ -221,37 +213,6 @@ export function ActivityFilterPanel({
                 onClick={() => toggleSeason(season)}
               >
                 {SeasonLabels[season]}
-              </Badge>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Risk Level Filter */}
-      <Collapsible open={openSections.includes("risk")}>
-        <CollapsibleTrigger
-          className="flex w-full items-center justify-between py-2 text-sm font-medium"
-          onClick={() => toggleSection("risk")}
-        >
-          <span className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-primary" />
-            Risiko
-          </span>
-          <ChevronDown className={cn(
-            "h-4 w-4 transition-transform",
-            openSections.includes("risk") && "rotate-180"
-          )} />
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pt-2">
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(RiskLevelLabels) as RiskLevel[]).map((level) => (
-              <Badge
-                key={level}
-                variant={filters.riskLevels?.includes(level) ? "default" : "secondary"}
-                className="cursor-pointer rounded-lg"
-                onClick={() => toggleRiskLevel(level)}
-              >
-                {RiskLevelLabels[level]}
               </Badge>
             ))}
           </div>
