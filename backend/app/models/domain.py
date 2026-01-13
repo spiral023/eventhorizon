@@ -161,10 +161,6 @@ class Activity(Base):
     gallery_urls = Column(ARRAY(String))
     
     season = Column(SQLEnum(Season))
-    region = Column(SQLEnum(Region))
-    
-    # New intensity fields
-    physical_intensity = Column(String, default="low")  # low, medium, high
     
     accessibility_flags = Column(ARRAY(String))
 
