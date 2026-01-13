@@ -42,8 +42,6 @@ export const CategoryLabels: Record<EventCategory, string> = {
   relax: "Entspannung",
   party: "Party",
   culture: "Kultur",
-  outdoor: "Outdoor",
-  creative: "Kreativ",
 };
 
 export const RegionLabels: Record<Region, string> = {
@@ -86,8 +84,6 @@ export const CategoryColors: Record<EventCategory, string> = {
   relax: "bg-success text-success-foreground shadow-sm shadow-success/30 ring-1 ring-white/15 backdrop-blur-sm",
   party: "bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-1 ring-white/15 backdrop-blur-sm",
   culture: "bg-purple-600 text-white shadow-sm shadow-purple-500/30 ring-1 ring-white/15 backdrop-blur-sm",
-  outdoor: "bg-emerald-600 text-white shadow-sm shadow-emerald-500/30 ring-1 ring-white/15 backdrop-blur-sm",
-  creative: "bg-pink-600 text-white shadow-sm shadow-pink-500/30 ring-1 ring-white/15 backdrop-blur-sm",
 };
 
 export const MonthLabels: Record<number, string> = {
