@@ -47,7 +47,7 @@ class AIService:
         messages: List[Dict[str, str]],
         response_format: Optional[Dict[str, Any]] = None,
         temperature: float = 0.7,
-        max_tokens: int = 2000
+        max_tokens: int = 2000,
     ) -> str:
         """
         Basis-Funktion für alle AI-Calls
@@ -69,7 +69,9 @@ class AIService:
             raise Exception("AI Service not configured - OPENROUTER_API_KEY missing")
 
         try:
-            logger.info(f"Making OpenRouter completion: model={model}, temperature={temperature}")
+            logger.info(
+                f"Making OpenRouter completion: model={model}, temperature={temperature}"
+            )
 
             completion = self.client.chat.completions.create(
                 extra_headers=self.default_headers,
@@ -77,7 +79,7 @@ class AIService:
                 messages=messages,
                 response_format=response_format,
                 temperature=temperature,
-                max_tokens=max_tokens
+                max_tokens=max_tokens,
             )
 
             content = completion.choices[0].message.content
@@ -95,7 +97,7 @@ class AIService:
         room_id: str,
         members: List[Dict],
         activities: List[Dict],
-        current_distribution: Optional[List[Dict]] = None
+        current_distribution: Optional[List[Dict]] = None,
     ) -> Dict[str, Any]:
         """
         Analysiere Team-Präferenzen für einen Room
@@ -131,48 +133,39 @@ class AIService:
                                 "properties": {
                                     "category": {"type": "string"},
                                     "percentage": {"type": "number"},
-                                    "count": {"type": "integer"}
+                                    "count": {"type": "integer"},
                                 },
                                 "required": ["category", "percentage", "count"],
-                                "additionalProperties": False
-                            }
+                                "additionalProperties": False,
+                            },
                         },
                         "preferredGoals": {
                             "type": "array",
-                            "items": {"type": "string"}
+                            "items": {"type": "string"},
                         },
                         "recommendedActivityIds": {
                             "type": "array",
-                            "items": {"type": "string"}
+                            "items": {"type": "string"},
                         },
                         "teamVibe": {
                             "type": "string",
-                            "enum": ["action", "relax", "mixed"]
+                            "enum": ["action", "relax", "mixed"],
                         },
                         "synergyScore": {
                             "type": "number",
-                            "description": "0-100 indicating how well the team's preferences align"
+                            "description": "0-100 indicating how well the team's preferences align",
                         },
-                        "strengths": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        },
-                        "challenges": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        },
+                        "strengths": {"type": "array", "items": {"type": "string"}},
+                        "challenges": {"type": "array", "items": {"type": "string"}},
                         "teamPersonality": {
                             "type": "string",
-                            "description": "A creative name for the team profile"
+                            "description": "A creative name for the team profile",
                         },
                         "socialVibe": {
                             "type": "string",
-                            "enum": ["low", "medium", "high"]
+                            "enum": ["low", "medium", "high"],
                         },
-                        "insights": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        }
+                        "insights": {"type": "array", "items": {"type": "string"}},
                     },
                     "required": [
                         "categoryDistribution",
@@ -184,11 +177,11 @@ class AIService:
                         "challenges",
                         "teamPersonality",
                         "socialVibe",
-                        "insights"
+                        "insights",
                     ],
-                    "additionalProperties": False
-                }
-            }
+                    "additionalProperties": False,
+                },
+            },
         }
 
         # Prepare context
@@ -196,17 +189,20 @@ class AIService:
         activities_summary = self._summarize_activities(activities, include_price=False)
         distribution_context = ""
         if current_distribution:
-            distribution_context = "\n**Tatsächliches Abstimmungsverhalten (Favoriten):**\n"
+            distribution_context = (
+                "\n**Tatsächliches Abstimmungsverhalten (Favoriten):**\n"
+            )
             for item in current_distribution:
                 distribution_context += f"- {item['category']}: {item['percentage']}%\n"
 
         messages = [
             {
                 "role": "system",
-                "content": """Du bist ein Experte für Team-Psychologie, Gruppendynamik und Event-Planung.
+                "content": """Du bist ein charismatischer Experte für Team-Psychologie, Gruppendynamik und Event-Planung.
                 Deine Aufgabe ist es, aus den individuellen Profilen eines Teams ein tiefgreifendes Gesamtprofil zu erstellen.
-                Analysiere die Präferenzen der Team-Mitglieder und erstelle eine strategische Analyse.
-                Antworte auf Deutsch mit inspirierenden, präzisen und psychologisch fundierten Einblicken.
+                Analysiere die Präferenzen der Team-Mitglieder und erstelle ein Profil, das Spaß macht zu lesen.
+                Antworte auf Deutsch: locker, modern, wertschätzend und mit einem leichten Augenzwinkern.
+                Vermeide steifes 'Behördendeutsch', klinische Begriffe oder trockene Analysen.
                 WICHTIG: Erstelle ein Gesamtprofil des Teams, ohne auf einzelne Individuen namentlich einzugehen.
                 Behandle das Team als eine Einheit.
                 HALTE DICH AN DIE LÄNGENVORGABEN.""",
@@ -228,10 +224,10 @@ Aufgabe (STRIKTE LÄNGENVORGABEN):
 4. Bestimme den Team-Vibe (action/relax/mixed).
 5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
 6. Identifiziere 2-3 Stärken (jeweils ca. 10 Wörter!).
-7. Benenne 2 Herausforderungen (jeweils ca. 15 Wörter!).
+7. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
 8. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
 9. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
-10. Gib dem Team 3 Insights zur Teamdynamik (jeweils ca. 25 Wörter!).
+10. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 25 Wörter!)
 
 Berücksichtige:
 - Gemeinsamkeiten und starke Kontraste in den Profilen.
@@ -258,7 +254,7 @@ WICHTIG:
         self,
         event: Dict,
         activities: List[Dict],
-        team_preferences: Optional[Dict] = None
+        team_preferences: Optional[Dict] = None,
     ) -> List[Dict[str, Any]]:
         """
         Schlage die besten Aktivitäten für ein Event vor
@@ -298,33 +294,47 @@ WICHTIG:
                                             "budgetMatch": {"type": "number"},
                                             "seasonMatch": {"type": "number"},
                                             "groupSizeMatch": {"type": "number"},
-                                            "preferenceMatch": {"type": "number"}
+                                            "preferenceMatch": {"type": "number"},
                                         },
-                                        "required": ["budgetMatch", "seasonMatch", "groupSizeMatch", "preferenceMatch"],
-                                        "additionalProperties": False
-                                    }
+                                        "required": [
+                                            "budgetMatch",
+                                            "seasonMatch",
+                                            "groupSizeMatch",
+                                            "preferenceMatch",
+                                        ],
+                                        "additionalProperties": False,
+                                    },
                                 },
-                                "required": ["activityId", "score", "reason", "matchFactors"],
-                                "additionalProperties": False
-                            }
+                                "required": [
+                                    "activityId",
+                                    "score",
+                                    "reason",
+                                    "matchFactors",
+                                ],
+                                "additionalProperties": False,
+                            },
                         }
                     },
                     "required": ["suggestions"],
-                    "additionalProperties": False
-                }
-            }
+                    "additionalProperties": False,
+                },
+            },
         }
 
         event_context = self._format_event_context(event)
         activities_list = self._format_activities_list(activities)
-        team_context = json.dumps(team_preferences, indent=2) if team_preferences else "Keine Team-Präferenzen verfügbar"
+        team_context = (
+            json.dumps(team_preferences, indent=2)
+            if team_preferences
+            else "Keine Team-Präferenzen verfügbar"
+        )
 
         messages = [
             {
                 "role": "system",
                 "content": """Du bist ein Experte für Event-Planung.
                 Ranke Aktivitäten basierend auf Event-Anforderungen und Team-Präferenzen.
-                Bewerte jeden Match-Faktor von 0-100. Score = Durchschnitt aller Faktoren."""
+                Bewerte jeden Match-Faktor von 0-100. Score = Durchschnitt aller Faktoren.""",
             },
             {
                 "role": "user",
@@ -346,25 +356,22 @@ Bewertungskriterien:
 - groupSizeMatch: Passt zur Teilnehmerzahl? (100 = optimal, 0 = zu klein/groß)
 - preferenceMatch: Passt zu Team-Präferenzen? (100 = perfekt, 0 = nicht passend)
 
-Gib eine kurze, überzeugende Begründung auf Deutsch."""
-            }
+Gib eine kurze, überzeugende Begründung auf Deutsch.""",
+            },
         ]
 
         response = self._make_completion(
             model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
-            temperature=0.3
+            temperature=0.3,
         )
 
         data = json.loads(response)
         return data["suggestions"]
 
     def generate_event_invite(
-        self,
-        event: Dict,
-        recipient: Dict,
-        role: str  # "organizer" or "participant"
+        self, event: Dict, recipient: Dict, role: str  # "organizer" or "participant"
     ) -> Dict[str, str]:
         """
         Generiere personalisierte Event-Einladung
@@ -388,12 +395,12 @@ Gib eine kurze, überzeugende Begründung auf Deutsch."""
                     "properties": {
                         "subject": {"type": "string"},
                         "body": {"type": "string"},
-                        "callToAction": {"type": "string"}
+                        "callToAction": {"type": "string"},
                     },
                     "required": ["subject", "body", "callToAction"],
-                    "additionalProperties": False
-                }
-            }
+                    "additionalProperties": False,
+                },
+            },
         }
 
         messages = [
@@ -401,7 +408,7 @@ Gib eine kurze, überzeugende Begründung auf Deutsch."""
                 "role": "system",
                 "content": """Du bist ein freundlicher Event-Manager.
                 Schreibe persönliche, motivierende Einladungen auf Deutsch.
-                Ton: Professionell aber warm, kurz und prägnant."""
+                Ton: Professionell aber warm, kurz und prägnant.""",
             },
             {
                 "role": "user",
@@ -419,24 +426,21 @@ Event:
 
 Betreff: Kurz und einladend (max 60 Zeichen)
 Text: 2-3 Absätze, persönlich, informativ
-Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")"""
-            }
+Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")""",
+            },
         ]
 
         response = self._make_completion(
             model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
-            temperature=0.8
+            temperature=0.8,
         )
 
         return json.loads(response)
 
     def generate_voting_reminder(
-        self,
-        event: Dict,
-        recipient: Dict,
-        days_until_deadline: int
+        self, event: Dict, recipient: Dict, days_until_deadline: int
     ) -> Dict[str, str]:
         """
         Generiere Voting-Erinnerung
@@ -450,7 +454,11 @@ Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")"""
             Dict mit subject, body, urgency
         """
 
-        urgency = "high" if days_until_deadline <= 1 else "medium" if days_until_deadline <= 3 else "low"
+        urgency = (
+            "high"
+            if days_until_deadline <= 1
+            else "medium" if days_until_deadline <= 3 else "low"
+        )
 
         schema = {
             "type": "json_schema",
@@ -464,13 +472,13 @@ Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")"""
                         "body": {"type": "string"},
                         "urgency": {
                             "type": "string",
-                            "enum": ["low", "medium", "high"]
-                        }
+                            "enum": ["low", "medium", "high"],
+                        },
                     },
                     "required": ["subject", "body", "urgency"],
-                    "additionalProperties": False
-                }
-            }
+                    "additionalProperties": False,
+                },
+            },
         }
 
         messages = [
@@ -478,7 +486,7 @@ Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")"""
                 "role": "system",
                 "content": """Du bist ein freundlicher Reminder-Bot.
                 Schreibe kurze, motivierende Erinnerungen auf Deutsch.
-                Kein Druck, aber klarer Call-to-Action."""
+                Kein Druck, aber klarer Call-to-Action.""",
             },
             {
                 "role": "user",
@@ -490,15 +498,15 @@ Deadline: in {days_until_deadline} Tag(en)
 Dringlichkeit: {urgency}
 
 Betreff: Freundlich und klar
-Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen"""
-            }
+Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen""",
+            },
         ]
 
         response = self._make_completion(
             model="deepseek/deepseek-v3.2",
             messages=messages,
             response_format=schema,
-            temperature=0.7
+            temperature=0.7,
         )
 
         return json.loads(response)
@@ -509,14 +517,13 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen"""
         """Format member data for AI context"""
         lines = []
         for m in members[:20]:  # Limit to prevent token overflow
-            prefs = m.get('activity_preferences', {})
-            lines.append(
-                f"- {m.get('name', 'Unknown')}: "
-                f"Präferenzen={prefs}"
-            )
+            prefs = m.get("activity_preferences", {})
+            lines.append(f"- {m.get('name', 'Unknown')}: " f"Präferenzen={prefs}")
         return "\n".join(lines)
 
-    def _summarize_activities(self, activities: List[Dict], include_price: bool = True) -> str:
+    def _summarize_activities(
+        self, activities: List[Dict], include_price: bool = True
+    ) -> str:
         """Format activities for AI context"""
         lines = []
         for a in activities[:50]:  # Limit to top 50
