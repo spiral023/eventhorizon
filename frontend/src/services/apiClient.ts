@@ -605,6 +605,7 @@ function mapActivityFromApi(apiActivity: ApiActivity): Activity {
     priceComment: apiActivity.price_comment,
     shortDescription: apiActivity.short_description,
     longDescription: apiActivity.long_description,
+    customerVoice: apiActivity.customer_voice,
     imageUrl: apiActivity.image_url,
     galleryUrls: apiActivity.gallery_urls || [],
     season: apiActivity.season as Season,

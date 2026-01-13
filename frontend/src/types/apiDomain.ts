@@ -63,6 +63,7 @@ export interface ApiActivity {
   price_comment?: string;
   short_description: string;
   long_description?: string;
+  customer_voice?: string;
   image_url: string;
   gallery_urls?: string[];
   season: string;

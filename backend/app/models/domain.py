@@ -157,6 +157,8 @@ class Activity(Base):
     long_description = Column(Text)
     description = Column(Text) # generic/middle description
     
+    customer_voice = Column(Text)
+
     image_url = Column(String)
     gallery_urls = Column(ARRAY(String))
     

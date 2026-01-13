@@ -73,6 +73,7 @@ export const ActivitySchema = z.object({
   priceComment: z.string().optional(),
   shortDescription: z.string().min(1).max(200),
   longDescription: z.string().optional(),
+  customerVoice: z.string().optional(),
   imageUrl: z.string().url(),
   galleryUrls: z.array(z.string().url()).optional(),
   season: SeasonSchema,

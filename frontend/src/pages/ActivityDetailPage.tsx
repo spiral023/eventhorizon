@@ -443,6 +443,23 @@ export default function ActivityDetailPage() {
             </motion.section>
           )}
 
+          {/* Customer Voice Section */}
+          {activity.customerVoice && (
+            <motion.section variants={itemVariants}>
+              <div className="flex items-center gap-2 mb-4">
+                <MessageCircle className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold">Die Kunden sagen</h2>
+              </div>
+              <Card className="bg-muted/30 border-border/50 rounded-2xl">
+                <CardContent className="p-6 italic text-muted-foreground leading-7 relative">
+                   <span className="absolute top-4 left-4 text-4xl text-primary/20 font-serif leading-none">“</span>
+                   <span className="relative z-10">{activity.customerVoice}</span>
+                   <span className="absolute bottom-2 right-4 text-4xl text-primary/20 font-serif leading-none rotate-180">“</span>
+                </CardContent>
+              </Card>
+            </motion.section>
+          )}
+
           {/* Tags */}
           {activity.tags.length > 0 && (
             <motion.section variants={itemVariants}>

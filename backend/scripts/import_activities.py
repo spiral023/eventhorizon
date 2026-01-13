@@ -1,5 +1,5 @@
 """
-Import activities from JSON file to database
+Import activities from JSON file to database with Upsert logic
 """
 import asyncio
 import json
@@ -12,18 +12,35 @@ from datetime import datetime
 sys.path.append(str(Path(__file__).parent.parent))
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.db.session import async_session
 from app.models.domain import Activity, EventCategory, Region, Season
+from app.services.slug_service import generate_slug
 
 
-def map_json_to_model(activity_json: dict) -> Activity:
+def map_json_to_model(activity_json: dict, existing_activity: Activity = None) -> Activity:
     """Map JSON activity data to SQLAlchemy model"""
-
-    # Map fields from JSON to database model
+    
+    # Generate slug if not present (although model requires it, we generate it here for new items)
+    # Note: For existing items, we keep the ID and Slug stable unless we want to re-generate slug?
+    # Usually better to keep slug stable if title hasn't changed drastically, but here we base lookup on slug.
+    
+    # We will handle ID and Slug outside or pass them in if existing
+    activity_id = existing_activity.id if existing_activity else uuid4()
+    
+    # Use existing slug if available, otherwise generate new
+    # But wait, if we lookup by slug, we already have it.
+    # If we lookup by title, we might generate a new slug if title changed?
+    # Let's stick to generating slug from title for consistency or use existing.
+    
+    # Simple approach: Re-map everything. ID is preserved via existing_activity check in main loop.
+    # Slug logic: We generate it in main loop to check existence.
+    
     # Handle snake_case to match both JSON and model
     return Activity(
-        id=uuid4(),
+        id=activity_id,
         title=activity_json.get("title"),
+        # slug is handled by caller
         category=EventCategory(activity_json.get("category")),
         tags=activity_json.get("tags", []),
 
@@ -38,11 +55,12 @@ def map_json_to_model(activity_json: dict) -> Activity:
         short_description=activity_json.get("short_description", ""),
         long_description=activity_json.get("long_description"),
         description=activity_json.get("description"),
+        customer_voice=activity_json.get("customer_voice"),
 
         image_url=activity_json.get("image_url"),
 
         season=Season(activity_json.get("season")) if activity_json.get("season") else None,
-        weather_dependent=activity_json.get("weather_dependent", False),
+        # weather_dependent=activity_json.get("weather_dependent", False),
 
         accessibility_flags=activity_json.get("accessibility_flags", []),
 
@@ -73,12 +91,12 @@ def map_json_to_model(activity_json: dict) -> Activity:
         travel_time_from_office_minutes=activity_json.get("travel_time_from_office_minutes"),
         travel_time_from_office_minutes_walking=activity_json.get("travel_time_from_office_minutes_walking"),
 
-        created_at=datetime.utcnow()
+        created_at=existing_activity.created_at if existing_activity else datetime.utcnow()
     )
 
 
 async def import_activities():
-    """Import activities from JSON file to database"""
+    """Import activities from JSON file to database with Upsert"""
 
     # Read JSON file
     json_path = Path(__file__).parent.parent / "data" / "activities.json"
@@ -92,37 +110,63 @@ async def import_activities():
     # Import to database
     async with async_session() as db:
         try:
-            # Check if activities already exist
-            from sqlalchemy.future import select
-            result = await db.execute(select(Activity))
-            existing = result.scalars().all()
+            created_count = 0
+            updated_count = 0
+            
+            print(f"Starting import loop for {len(activities_data)} items...")
 
-            if existing:
-                print(f"Database already contains {len(existing)} activities")
-                response = input("Delete existing and reimport? (y/N): ")
-                if response.lower() != 'y':
-                    print("Import cancelled")
-                    return
-
-                # Delete existing
-                for activity in existing:
-                    await db.delete(activity)
-                await db.commit()
-                print("Deleted existing activities")
-
-            # Import new activities
-            imported_count = 0
             for activity_json in activities_data:
+                title = activity_json.get("title")
+                if not title:
+                    print("Skipping activity without title")
+                    continue
+                
+                # Generate slug for lookup
+                slug = generate_slug(title)
+                # print(f"Checking slug: {slug}")
+                
+                # Check if exists by slug
+                result = await db.execute(select(Activity).where(Activity.slug == slug))
+                existing_activity = result.scalar_one_or_none()
+                
                 try:
-                    activity = map_json_to_model(activity_json)
-                    db.add(activity)
-                    imported_count += 1
+                    if existing_activity:
+                        # Update existing
+                        # We map json to a TEMPORARY model to get clean fields, then update existing instance
+                        temp_model = map_json_to_model(activity_json, existing_activity)
+                        
+                        has_changes = False
+                        # Update fields on existing_activity
+                        for key, new_value in temp_model.__dict__.items():
+                            if not key.startswith('_') and key != 'id' and key != 'created_at':
+                                old_value = getattr(existing_activity, key)
+                                if old_value != new_value:
+                                    setattr(existing_activity, key, new_value)
+                                    has_changes = True
+                        
+                        # Ensure slug is set (though it should match)
+                        if existing_activity.slug != slug:
+                            existing_activity.slug = slug
+                            has_changes = True
+
+                        if has_changes:
+                            updated_count += 1
+                            print(f"Updated: {title}")
+                    else:
+                        # Create new
+                        new_activity = map_json_to_model(activity_json)
+                        new_activity.slug = slug
+                        db.add(new_activity)
+                        created_count += 1
+                        print(f"Created: {title}")
+                        
                 except Exception as e:
-                    print(f"Error importing activity '{activity_json.get('title')}': {e}")
+                    print(f"Error processing activity '{title}': {e}")
                     continue
 
+            print("Committing changes...")
             await db.commit()
-            print(f"Successfully imported {imported_count} activities!")
+            print(f"Import complete! Created: {created_count}, Updated: {updated_count}")
 
         except Exception as e:
             print(f"Error during import: {e}")

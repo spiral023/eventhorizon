@@ -112,6 +112,7 @@ class ActivityBase(BaseSchema):
     description: Optional[str] = ""
     short_description: str
     long_description: Optional[str] = None
+    customer_voice: Optional[str] = None
     
     season: Optional[str] = "all_year"
     

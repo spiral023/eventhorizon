@@ -46,7 +46,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://vreservierung.activity.com",
-    "menu_url": "https://vspeisekarte.activity.com"
+    "menu_url": "https://vspeisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Lasertron: Actionreiches Lasertag Battle",
@@ -87,7 +88,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Exit the Room: Das Escape Abenteuer Linz",
@@ -104,7 +106,7 @@
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
     "short_description": "Klassische Escape Rooms mit kniffligen Rätseln und 60 Minuten Zeitdruck.",
-    "long_description": "Ihr werdet gemeinsam in einen Themenraum „eingesperrt“ und müsst innerhalb von 60 Minuten Codes knacken, Hinweise kombinieren und als Team den Ausweg finden – ideal für kleine Gruppen, die Grübelspaß lieben.",
+    "long_description": "Ihr werdet gemeinsam in einen Themenraum „eingesperrt“ und müsst innerhalb von 60 Minuten Codes knacken, Hinweise suchen, diese kombinieren und clever um die Ecke denken. Jede Spur kann wichtig sein – von versteckten Botschaften bis zu Mechanismen, die erst im Team Sinn ergeben. Kommunikation, Rollenverteilung und ein kühler Kopf bringen euch voran, während die Zeit gnadenlos läuft. Schafft ihr den Ausweg, wartet das perfekte Erfolgserlebnis für kleine Gruppen mit Grübelspaß.",
     "physical_intensity": 2,
     "mental_challenge": 5,
     "social_interaction_level": 5,
@@ -132,7 +134,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Die Besucher sind begeistert vom hohen Spaßfaktor und der Spannung. Sie beschreiben die Räume, insbesondere das Zombie- und Murder-Szenario, als gut durchdacht und unterhaltsam. Das Personal wird vielfach als sehr freundlich, sympathisch und hilfsbereit gelobt. Kunden schätzen die kniffligen, logischen Rätsel und empfehlen das Erlebnis für Freunde, Familien und Kollegen weiter."
   },
   {
     "title": "NoWayOut: Premium Escape Room Erlebnis",
@@ -173,7 +176,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Ocean Park: Bowling & Dinner Teamevent",
@@ -220,7 +224,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "JUMP DOME Linz: Trampolin-Action pur",
@@ -266,7 +271,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Linzer Bier: Brauereiführung & Verkostung",
@@ -314,7 +320,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Ruff Indoor Golf: Die Team-Challenge Linz",
@@ -355,7 +362,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Another World: VR Team-Abenteuer erleben",
@@ -402,7 +410,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Deep Space 8K: Zukunftstrip im AEC Linz",
@@ -448,7 +457,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Segway Tour: Linz schwebend entdecken",
@@ -493,7 +503,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Mural Harbor: Graffiti Walk & Spray Class",
@@ -536,7 +547,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Stahlwelt Linz: Werkstour & Industriekultur",
@@ -582,7 +594,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Stefan's Stubm: Kulinarik & Gemütlichkeit",
@@ -628,7 +641,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Il Teatro: Italienischer Abend fürs Team",
@@ -674,7 +688,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Das Josef: Der Linzer Gastro-Klassiker",
@@ -720,7 +735,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "PAULs am Dom: Stylisches Dinner & Drinks",
@@ -766,7 +782,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Weinstadl Urfahr: Uriges Dinner & Wein",
@@ -813,7 +830,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Eisstockschießen & Bratl: Winter-Teamevent",
@@ -859,7 +877,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Hollywood Megaplex: Privates Kino-Event",
@@ -905,7 +924,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Cocktail-Kurs im Lennox: Mix it up Team!",
@@ -951,7 +971,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "ÄNGUS Downtown: Bestes Steak-Dinner Linz",
@@ -996,7 +1017,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Glorious Bastards: Pizza, Grill & Vibes",
@@ -1043,7 +1065,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Bratwurstglöckerl: Linzer Wirtshauskultur",
@@ -1089,7 +1112,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Stadtliebe Linz: Urbanes Wirtshaus-Event",
@@ -1135,7 +1159,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.activity.com",
-    "menu_url": "https://speisekarte.activity.com"
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Wia z'haus Lehner: Schmankerl & Ausblick",
@@ -1179,7 +1204,8 @@
     "max_capacity": 100.0,
     "outdoor_seating": true,
     "reservation_url": "https://www.wiazhaus-lehner.at/reservierung/",
-    "menu_url": "https://www.wiazhaus-lehner.at/speisekarte/"
+    "menu_url": "https://www.wiazhaus-lehner.at/speisekarte/",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Zur Eisernen Hand: Tradition & Genuss",
@@ -1221,7 +1247,8 @@
     ],
     "max_capacity": 80.0,
     "outdoor_seating": true,
-    "menu_url": "http://www.gasthaus-eisernehand.at/speisen.html"
+    "menu_url": "http://www.gasthaus-eisernehand.at/speisen.html",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Rotax MAX Dome: High-Speed E-Kart Action",
@@ -1269,7 +1296,8 @@
     "instagram": "https://www.instagram.com/rotaxmaxdomelinz",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.rotaxmaxdome.com/linz/buchen"
+    "reservation_url": "https://www.rotaxmaxdome.com/linz/buchen",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Booosters Kartbahn: Rennfeeling für Teams",
@@ -1314,7 +1342,8 @@
     "instagram": "https://www.instagram.com/booosters_official",
     "max_capacity": 120.0,
     "outdoor_seating": true,
-    "reservation_url": "https://booosters.at/bahnmiete/"
+    "reservation_url": "https://booosters.at/bahnmiete/",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Mission Games: Die Live Game-Show Linz",
@@ -1359,7 +1388,8 @@
     "instagram": "https://www.instagram.com/missiongames_linz",
     "max_capacity": 80.0,
     "outdoor_seating": false,
-    "reservation_url": "https://missiongames.at/buchen/"
+    "reservation_url": "https://missiongames.at/buchen/",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "BBQ im Schloss Café Linz",
@@ -1400,7 +1430,8 @@
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 60,
     "max_capacity": 316.0,
-    "outdoor_seating": true
+    "outdoor_seating": true,
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Gasthaus „Zum Schiefen Apfelbaum“",
@@ -1440,11 +1471,12 @@
     "recommended_group_size_max": 40,
     "outdoor_seating": true,
     "reservation_url": "https://zumschiefenapfelbaum.at/reservierung",
-    "menu_url": "https://zumschiefenapfelbaum.at/speisekarte"
+    "menu_url": "https://zumschiefenapfelbaum.at/speisekarte",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Swingolf Linz (HALL.O Swingolf)",
-    "category": "sport",
+    "category": "action",
     "tags": [
       "swingolf",
       "discgolf",
@@ -1478,7 +1510,8 @@
     "typical_duration_hours": 4.5,
     "recommended_group_size_min": 4,
     "recommended_group_size_max": 40,
-    "outdoor_seating": false
+    "outdoor_seating": false,
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Stiegl-Klosterhof Linz",
@@ -1518,11 +1551,12 @@
     "recommended_group_size_max": 80,
     "outdoor_seating": true,
     "reservation_url": "https://www.klosterhof.at/kontakt-service/tischreservierung/",
-    "menu_url": "https://www.klosterhof.at/kulinarik/"
+    "menu_url": "https://www.klosterhof.at/kulinarik/",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Zocken im Game & Dine",
-    "category": "entertainment",
+    "category": "relax",
     "tags": [
       "boardgames",
       "videogames",
@@ -1558,7 +1592,8 @@
     "recommended_group_size_max": 40,
     "outdoor_seating": false,
     "reservation_url": "https://gamedine.at/reservierung/",
-    "menu_url": "https://gamedine.at/speisen/"
+    "menu_url": "https://gamedine.at/speisen/",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Jack the Ripperl",
@@ -1599,6 +1634,7 @@
     "max_capacity": 175.0,
     "outdoor_seating": true,
     "reservation_url": "https://www.jack-the-ripperl.com/linz-landstrasse/reservieren/",
-    "menu_url": "https://www.jack-the-ripperl.com/linz-landstrasse/ripperl/"
+    "menu_url": "https://www.jack-the-ripperl.com/linz-landstrasse/ripperl/",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   }
 ]
