@@ -29,6 +29,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "@/pages/NotFound";
 import RequestResetPasswordPage from "@/pages/RequestResetPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import DevSentryTest from "@/pages/DevSentryTest";
 
 const queryClient = new QueryClient();
@@ -101,6 +102,7 @@ function AppRoutes() {
       <Route path="/join/:inviteCode" element={<PageTransition><JoinRoomPage /></PageTransition>} />
       <Route path="/forgot-password" element={<PageTransition><RequestResetPasswordPage /></PageTransition>} />
       <Route path="/reset-password" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
+      <Route path="/verify-email" element={<PageTransition><VerifyEmailPage /></PageTransition>} />
 
       {/* App layout for all in-app pages */}
       <Route element={<AppShell />}>
