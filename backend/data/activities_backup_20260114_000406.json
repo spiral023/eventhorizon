@@ -10,6 +10,9 @@
     "location_region": "OOE",
     "est_price_pp": 28,
     "min_participants": 8.0,
+    "accessibility_flags": [
+      "wheelchair"
+    ],
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -30,10 +33,10 @@
     "email": "office@mastersofescape.at",
     "travel_time_from_office_minutes_walking": 42,
     "primary_goal": "teambuilding",
-    "competition_level": 3,
-    "typical_duration_hours": 1.0,
-    "recommended_group_size_min": 2,
-    "recommended_group_size_max": 6,
+    "competition_level": 1,
+    "typical_duration_hours": 3.5,
+    "recommended_group_size_min": 8,
+    "recommended_group_size_max": 15,
     "coordinates": [
       48.312061,
       14.2810701
@@ -42,8 +45,9 @@
     "instagram": "https://instagram.com/masters-of-escape-team-r-tselspa-in-linz",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.mastersofescape.at/index.php?s=c",
-    "customer_voice": "Die Kunden loben die authentische Atmosphäre und die liebevoll, detailreich gestalteten Räume. Besonders das überaus freundliche und kompetente Personal wird hervorgehoben. Die Rätsel beschreiben Besucher als abwechslungsreich, logisch und technisch beeindruckend. Egal ob „Prison Break“ oder „Wudang“, die spannenden Geschichten und der hohe Spaßfaktor machen den Anbieter zu einer Top-Empfehlung für Gruppen."
+    "reservation_url": "https://vreservierung.activity.com",
+    "menu_url": "https://vspeisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Lasertron: Actionreiches Lasertag Battle",
@@ -75,20 +79,17 @@
     "email": "info@lasertron-linz.at",
     "travel_time_from_office_minutes_walking": 17,
     "primary_goal": "teambuilding",
-    "competition_level": 5,
-    "typical_duration_hours": 1.0,
+    "competition_level": 1,
+    "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
-    "coordinates": [
-      48.30135662042273,
-      14.321515640384213
-    ],
     "facebook": "https://facebook.com/lasertron-actionreiches-lasertag-battle",
     "instagram": "https://instagram.com/lasertron-actionreiches-lasertag-battle",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://lasertron-linz.at/#order",
-    "customer_voice": "Die Besucher heben den extremen Spaßfaktor hervor. Sie beschreiben Lasertron als ideales Erlebnis für Familienausflüge, Kindergeburtstage und Gruppen. Das Personal wird in vielen Rezensionen als sehr freundlich, hilfsbereit und kompetent bei der Einweisung gelobt. Kunden schätzen die coole Arena, die verständlichen Regeln und die Möglichkeit, sich sportlich richtig auszupowern."
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Exit the Room: Das Escape Abenteuer Linz",
@@ -120,10 +121,10 @@
     "email": "linz@exittheroom.at",
     "travel_time_from_office_minutes_walking": 21,
     "primary_goal": "teambuilding",
-    "competition_level": 3,
-    "typical_duration_hours": 1.0,
-    "recommended_group_size_min": 2,
-    "recommended_group_size_max": 6,
+    "competition_level": 1,
+    "typical_duration_hours": 3.5,
+    "recommended_group_size_min": 8,
+    "recommended_group_size_max": 15,
     "coordinates": [
       48.2972578,
       14.2894709
@@ -132,7 +133,8 @@
     "instagram": "https://instagram.com/exit-the-room-das-escape-abenteuer-linz",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.exittheroom.at/buchung",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Die Besucher sind begeistert vom hohen Spaßfaktor und der Spannung. Sie beschreiben die Räume, insbesondere das Zombie- und Murder-Szenario, als gut durchdacht und unterhaltsam. Das Personal wird vielfach als sehr freundlich, sympathisch und hilfsbereit gelobt. Kunden schätzen die kniffligen, logischen Rätsel und empfehlen das Erlebnis für Freunde, Familien und Kollegen weiter."
   },
   {
@@ -165,20 +167,17 @@
     "email": "linz@nowayout-escape.at",
     "travel_time_from_office_minutes_walking": 17,
     "primary_goal": "teambuilding",
-    "competition_level": 3,
-    "typical_duration_hours": 1.0,
+    "competition_level": 1,
+    "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
-    "coordinates": [
-      48.30135779936691,
-      14.321510487345043
-    ],
     "facebook": "https://facebook.com/nowayout-premium-escape-room-erlebnis",
     "instagram": "https://instagram.com/nowayout-premium-escape-room-erlebnis",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://linz.nowayout-escape.at/de/#rooms",
-    "customer_voice": "Die Besucher loben die detailreiche und liebevolle Gestaltung der Räume, insbesondere die magische Atmosphäre in „School of Magic“. Das Personal wird vielfach als überaus herzlich, hilfsbereit und kompetent beschrieben. Viele Kunden betonen den hohen Spaßfaktor für Familien und Einsteiger. Die Rätsel werden als unterhaltsam und die Kulissen als immersiv wahrgenommen."
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Ocean Park: Bowling & Dinner Teamevent",
@@ -212,8 +211,8 @@
     "email": "linz@oceanpark.at",
     "travel_time_from_office_minutes_walking": 125,
     "primary_goal": "teambuilding",
-    "competition_level": 4,
-    "typical_duration_hours": 2.0,
+    "competition_level": 1,
+    "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
@@ -224,8 +223,9 @@
     "instagram": "https://instagram.com/ocean-park-bowling-dinner-teamevent",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://oceanparkpluscity.at/packages/",
-    "customer_voice": "Die Kunden bewerten die Anlage grundsätzlich als modern und das Angebot an Bowling, Billard und Arcade-Spielen als unterhaltsam, besonders für Gruppen und Kinder. Das Ambiente wird oft als ansprechend beschrieben. Jedoch wird der Service massiv kritisiert: Das Personal wird überwiegend als unfreundlich, unmotiviert und langsam wahrgenommen. Viele Kunden berichten von technischen Mängeln an den Bowlingbahnen und defekten Spielautomaten. Ein häufiger Beschwerdegrund ist zudem die Preispolitik, insbesondere der verpflichtende Getränkekonsum, hohe Preise für Getränke sowie Probleme bei der Kautionsrückgabe. Auch die Hygiene der Leihschuhe wird vereinzelt bemängelt."
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "JUMP DOME Linz: Trampolin-Action pur",
@@ -258,8 +258,8 @@
     "email": "linz@jumpdome.at",
     "travel_time_from_office_minutes_walking": 110,
     "primary_goal": "teambuilding",
-    "competition_level": 2,
-    "typical_duration_hours": 1.0,
+    "competition_level": 1,
+    "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
@@ -270,8 +270,9 @@
     "instagram": "https://instagram.com/jump-dome-linz-trampolin-action-pur",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://jumpdome.at/linz/buchen/",
-    "customer_voice": "Die Kunden sind begeistert vom hohen Spaßfaktor und beschreiben die Anlage als idealen Ort zum Auspowern für Kinder und Erwachsene. Besonders gelobt werden die abwechslungsreichen Sprungbereiche, die Sauberkeit der Halle und das überwiegend freundliche, hilfsbereite Personal. Auch die Organisation von Geburtstagsfeiern wird positiv hervorgehoben. Kritisch sehen Kunden hingegen das Preis-Leistungs-Verhältnis: Die Eintrittspreise sowie die zusätzlichen Kosten für obligatorische Socken und Armbänder werden von vielen als zu hoch empfunden. Vereinzelt werden zudem die hohen Temperaturen und die schlechte Belüftung in der Halle bemängelt."
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
+    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
     "title": "Linzer Bier: Brauereiführung & Verkostung",
@@ -318,8 +319,8 @@
     "instagram": "https://instagram.com/linzer-bier-brauereif-hrung-verkostung",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.linzerbier.at/buchungskalender/",
-    "menu_url": "https://www.zurliesl.at/",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -352,19 +353,16 @@
     "email": "linz@ruffgolf.at",
     "travel_time_from_office_minutes_walking": 105,
     "primary_goal": "teambuilding",
-    "competition_level": 3,
+    "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
-    "coordinates": [
-      48.251543295110665,
-      14.246764541104266
-    ],
     "facebook": "https://facebook.com/ruff-indoor-golf-die-team-challenge-linz",
     "instagram": "https://instagram.com/ruff-indoor-golf-die-team-challenge-linz",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://play.ruffgolf.eu/venues/ruff-leonding/booking/bays",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -399,7 +397,7 @@
     "email": "linz@another-world.com",
     "travel_time_from_office_minutes_walking": 94,
     "primary_goal": "teambuilding",
-    "competition_level": 3,
+    "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
@@ -411,7 +409,8 @@
     "instagram": "https://instagram.com/another-world-vr-team-abenteuer-erleben",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://linz.another-world.com/buy",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -457,7 +456,8 @@
     "instagram": "https://instagram.com/deep-space-8k-zukunftstrip-im-aec-linz",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://ars.electronica.art/center/de/deepspace-3d/",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -502,7 +502,8 @@
     "instagram": "https://instagram.com/segway-tour-linz-schwebend-entdecken",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://linzerschweben.at/termine/",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -541,15 +542,12 @@
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
-    "coordinates": [
-      48.31139026351853,
-      14.315165999999762
-    ],
     "facebook": "https://facebook.com/mural-harbor-graffiti-walk-spray-class",
     "instagram": "https://instagram.com/mural-harbor-graffiti-walk-spray-class",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://muralharbor.at/tickets/",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -595,7 +593,8 @@
     "instagram": "https://instagram.com/stahlwelt-linz-werkstour-industriekultur",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.voestalpine.com/stahlwelt/Besuch-planen/Gruppen",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -610,7 +609,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 40,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -641,9 +639,9 @@
     "facebook": "https://facebook.com/stefan-s-stubm-kulinarik-gem-tlichkeit",
     "instagram": "https://instagram.com/stefan-s-stubm-kulinarik-gem-tlichkeit",
     "max_capacity": 100.0,
-    "outdoor_seating": true,
-    "reservation_url": "https://www.stubm.at/reservieren.aspx",
-    "menu_url": "https://www.stubm.at/speisen.html",
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -658,7 +656,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -690,8 +687,8 @@
     "instagram": "https://instagram.com/il-teatro-italienischer-abend-f-rs-team",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.ilteatro.at/reservierung/",
-    "menu_url": "https://www.ilteatro.at/speisen/",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -706,7 +703,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -737,9 +733,9 @@
     "facebook": "https://facebook.com/das-josef-der-linzer-gastro-klassiker",
     "instagram": "https://instagram.com/das-josef-der-linzer-gastro-klassiker",
     "max_capacity": 100.0,
-    "outdoor_seating": true,
-    "reservation_url": "https://josef.eu/reservierung/",
-    "menu_url": "https://josef.eu/food-drinks/",
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -754,7 +750,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 50,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -785,9 +780,9 @@
     "facebook": "https://facebook.com/pauls-am-dom-stylisches-dinner-drinks",
     "instagram": "https://instagram.com/pauls-am-dom-stylisches-dinner-drinks",
     "max_capacity": 100.0,
-    "outdoor_seating": true,
-    "reservation_url": "https://www.pauls-linz.at/reservierung",
-    "menu_url": "https://www.pauls-linz.at/essen-trinken",
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -833,9 +828,9 @@
     "facebook": "https://facebook.com/weinstadl-urfahr-uriges-dinner-wein",
     "instagram": "https://instagram.com/weinstadl-urfahr-uriges-dinner-wein",
     "max_capacity": 100.0,
-    "outdoor_seating": true,
-    "reservation_url": "https://weinstadl-urfahr.eatbu.com/?lang=de",
-    "menu_url": "https://weinstadl-urfahr.eatbu.com/?lang=de",
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -869,7 +864,7 @@
     "email": "sport@linzag.at",
     "travel_time_from_office_minutes_walking": 28,
     "primary_goal": "fun",
-    "competition_level": 5,
+    "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
@@ -881,7 +876,8 @@
     "instagram": "https://instagram.com/eisstockschie-en-bratl-winter-teamevent",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://services.linzag.at/onlinereservierung/curlingrinkstep1.jsf?nav=%2Fde_1%2Fprivatkunden%2Ffreizeit%2Feissport%2Fonline_reservierung%2Fonline_reservierung_eishalle.nav.xhtml",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -918,7 +914,7 @@
     "competition_level": 1,
     "typical_duration_hours": 3.5,
     "recommended_group_size_min": 8,
-    "recommended_group_size_max": 30,
+    "recommended_group_size_max": 15,
     "coordinates": [
       48.2434541,
       14.2358488
@@ -927,7 +923,8 @@
     "instagram": "https://instagram.com/hollywood-megaplex-privates-kino-event",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.megaplex.at/inhalt/kino-zum-mieten",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -973,7 +970,8 @@
     "instagram": "https://instagram.com/cocktail-kurs-im-lennox-mix-it-up-team",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.lennox.at/events/cocktailkurse/#events",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -987,7 +985,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 60,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1019,8 +1016,8 @@
     "instagram": "https://instagram.com/ngus-downtown-bestes-steak-dinner-linz",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.xn--ngus-koa.at/#contactform",
-    "menu_url": "https://www.xn--ngus-koa.at/#speisekarten",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -1036,7 +1033,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 40,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1068,8 +1064,8 @@
     "instagram": "https://instagram.com/glorious-bastards-pizza-grill-vibes",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://glorious-bastards.at/linz/",
-    "menu_url": "https://glorious-bastards.at/food/",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -1084,7 +1080,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1116,8 +1111,8 @@
     "instagram": "https://instagram.com/bratwurstgl-ckerl-linzer-wirtshauskultur",
     "max_capacity": 100.0,
     "outdoor_seating": false,
-    "reservation_url": "https://www.bratwurstgloeckerl.at/de/reservierung/",
-    "menu_url": "https://www.bratwurstgloeckerl.at/de/essen_trinken/",
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -1132,7 +1127,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 40,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1163,9 +1157,9 @@
     "facebook": "https://facebook.com/stadtliebe-linz-urbanes-wirtshaus-event",
     "instagram": "https://instagram.com/stadtliebe-linz-urbanes-wirtshaus-event",
     "max_capacity": 100.0,
-    "outdoor_seating": true,
-    "reservation_url": "https://www.stadtliebe.at/reservierung",
-    "menu_url": "https://www.stadtliebe.at/urbanfood",
+    "outdoor_seating": false,
+    "reservation_url": "https://reservierung.activity.com",
+    "menu_url": "https://speisekarte.activity.com",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -1179,7 +1173,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1211,7 +1204,7 @@
     "max_capacity": 100.0,
     "outdoor_seating": true,
     "reservation_url": "https://www.wiazhaus-lehner.at/reservierung/",
-    "menu_url": "https://www.wiazhaus-lehner.at/speisekarte",
+    "menu_url": "https://www.wiazhaus-lehner.at/speisekarte/",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -1225,7 +1218,6 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1255,7 +1247,6 @@
     ],
     "max_capacity": 80.0,
     "outdoor_seating": true,
-    "reservation_url": "https://www.gasthaus-eisernehand.at/start/",
     "menu_url": "http://www.gasthaus-eisernehand.at/speisen.html",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
@@ -1271,6 +1262,9 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 55,
+    "accessibility_flags": [
+      "wheelchair_accessible"
+    ],
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1382,7 +1376,7 @@
     "email": "office@missiongames.at",
     "travel_time_from_office_minutes_walking": 38,
     "primary_goal": "teambuilding",
-    "competition_level": 3,
+    "competition_level": 4,
     "typical_duration_hours": 3.0,
     "recommended_group_size_min": 6,
     "recommended_group_size_max": 60,
@@ -1435,10 +1429,6 @@
     "typical_duration_hours": 2.5,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 60,
-    "coordinates": [
-      48.30573502257994,
-      14.282031691527816
-    ],
     "max_capacity": 316.0,
     "outdoor_seating": true,
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
@@ -1479,10 +1469,6 @@
     "typical_duration_hours": 2.5,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 40,
-    "coordinates": [
-      48.281432002870424,
-      14.293608090970707
-    ],
     "outdoor_seating": true,
     "reservation_url": "https://zumschiefenapfelbaum.at/reservierung",
     "menu_url": "https://zumschiefenapfelbaum.at/speisekarte",
@@ -1524,12 +1510,7 @@
     "typical_duration_hours": 4.5,
     "recommended_group_size_min": 4,
     "recommended_group_size_max": 40,
-    "coordinates": [
-      48.3248913845126,
-      14.298549647330535
-    ],
     "outdoor_seating": false,
-    "reservation_url": "https://reservierung.swingolf.at/",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
@@ -1568,10 +1549,6 @@
     "typical_duration_hours": 2.5,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 80,
-    "coordinates": [
-      48.3023536725517,
-      14.289336294934136
-    ],
     "outdoor_seating": true,
     "reservation_url": "https://www.klosterhof.at/kontakt-service/tischreservierung/",
     "menu_url": "https://www.klosterhof.at/kulinarik/",
@@ -1609,14 +1586,10 @@
     "email": "office@gamedine.at",
     "travel_time_from_office_minutes_walking": 19,
     "primary_goal": "teambuilding",
-    "competition_level": 3,
+    "competition_level": 2,
     "typical_duration_hours": 3.0,
     "recommended_group_size_min": 4,
     "recommended_group_size_max": 40,
-    "coordinates": [
-      48.29544603751299,
-      14.294202991307817
-    ],
     "outdoor_seating": false,
     "reservation_url": "https://gamedine.at/reservierung/",
     "menu_url": "https://gamedine.at/speisen/",
@@ -1658,10 +1631,6 @@
     "typical_duration_hours": 2.5,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 120,
-    "coordinates": [
-      48.303974150311454,
-      14.288800007639
-    ],
     "max_capacity": 175.0,
     "outdoor_seating": true,
     "reservation_url": "https://www.jack-the-ripperl.com/linz-landstrasse/reservieren/",
