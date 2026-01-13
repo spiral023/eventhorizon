@@ -296,6 +296,50 @@ export default function CreateEventPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className={timeWindowType === "weekRange" ? "block" : "hidden"}>
+                  <div className="flex gap-4">
+                    <FormField
+                      control={form.control}
+                      name="fromWeek"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Von KW</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min={1} 
+                              max={53} 
+                              className="rounded-xl"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : "")}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="toWeek"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Bis KW</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min={1} 
+                              max={53} 
+                              className="rounded-xl"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : "")}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
                 <div className={timeWindowType === "freeText" ? "block" : "hidden"}>
                   <Input
                     placeholder="z.B. 'Nach der Konferenz' oder 'Anfang Q3'"

@@ -152,7 +152,7 @@ export default function TeamPage() {
             KI-Analyse läuft...
           </h3>
           <p className="text-muted-foreground animate-pulse">
-            Wir werten die Präferenzen deines Teams aus, um die perfekte Strategie zu berechnen.
+            Wir werten dein Team aus, um die perfekte Strategie zu berechnen. Dies dauert ca. 20-30 Sekunden und erfolgt nur nach Änderungen.
           </p>
         </div>
 
