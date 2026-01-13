@@ -286,147 +286,149 @@ export default function ActivityDetailPage() {
         </Button>
       </motion.div>
 
-      {/* Hero Section - Enhanced */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative -mx-4 sm:-mx-6 lg:mx-0 lg:rounded-2xl overflow-hidden"
-      >
-        {/* Hero Image Container */}
-        <div className="relative h-[320px] sm:h-[380px] md:h-[420px] lg:h-[480px]">
-          <img
-            src={activity.imageUrl}
-            alt={activity.title}
-            className="w-full h-full object-cover"
-          />
-
-          {/* Layered gradients for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />
-
-          {/* Hero Content */}
-          <div className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-16 sm:px-6 sm:pt-20 sm:pb-20 lg:px-8 lg:pt-24 lg:pb-24 flex flex-col justify-center">
-            <div className="max-w-4xl">
-              {/* Badges */}
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <Badge
-                  className={cn(
-                    CategoryColors[activity.category],
-                    "text-sm px-3 py-1"
-                  )}
-                >
-                  {CategoryLabels[activity.category]}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="bg-white/15 backdrop-blur-md text-white border-white/30 text-sm px-3 py-1"
-                >
-                  {SeasonLabels[activity.season]}
-                </Badge>
-                {rating && (
-                  <Badge
-                    variant="outline"
-                    className="bg-white/15 backdrop-blur-md text-white border-white/30 text-sm px-3 py-1"
-                  >
-                    <Star className="h-3.5 w-3.5 fill-warning text-warning mr-1" />
-                    {rating.toFixed(1)}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Title */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-                {activity.title}
-              </h1>
-            </div>
-          </div>
-
-          {/* Desktop Favorite Button */}
-          <div className="hidden lg:flex absolute top-4 right-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleFavoriteToggle}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md transition-all",
-                isFav
-                  ? "bg-red-500/90 text-white"
-                  : "bg-white/20 text-white hover:bg-white/30"
-              )}
-            >
-              <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
-              {favoriteCount > 0 && <span className="font-medium">{favoriteCount}</span>}
-            </motion.button>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Quick Stats Bar - Floating */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.4 }}
-        className="relative z-10 -mt-12 mx-2 sm:mx-4 lg:mx-0"
-      >
-        <Card className="bg-card/95 backdrop-blur-sm border-border/50 shadow-xl rounded-2xl overflow-hidden">
-          <CardContent className="p-0">
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/50">
-              {/* Price */}
-              <div className="p-3 sm:p-4 md:p-6 text-center">
-                <div className="flex items-center justify-center text-primary mb-1">
-                  <Euro className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold">ab {activity.estPricePerPerson}€</p>
-                <p className="text-xs text-muted-foreground">pro Person</p>
-              </div>
-
-              {/* Duration */}
-              <div className="p-3 sm:p-4 md:p-6 text-center">
-                <div className="flex items-center justify-center text-primary mb-1">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold">
-                  {activity.typicalDurationHours ? `${activity.typicalDurationHours}h` : "Flexibel"}
-                </p>
-                <p className="text-xs text-muted-foreground">Dauer</p>
-              </div>
-
-              {/* Group Size */}
-              <div className="p-3 sm:p-4 md:p-6 text-center">
-                <div className="flex items-center justify-center text-primary mb-1">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold">
-                  {activity.recommendedGroupSizeMin || 2}-{activity.recommendedGroupSizeMax || 20}
-                </p>
-                <p className="text-xs text-muted-foreground">Personen</p>
-              </div>
-
-              {/* Location */}
-              <div className="p-3 sm:p-4 md:p-6 text-center">
-                <div className="flex items-center justify-center text-primary mb-1">
-                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold truncate">
-                  {activity.locationCity || RegionLabels[activity.locationRegion]}
-                </p>
-                <p className="text-xs text-muted-foreground">Standort</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
       {/* Main Content Grid */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="mt-8 grid gap-8 lg:grid-cols-3 lg:gap-10"
+        className="mt-6 grid gap-8 lg:grid-cols-4 lg:gap-10"
       >
         {/* Primary Content Column */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-3 space-y-8">
+
+          <div>
+          {/* Hero Section - Enhanced */}
+          <motion.section
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative -mx-4 sm:-mx-6 lg:mx-0 lg:rounded-2xl overflow-hidden"
+          >
+            {/* Hero Image Container */}
+            <div className="relative h-[320px] sm:h-[380px] md:h-[420px] lg:h-[480px]">
+              <img
+                src={activity.imageUrl}
+                alt={activity.title}
+                className="w-full h-full object-cover"
+              />
+
+              {/* Layered gradients for depth */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />
+
+              {/* Hero Content */}
+              <div className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-16 sm:px-6 sm:pt-20 sm:pb-20 lg:px-8 lg:pt-24 lg:pb-24 flex flex-col justify-center">
+                <div className="max-w-4xl">
+                  {/* Badges */}
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <Badge
+                      className={cn(
+                        CategoryColors[activity.category],
+                        "text-sm px-3 py-1"
+                      )}
+                    >
+                      {CategoryLabels[activity.category]}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="bg-white/15 backdrop-blur-md text-white border-white/30 text-sm px-3 py-1"
+                    >
+                      {SeasonLabels[activity.season]}
+                    </Badge>
+                    {rating && (
+                      <Badge
+                        variant="outline"
+                        className="bg-white/15 backdrop-blur-md text-white border-white/30 text-sm px-3 py-1"
+                      >
+                        <Star className="h-3.5 w-3.5 fill-warning text-warning mr-1" />
+                        {rating.toFixed(1)}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white">
+                    {activity.title}
+                  </h1>
+                </div>
+              </div>
+
+              {/* Desktop Favorite Button */}
+              <div className="hidden lg:flex absolute top-4 right-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleFavoriteToggle}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md transition-all",
+                    isFav
+                      ? "bg-red-500/90 text-white"
+                      : "bg-white/20 text-white hover:bg-white/30"
+                  )}
+                >
+                  <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
+                  {favoriteCount > 0 && <span className="font-medium">{favoriteCount}</span>}
+                </motion.button>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Quick Stats Bar - Floating */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            className="relative z-10 -mt-12 mx-2 sm:mx-4 lg:mx-0"
+          >
+            <Card className="bg-card/95 backdrop-blur-sm border-border/50 shadow-xl rounded-2xl overflow-hidden">
+              <CardContent className="p-0">
+                <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/50">
+                  {/* Price */}
+                  <div className="p-3 sm:p-4 md:p-6 text-center">
+                    <div className="flex items-center justify-center text-primary mb-1">
+                      <Euro className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold">ab {activity.estPricePerPerson}€</p>
+                    <p className="text-xs text-muted-foreground">pro Person</p>
+                  </div>
+
+                  {/* Duration */}
+                  <div className="p-3 sm:p-4 md:p-6 text-center">
+                    <div className="flex items-center justify-center text-primary mb-1">
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold">
+                      {activity.typicalDurationHours ? `${activity.typicalDurationHours}h` : "Flexibel"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Dauer</p>
+                  </div>
+
+                  {/* Group Size */}
+                  <div className="p-3 sm:p-4 md:p-6 text-center">
+                    <div className="flex items-center justify-center text-primary mb-1">
+                      <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold">
+                      {activity.recommendedGroupSizeMin || 2}-{activity.recommendedGroupSizeMax || 20}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Personen</p>
+                  </div>
+
+                  {/* Location */}
+                  <div className="p-3 sm:p-4 md:p-6 text-center">
+                    <div className="flex items-center justify-center text-primary mb-1">
+                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold truncate">
+                      {activity.locationCity || RegionLabels[activity.locationRegion]}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Standort</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          </div>
 
           {/* Description Section */}
           {activity.longDescription && (
@@ -440,82 +442,6 @@ export default function ActivityDetailPage() {
               </p>
             </motion.section>
           )}
-
-          {/* Activity Profile */}
-          <motion.section variants={itemVariants}>
-            <Card className="border-border/50 rounded-2xl overflow-hidden">
-              <CardHeader className="bg-muted/30 border-b border-border/50 pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  Aktivitätsprofil
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {activity.physicalIntensity !== undefined && (
-                    <ScaleRow
-                      icon={Zap}
-                      iconColor="text-orange-500"
-                      label="Körperliche Intensität"
-                      value={activity.physicalIntensity}
-                      gradientFrom="from-orange-400"
-                      gradientTo="to-orange-500"
-                    />
-                  )}
-                  {activity.mentalChallenge !== undefined && (
-                    <ScaleRow
-                      icon={Brain}
-                      iconColor="text-purple-500"
-                      label="Mentale Herausforderung"
-                      value={activity.mentalChallenge}
-                      gradientFrom="from-purple-400"
-                      gradientTo="to-purple-500"
-                    />
-                  )}
-                  {activity.socialInteractionLevel !== undefined && (
-                    <ScaleRow
-                      icon={Users}
-                      iconColor="text-blue-500"
-                      label="Soziale Interaktion"
-                      value={activity.socialInteractionLevel}
-                      gradientFrom="from-blue-400"
-                      gradientTo="to-blue-500"
-                    />
-                  )}
-                  {activity.competitionLevel !== undefined && (
-                    <ScaleRow
-                      icon={Target}
-                      iconColor="text-red-500"
-                      label="Wettbewerbslevel"
-                      value={activity.competitionLevel}
-                      gradientFrom="from-red-400"
-                      gradientTo="to-red-500"
-                    />
-                  )}
-                  {activity.teamworkLevel !== undefined && (
-                    <ScaleRow
-                      icon={Heart}
-                      iconColor="text-pink-500"
-                      label="Teamwork"
-                      value={activity.teamworkLevel}
-                      gradientFrom="from-pink-400"
-                      gradientTo="to-pink-500"
-                    />
-                  )}
-                  {activity.creativityLevel !== undefined && (
-                    <ScaleRow
-                      icon={Sparkles}
-                      iconColor="text-emerald-500"
-                      label="Kreativität"
-                      value={activity.creativityLevel}
-                      gradientFrom="from-emerald-400"
-                      gradientTo="to-emerald-500"
-                    />
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.section>
 
           {/* Tags */}
           {activity.tags.length > 0 && (
@@ -695,48 +621,127 @@ export default function ActivityDetailPage() {
             </Card>
           </motion.div>
 
-          {/* Location Card */}
+
+
+          {/* Activity Profile Card */}
           <motion.div variants={itemVariants}>
             <Card className="border-border/50 rounded-2xl overflow-hidden">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  Standort
+              <CardHeader className="bg-muted/30 border-b border-border/50 pb-4">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Profil
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="h-[200px] sm:h-[220px] w-full">
-                  <ActivityMiniMap activity={activity} className="h-full w-full rounded-none" />
-                </div>
-
-                <div className="p-4 space-y-3 border-t border-border/50">
-                  <div>
-                    <p className="font-medium">{activity.locationCity || RegionLabels[activity.locationRegion]}</p>
-                    {activity.locationAddress && (
-                      <p className="text-sm text-muted-foreground">{activity.locationAddress}</p>
-                    )}
-                  </div>
-
-                  {(activity.travelTimeMinutes || activity.travelTimeMinutesWalking) && (
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      {activity.travelTimeMinutes && (
-                        <span className="flex items-center gap-1.5">
-                          <Car className="h-4 w-4" />
-                          {activity.travelTimeMinutes} Min.
-                        </span>
-                      )}
-                      {activity.travelTimeMinutesWalking && (
-                        <span className="flex items-center gap-1.5">
-                          <FootprintsIcon className="h-4 w-4" />
-                          {activity.travelTimeMinutesWalking} Min.
-                        </span>
-                      )}
-                    </div>
+              <CardContent className="p-4">
+                <div className="grid gap-4">
+                  {activity.physicalIntensity !== undefined && (
+                    <ScaleRow
+                      icon={Zap}
+                      iconColor="text-orange-500"
+                      label="Körperlich"
+                      value={activity.physicalIntensity}
+                      gradientFrom="from-orange-400"
+                      gradientTo="to-orange-500"
+                    />
+                  )}
+                  {activity.mentalChallenge !== undefined && (
+                    <ScaleRow
+                      icon={Brain}
+                      iconColor="text-purple-500"
+                      label="Mental"
+                      value={activity.mentalChallenge}
+                      gradientFrom="from-purple-400"
+                      gradientTo="to-purple-500"
+                    />
+                  )}
+                  {activity.socialInteractionLevel !== undefined && (
+                    <ScaleRow
+                      icon={Users}
+                      iconColor="text-blue-500"
+                      label="Sozial"
+                      value={activity.socialInteractionLevel}
+                      gradientFrom="from-blue-400"
+                      gradientTo="to-blue-500"
+                    />
+                  )}
+                  {activity.competitionLevel !== undefined && (
+                    <ScaleRow
+                      icon={Target}
+                      iconColor="text-red-500"
+                      label="Wettbewerb"
+                      value={activity.competitionLevel}
+                      gradientFrom="from-red-400"
+                      gradientTo="to-red-500"
+                    />
+                  )}
+                  {activity.teamworkLevel !== undefined && (
+                    <ScaleRow
+                      icon={Heart}
+                      iconColor="text-pink-500"
+                      label="Teamwork"
+                      value={activity.teamworkLevel}
+                      gradientFrom="from-pink-400"
+                      gradientTo="to-pink-500"
+                    />
+                  )}
+                  {activity.creativityLevel !== undefined && (
+                    <ScaleRow
+                      icon={Sparkles}
+                      iconColor="text-emerald-500"
+                      label="Kreativität"
+                      value={activity.creativityLevel}
+                      gradientFrom="from-emerald-400"
+                      gradientTo="to-emerald-500"
+                    />
                   )}
                 </div>
               </CardContent>
             </Card>
           </motion.div>
+
+          {/* Additional Details Card */}
+          <motion.div variants={itemVariants}>
+            <Card className="border-border/50 rounded-2xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Weitere Details</CardTitle>
+              </CardHeader>
+              <CardContent className="divide-y divide-border/50">
+                {activity.primaryGoal && (
+                  <DetailRow icon={Target} label="Hauptziel" value={PrimaryGoalLabels[activity.primaryGoal]} />
+                )}
+                {activity.weatherDependent !== undefined && (
+                  <DetailRow
+                    icon={CloudSun}
+                    label="Wetter"
+                    value={activity.weatherDependent ? "Wetterabhängig" : "Wetterunabhängig"}
+                  />
+                )}
+                {activity.leadTimeMinDays && (
+                  <DetailRow icon={Calendar} label="Vorlauf" value={`Mind. ${activity.leadTimeMinDays} Tage`} />
+                )}
+                {activity.maxCapacity && (
+                  <DetailRow icon={Users} label="Max. Kapazität" value={`${activity.maxCapacity} Personen`} />
+                )}
+                {activity.accessibilityFlags && activity.accessibilityFlags.length > 0 && (
+                  <div className="py-2">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Accessibility className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">Barrierefreiheit</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 ml-7">
+                      {activity.accessibilityFlags.map((flag) => (
+                        <Badge key={flag} variant="outline" className="text-xs">
+                          {flag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+
 
           {/* Contact Card */}
           <motion.div variants={itemVariants}>
@@ -806,47 +811,50 @@ export default function ActivityDetailPage() {
             </Card>
           </motion.div>
 
-          {/* Additional Details Card */}
+          {/* Location Card */}
           <motion.div variants={itemVariants}>
-            <Card className="border-border/50 rounded-2xl">
+            <Card className="border-border/50 rounded-2xl overflow-hidden">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Weitere Details</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Standort
+                </CardTitle>
               </CardHeader>
-              <CardContent className="divide-y divide-border/50">
-                {activity.primaryGoal && (
-                  <DetailRow icon={Target} label="Hauptziel" value={PrimaryGoalLabels[activity.primaryGoal]} />
-                )}
-                {activity.weatherDependent !== undefined && (
-                  <DetailRow
-                    icon={CloudSun}
-                    label="Wetter"
-                    value={activity.weatherDependent ? "Wetterabhängig" : "Wetterunabhängig"}
-                  />
-                )}
-                {activity.leadTimeMinDays && (
-                  <DetailRow icon={Calendar} label="Vorlauf" value={`Mind. ${activity.leadTimeMinDays} Tage`} />
-                )}
-                {activity.maxCapacity && (
-                  <DetailRow icon={Users} label="Max. Kapazität" value={`${activity.maxCapacity} Personen`} />
-                )}
-                {activity.accessibilityFlags && activity.accessibilityFlags.length > 0 && (
-                  <div className="py-2">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Accessibility className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">Barrierefreiheit</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 ml-7">
-                      {activity.accessibilityFlags.map((flag) => (
-                        <Badge key={flag} variant="outline" className="text-xs">
-                          {flag}
-                        </Badge>
-                      ))}
-                    </div>
+              <CardContent className="p-0">
+                <div className="h-[200px] sm:h-[220px] w-full">
+                  <ActivityMiniMap activity={activity} className="h-full w-full rounded-none" />
+                </div>
+
+                <div className="p-4 space-y-3 border-t border-border/50">
+                  <div>
+                    <p className="font-medium">{activity.locationCity || RegionLabels[activity.locationRegion]}</p>
+                    {activity.locationAddress && (
+                      <p className="text-sm text-muted-foreground">{activity.locationAddress}</p>
+                    )}
                   </div>
-                )}
+
+                  {(activity.travelTimeMinutes || activity.travelTimeMinutesWalking) && (
+                    <div className="flex gap-4 text-sm text-muted-foreground">
+                      {activity.travelTimeMinutes && (
+                        <span className="flex items-center gap-1.5">
+                          <Car className="h-4 w-4" />
+                          {activity.travelTimeMinutes} Min.
+                        </span>
+                      )}
+                      {activity.travelTimeMinutesWalking && (
+                        <span className="flex items-center gap-1.5">
+                          <FootprintsIcon className="h-4 w-4" />
+                          {activity.travelTimeMinutesWalking} Min.
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
+
+
         </aside>
       </motion.div>
 
