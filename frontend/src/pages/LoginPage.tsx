@@ -175,7 +175,7 @@ export default function LoginPage() {
         } else {
           toast({
             title: "Registrierung fehlgeschlagen",
-            description: "Bitte überprüfe deine Angaben.",
+            description: result.error || error || "Bitte überprüfe deine Angaben.",
             variant: "destructive",
           });
         }

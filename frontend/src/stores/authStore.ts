@@ -19,6 +19,7 @@ interface AuthState {
   register: (input: { email: string; firstName: string; lastName: string; password: string }) => Promise<{
     success: boolean;
     email?: string;
+    error?: string;
   }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -113,7 +114,7 @@ export const useAuthStore = create<AuthState>()(
           const result = await apiRegister(input);
           if (result.error) {
             set({ error: result.error.message, isLoading: false });
-            return { success: false };
+            return { success: false, error: result.error.message };
           }
           set({
             user: null,
@@ -124,7 +125,7 @@ export const useAuthStore = create<AuthState>()(
           return { success: true, email: result.data?.email ?? input.email };
         } catch (e) {
           set({ error: "Registrierung fehlgeschlagen", isLoading: false });
-          return { success: false };
+          return { success: false, error: "Registrierung fehlgeschlagen" };
         }
       },
 

@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { jwt, emailOTP, magicLink } from "better-auth/plugins";
+import { jwt, emailOTP, magicLink, haveIBeenPwned } from "better-auth/plugins";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
@@ -116,6 +116,11 @@ const auth = betterAuth({
     },
   },
   plugins: [
+    haveIBeenPwned({
+      paths: ["/sign-up/email"],
+      customPasswordCompromisedMessage:
+        "Dieses Passwort ist kompromittiert. Bitte nutze ein anderes.",
+    }),
     magicLink({
       sendMagicLink: async ({ email, token, url }, ctx) => {
         const { subject, text, html } = renderMagicLinkEmail({
