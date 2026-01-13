@@ -9,6 +9,7 @@ Provides AI-powered features:
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from starlette.concurrency import run_in_threadpool
 import logging
 import hashlib
 import json
@@ -174,11 +175,12 @@ async def get_team_recommendations(
     ai_error = None
     
     try:
-        ai_result = ai_service.analyze_team_preferences(
-            room_id=str(room_id),
-            members=members_data,
-            activities=activities_data,
-            current_distribution=real_distribution if total_favorites > 0 else None
+        ai_result = await run_in_threadpool(
+            ai_service.analyze_team_preferences,
+            str(room_id),
+            members_data,
+            activities_data,
+            real_distribution if total_favorites > 0 else None
         )
     except Exception as e:
         ai_error = str(e)
@@ -322,10 +324,11 @@ async def get_activity_suggestions(
 
     # Call AI service
     try:
-        suggestions = ai_service.suggest_activities_for_event(
-            event=event_data,
-            activities=activities_data,
-            team_preferences=team_prefs
+        suggestions = await run_in_threadpool(
+            ai_service.suggest_activities_for_event,
+            event_data,
+            activities_data,
+            team_prefs
         )
         return suggestions
     except Exception as e:
@@ -389,10 +392,11 @@ async def send_event_invites(
         role = "organizer" if participant.is_organizer else "participant"
 
         try:
-            invite = ai_service.generate_event_invite(
-                event=event_data,
-                recipient=user_data,
-                role=role
+            invite = await run_in_threadpool(
+                ai_service.generate_event_invite,
+                event_data,
+                user_data,
+                role
             )
 
             # Actually send email here
@@ -475,10 +479,11 @@ async def send_voting_reminders(
         }
 
         try:
-            reminder = ai_service.generate_voting_reminder(
-                event=event_data,
-                recipient=user_data,
-                days_until_deadline=days_until
+            reminder = await run_in_threadpool(
+                ai_service.generate_voting_reminder,
+                event_data,
+                user_data,
+                days_until
             )
 
             # Send email

@@ -27,7 +27,8 @@ import {
   Trash2,
   MessageCircle,
   Send,
-  Loader2
+  Loader2,
+  Share2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -199,6 +200,29 @@ export default function ActivityDetailPage() {
     }
   };
 
+  const handleShare = async () => {
+    if (!activity) return;
+    const shareData = {
+      title: activity.title,
+      text: activity.shortDescription,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link kopiert!");
+      }
+    } catch (err) {
+      // Ignore abort errors
+      if ((err as Error).name !== 'AbortError') {
+        console.error("Error sharing:", err);
+      }
+    }
+  };
+
   const handleSubmitComment = async () => {
     if (!slug || !newComment.trim()) return;
     setSubmittingComment(true);
@@ -351,21 +375,33 @@ export default function ActivityDetailPage() {
                 </div>
               </div>
 
-              {/* Desktop Favorite Button */}
-              <div className="hidden lg:flex absolute top-4 right-4">
+              {/* Top-Right Actions (Mobile & Desktop) */}
+              <div className="absolute top-4 right-4 flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleShare}
+                  className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full backdrop-blur-md bg-white/20 text-white hover:bg-white/30 transition-all border border-white/10"
+                  title="Aktivität teilen"
+                >
+                  <Share2 className="h-5 w-5" />
+                  <span className="hidden sm:inline font-medium text-sm">Teilen</span>
+                </motion.button>
+
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleFavoriteToggle}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md transition-all",
+                    "flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full backdrop-blur-md transition-all border border-white/10",
                     isFav
-                      ? "bg-red-500/90 text-white"
+                      ? "bg-red-500/90 text-white border-red-500/20"
                       : "bg-white/20 text-white hover:bg-white/30"
                   )}
+                  title={isFav ? "Von Favoriten entfernen" : "Zu Favoriten hinzufügen"}
                 >
                   <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
-                  {favoriteCount > 0 && <span className="font-medium">{favoriteCount}</span>}
+                  {favoriteCount > 0 && <span className="font-medium text-sm">{favoriteCount}</span>}
                 </motion.button>
               </div>
             </div>

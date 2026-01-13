@@ -202,7 +202,7 @@ export default function TeamPage() {
         title="Team-Analyse"
         description={`Strategische KI-Einblicke in die DNA von "${currentRoom?.name}"`}
         action={
-            rooms.length > 0 ? (
+            rooms.length > 1 ? (
                 <div className="w-full sm:w-[250px]">
                      <Select value={currentRoom?.id} onValueChange={handleRoomChange}>
                       <SelectTrigger>
