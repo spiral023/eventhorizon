@@ -194,7 +194,7 @@ export default function HomePage() {
         <div className="lg:col-span-2 space-y-12">
           {/* Upcoming Events */}
           <section>
-            <SectionHeader title="Anstehende Events" subtitle="Deine nächsten Termine und Abstimmungen" link="/events" linkLabel="Alle Events" />
+            <SectionHeader title="Anstehende Events" subtitle="Deine nächsten Termine und Abstimmungen" />
             
             {loading ? (
               <div className="space-y-4">
@@ -359,19 +359,21 @@ function StatCard({ label, value, icon: Icon, color, delay = 0 }: { label: strin
   );
 }
 
-function SectionHeader({ title, subtitle, link, linkLabel }: { title: string; subtitle: string; link: string; linkLabel: string }) {
+function SectionHeader({ title, subtitle, link, linkLabel }: { title: string; subtitle: string; link?: string; linkLabel?: string }) {
   return (
     <div className="flex items-end justify-between mb-6">
       <div className="space-y-1">
         <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
         <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
-      <Button variant="ghost" size="sm" asChild className="text-primary hover:bg-primary/10 rounded-xl">
-        <Link to={link} className="gap-1">
-          {linkLabel}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </Button>
+      {link && linkLabel && (
+        <Button variant="ghost" size="sm" asChild className="text-primary hover:bg-primary/10 rounded-xl">
+          <Link to={link} className="gap-1">
+            {linkLabel}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+      )}
     </div>
   );
 }

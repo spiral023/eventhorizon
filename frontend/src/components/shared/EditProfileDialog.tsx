@@ -163,7 +163,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         department: department.trim(),
         position: position.trim() || undefined,
         location: location.trim() || undefined,
-        birthday: birthday ? birthday.toISOString().split('T')[0] : undefined,
+        birthday: birthday ? format(birthday, "yyyy-MM-dd") : undefined,
         bio: bio.trim() || undefined,
         avatarUrl: avatarUrl || undefined,
         hobbies: hobbies,
@@ -189,7 +189,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         department: department.trim(),
         position: position.trim() || undefined,
         location: location.trim() || undefined,
-        birthday: birthday ? birthday.toISOString().split('T')[0] : undefined,
+        birthday: birthday ? format(birthday, "yyyy-MM-dd") : undefined,
         bio: bio.trim() || undefined,
         hobbies: hobbies,
         activityPreferences: {
