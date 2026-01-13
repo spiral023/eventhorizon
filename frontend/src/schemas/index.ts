@@ -17,7 +17,7 @@ export const RoomRoleSchema = z.enum(["owner", "admin", "member"]);
 export const VoteTypeSchema = z.enum(["for", "against", "abstain"]);
 export const DateResponseTypeSchema = z.enum(["yes", "no", "maybe"]);
 export const PrimaryGoalSchema = z.enum([
-  "teambuilding", "fun", "reward", "celebration", "networking"
+  "teambuilding", "fun", "reward"
 ]);
 
 // ============================================

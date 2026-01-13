@@ -56,8 +56,6 @@ const PrimaryGoalLabels: Record<string, string> = {
   teambuilding: "Teambuilding",
   fun: "Spaß & Unterhaltung",
   reward: "Belohnung & Genuss",
-  celebration: "Feier",
-  networking: "Networking",
 };
 
 // Animation variants

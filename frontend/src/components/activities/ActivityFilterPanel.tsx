@@ -20,12 +20,10 @@ interface ActivityFilterPanelProps {
   className?: string;
 }
 
-const PrimaryGoalLabels: Record<PrimaryGoal, string> = {
+const PrimaryGoalLabels: Record<string, string> = {
   teambuilding: "Teambuilding",
-  fun: "Spaß",
-  reward: "Belohnung",
-  celebration: "Feier",
-  networking: "Networking",
+  fun: "Spaß & Unterhaltung",
+  reward: "Belohnung & Genuss",
 };
 
 export function ActivityFilterPanel({ 
