@@ -281,9 +281,9 @@ export default function EventDetailPage() {
     );
   }
 
-  const proposedActivities = activities.filter((a) =>
-    event.proposedActivityIds.includes(a.id)
-  );
+  const proposedActivities = activities
+    .filter((a) => event.proposedActivityIds.includes(a.id))
+    .sort((a, b) => (a.favoritesInRoomCount || 0) - (b.favoritesInRoomCount || 0));
 
   const nonExcludedProposedActivities = proposedActivities.filter(
     (a) => !event.excludedActivityIds?.includes(a.id)
