@@ -342,7 +342,7 @@ export default function TeamPage() {
                 Interessen-Radar
               </CardTitle>
               <CardDescription>
-                Bevorzugte Aktivitäten basierend auf euren Favoriten
+                Normalisierte Präferenzen basierend auf euren Favoriten
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -431,7 +431,7 @@ export default function TeamPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
-              Tiefen-Insights
+              Deep-Insights
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">

@@ -25,7 +25,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 from datetime import datetime
-from typing import List, Literal
+from typing import List, Literal, Dict, Tuple
 from pydantic import BaseModel, Field
 
 from app.db.session import get_db
@@ -42,6 +42,98 @@ from app.schemas.ai import (
 from app.models.domain import Room, Event, Activity, User, RoomRole, RoomMember
 
 router = APIRouter(prefix="/ai", tags=["ai"])
+
+
+def _category_value(category: object) -> str:
+    return category.value if hasattr(category, "value") else str(category)
+
+
+def _calculate_normalized_category_distribution(
+    members: List[User],
+    activities: List[Activity],
+) -> Tuple[List[dict], List[dict], int]:
+    availability_counts: Dict[str, int] = {}
+    for activity in activities:
+        cat_val = _category_value(activity.category)
+        availability_counts[cat_val] = availability_counts.get(cat_val, 0) + 1
+
+    total_available = sum(availability_counts.values())
+    if total_available == 0:
+        return [], [], 0
+
+    categories = list(availability_counts.keys())
+    favorites_counts = {cat: 0 for cat in categories}
+    per_member_counts: List[Dict[str, int]] = []
+    total_favorites = 0
+
+    for member in members:
+        member_counts: Dict[str, int] = {}
+        for activity in member.favorite_activities:
+            cat_val = _category_value(activity.category)
+            if cat_val not in availability_counts:
+                continue
+            member_counts[cat_val] = member_counts.get(cat_val, 0) + 1
+            favorites_counts[cat_val] = favorites_counts.get(cat_val, 0) + 1
+            total_favorites += 1
+        per_member_counts.append(member_counts)
+
+    if total_favorites == 0:
+        return [], [], 0
+
+    availability_share = {
+        cat: availability_counts[cat] / total_available for cat in categories
+    }
+    normalized_scores = {cat: 0.0 for cat in categories}
+    contributing_users = 0
+
+    for member_counts in per_member_counts:
+        member_total = sum(member_counts.values())
+        if member_total == 0:
+            continue
+        contributing_users += 1
+        for cat in categories:
+            if availability_share[cat] == 0:
+                continue
+            user_share = member_counts.get(cat, 0) / member_total
+            normalized_scores[cat] += user_share / availability_share[cat]
+
+    if contributing_users == 0:
+        return [], [], total_favorites
+
+    for cat in categories:
+        normalized_scores[cat] /= contributing_users
+
+    display_categories = [cat for cat in categories if favorites_counts[cat] > 0]
+    if not display_categories:
+        return [], [], total_favorites
+
+    score_sum = sum(normalized_scores[cat] for cat in display_categories)
+    if score_sum <= 0:
+        return [], [], total_favorites
+
+    normalized_distribution = []
+    raw_distribution = []
+    for cat in display_categories:
+        percentage = round((normalized_scores[cat] / score_sum) * 100, 1)
+        normalized_distribution.append(
+            {
+                "category": cat,
+                "percentage": percentage,
+                "count": favorites_counts.get(cat, 0),
+            }
+        )
+        raw_percentage = round((favorites_counts[cat] / total_favorites) * 100, 1)
+        raw_distribution.append(
+            {
+                "category": cat,
+                "percentage": raw_percentage,
+                "count": favorites_counts.get(cat, 0),
+            }
+        )
+
+    normalized_distribution.sort(key=lambda x: x["percentage"], reverse=True)
+    raw_distribution.sort(key=lambda x: x["percentage"], reverse=True)
+    return normalized_distribution, raw_distribution, total_favorites
 # ... (rest of imports)
 
 # ... (TestAIRequest, TestAIResponse, test_ai_connection)
@@ -115,32 +207,22 @@ async def get_team_recommendations(
     
     cache_key = hashlib.md5("|".join(fingerprint_parts).encode()).hexdigest()
     
-    if cache_key in TEAM_ANALYSIS_CACHE:
+    cached_result = TEAM_ANALYSIS_CACHE.get(cache_key)
+
+    # Get all activities
+    activities_result = await db.execute(select(Activity))
+    activities = activities_result.scalars().all()
+    normalized_distribution, raw_distribution, total_favorites = (
+        _calculate_normalized_category_distribution(members, activities)
+    )
+
+    if cached_result:
         logger.info(f"Returning cached team analysis for room {room_id}")
-        return TEAM_ANALYSIS_CACHE[cache_key]
-
-    # Calculate real category distribution from favorites
-    category_counts = {}
-    total_favorites = 0
-
-    for member in members:
-        for activity in member.favorite_activities:
-            # activity.category is an Enum, get its value
-            cat_val = activity.category.value if hasattr(activity.category, 'value') else str(activity.category)
-            category_counts[cat_val] = category_counts.get(cat_val, 0) + 1
-            total_favorites += 1
-
-    real_distribution = []
-    if total_favorites > 0:
-        for cat, count in category_counts.items():
-            percentage = round((count / total_favorites) * 100, 1)
-            real_distribution.append({
-                "category": cat,
-                "percentage": percentage,
-                "count": count
-            })
-        # Sort by percentage descending
-        real_distribution.sort(key=lambda x: x["percentage"], reverse=True)
+        cached_result["categoryDistribution"] = (
+            normalized_distribution if total_favorites > 0 else []
+        )
+        cached_result["memberCount"] = len(members)
+        return cached_result
 
     # Convert to dict for AI service
     members_data = [
@@ -151,10 +233,6 @@ async def get_team_recommendations(
         }
         for m in members
     ]
-
-    # Get all activities
-    activities_result = await db.execute(select(Activity))
-    activities = activities_result.scalars().all()
     activities_data = [
         {
             "id": str(a.id),
@@ -180,7 +258,7 @@ async def get_team_recommendations(
             str(room_id),
             members_data,
             activities_data,
-            real_distribution if total_favorites > 0 else None
+            raw_distribution if total_favorites > 0 else None
         )
     except Exception as e:
         ai_error = str(e)
@@ -210,7 +288,7 @@ async def get_team_recommendations(
     
     # Overwrite with real data if available
     if total_favorites > 0:
-        result["categoryDistribution"] = real_distribution
+        result["categoryDistribution"] = normalized_distribution
     
     # Ensure memberCount is set
     result["memberCount"] = len(members)
