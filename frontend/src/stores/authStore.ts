@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type { User, RoomRole } from "@/types/domain";
 import { getCurrentUser, login as apiLogin, logout as apiLogout, register as apiRegister } from "@/services/apiClient";
 import { authClient } from "@/lib/authClient";
+import { trackKeyFlowCounter } from "@/lib/metrics";
 
 interface AuthState {
   user: User | null;
@@ -61,6 +62,7 @@ export const useAuthStore = create<AuthState>()(
               user: null,
               isAuthenticated: false,
             });
+            trackKeyFlowCounter("login", "failure", { method: "password" });
             return false;
           }
           set({
@@ -69,9 +71,11 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             pendingVerificationEmail: null,
           });
+          trackKeyFlowCounter("login", "success", { method: "password" });
           return true;
         } catch (e) {
           set({ error: "Login fehlgeschlagen", isLoading: false });
+          trackKeyFlowCounter("login", "failure", { method: "password" });
           return false;
         }
       },
@@ -88,12 +92,15 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
               pendingVerificationEmail: null,
             });
+            trackKeyFlowCounter("login", "success", { method: "otp" });
             return true;
           }
           set({ error: "Login fehlgeschlagen", isLoading: false });
+          trackKeyFlowCounter("login", "failure", { method: "otp" });
           return false;
         } catch (e) {
           set({ error: "Login fehlgeschlagen", isLoading: false });
+          trackKeyFlowCounter("login", "failure", { method: "otp" });
           return false;
         }
       },

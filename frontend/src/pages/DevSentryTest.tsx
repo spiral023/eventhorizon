@@ -13,6 +13,35 @@ const DevSentryTest = () => {
     toast.success("Test-Nachricht an Sentry gesendet");
   };
 
+  const testFrontendMetrics = () => {
+    if (!Sentry.metrics) {
+      toast.error("Sentry Metrics API ist nicht verfuegbar");
+      return;
+    }
+
+    Sentry.metrics.count("eventhorizon.frontend.dev.count", 1, {
+      attributes: {
+        source: "ui",
+        env: "development",
+      },
+    });
+    Sentry.metrics.distribution("eventhorizon.frontend.dev.latency_ms", 42, {
+      unit: "millisecond",
+      attributes: {
+        source: "ui",
+        env: "development",
+      },
+    });
+    Sentry.metrics.gauge("eventhorizon.frontend.dev.gauge", 123, {
+      attributes: {
+        source: "ui",
+        env: "development",
+      },
+    });
+
+    toast.success("Frontend Metrics an Sentry gesendet");
+  };
+
   const testBackendError = async () => {
     try {
       const response = await fetch("http://localhost:8000/api/v1/dev/sentry/test-error");
@@ -75,6 +104,13 @@ const DevSentryTest = () => {
                 className="w-full"
               >
                 Frontend Message senden
+              </Button>
+              <Button
+                onClick={testFrontendMetrics}
+                variant="secondary"
+                className="w-full"
+              >
+                Frontend Metrics senden
               </Button>
             </CardContent>
           </Card>

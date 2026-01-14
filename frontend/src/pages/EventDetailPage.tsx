@@ -43,6 +43,7 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { getNextPhases, isPhaseCompleted, isPhaseCurrent } from "@/utils/phaseStateMachine";
 import { cn } from "@/lib/utils";
+import { trackKeyFlowCounter } from "@/lib/metrics";
 
 export default function EventDetailPage() {
   const { accessCode, eventCode } = useParams<{ accessCode: string; eventCode: string }>();
@@ -102,6 +103,7 @@ export default function EventDetailPage() {
     const resolvedEventCode = event?.shortCode || event?.id || eventCode;
     if (!resolvedEventCode || !event || !isAuthenticated) return;
     if (pendingVoteIds.has(activityId)) return;
+    let didTrackMetric = false;
     
     // Optimistic Update
     const previousEvent = currentUser ? { ...event } : null;
@@ -165,6 +167,13 @@ export default function EventDetailPage() {
 
     try {
       const result = await voteOnActivity(resolvedEventCode, activityId, vote);
+      if (result.error) {
+        trackKeyFlowCounter("vote.submit", "failure", { vote });
+        didTrackMetric = true;
+      } else {
+        trackKeyFlowCounter("vote.submit", "success", { vote });
+        didTrackMetric = true;
+      }
       
       // Force fetch fresh data to ensure we have the latest vote
       // This fixes an issue where voteOnActivity might return stale data
@@ -184,6 +193,9 @@ export default function EventDetailPage() {
         }
       }
     } catch (error) {
+      if (!didTrackMetric) {
+        trackKeyFlowCounter("vote.submit", "failure", { vote });
+      }
       // Revert on error
       const fallback = await getEventByCode(resolvedEventCode);
       if (fallback.data) {
@@ -252,6 +264,9 @@ export default function EventDetailPage() {
     const result = await finalizeDateOption(eventCode, dateOptionId);
     if (result.data) {
       setEvent(result.data);
+      trackKeyFlowCounter("schedule.confirm", "success");
+    } else {
+      trackKeyFlowCounter("schedule.confirm", "failure");
     }
     setActionLoading(false);
   };

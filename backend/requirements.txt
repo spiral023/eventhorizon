@@ -20,6 +20,6 @@ boto3==1.34.18
 Pillow==10.3.0
 pytest==8.3.3
 unidecode==1.3.8
-sentry-sdk[fastapi]==2.18.0
+sentry-sdk[fastapi]==2.44.0
 pandas>=2.0.0
 openpyxl>=3.1.0

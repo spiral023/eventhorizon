@@ -3,6 +3,7 @@ import type { CreateEventInput } from "@/schemas";
 import type { ApiResult } from "@/types/api";
 import type { ApiUser, ApiRoom, ApiActivity, ApiEvent, ApiEventComment, ApiActivityComment, ApiTokenResponse, ApiUserStats, ApiDateOption, ApiActivityVote, ApiEventParticipant, ApiSearchResult } from "@/types/apiDomain";
 import { AuthError, fetchJwtToken, signInWithEmail, signOutUser, signUpWithEmail } from "@/lib/authClient";
+import { trackAiAnalysisDuration, trackFavoriteToggle } from "@/lib/metrics";
 
 export interface AvatarUploadInfo {
   uploadUrl: string;
@@ -1582,24 +1583,33 @@ export async function toggleFavorite(activityId: string): Promise<ApiResult<{ is
       updatedCount = mockFavoriteCounts[activityId] || 0;
       const activity = mockActivities.find((a) => a.id === activityId);
       if (activity) activity.favoritesCount = updatedCount;
-      return { data: { isFavorite: false, favoritesCount: updatedCount } };
+      const data = { isFavorite: false, favoritesCount: updatedCount };
+      trackFavoriteToggle(data.isFavorite);
+      return { data };
     } else {
       favoriteActivityIds.push(activityId);
       mockFavoriteCounts[activityId] = (mockFavoriteCounts[activityId] || 0) + 1;
       updatedCount = mockFavoriteCounts[activityId];
       const activity = mockActivities.find((a) => a.id === activityId);
       if (activity) activity.favoritesCount = updatedCount;
-      return { data: { isFavorite: true, favoritesCount: updatedCount } };
+      const data = { isFavorite: true, favoritesCount: updatedCount };
+      trackFavoriteToggle(data.isFavorite);
+      return { data };
     }
   }
   const res = await request<{ is_favorite: boolean; favorites_count: number }>(`/activities/${activityId}/favorite`, {
     method: 'POST',
   });
   if (res.data) {
+    const data = {
+      isFavorite: res.data.is_favorite ?? res.data.isFavorite,
+      favoritesCount: res.data.favorites_count ?? res.data.favoritesCount,
+    };
+    trackFavoriteToggle(data.isFavorite);
     return {
       data: {
-        isFavorite: res.data.is_favorite ?? res.data.isFavorite,
-        favoritesCount: res.data.favorites_count ?? res.data.favoritesCount,
+        isFavorite: data.isFavorite,
+        favoritesCount: data.favoritesCount,
       },
     };
   }
@@ -1828,8 +1838,59 @@ export async function getTeamRecommendations(roomId: string): Promise<ApiResult<
     return { data: summary };
   }
 
-  const result = await request<TeamPreferenceSummary>(`/ai/rooms/${roomId}/recommendations`);
-  return { data: result.data, error: result.error };
+  const authHeader = await getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...authHeader,
+  };
+
+  const start = typeof performance !== "undefined" ? performance.now() : Date.now();
+
+  try {
+    const response = await fetch(`${API_BASE}/ai/rooms/${roomId}/recommendations`, {
+      headers,
+    });
+    const cacheHeader = response.headers.get("x-ai-cache");
+
+    let data;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      const rawText = await response.text();
+      data = rawText || null;
+      if (data === "null") data = null;
+    }
+
+    if (!response.ok) {
+      let errorMessage = `HTTP Error ${response.status}`;
+      if (data && typeof data === "object" && "detail" in data) {
+        errorMessage = (data as ApiError).detail as string;
+      } else if (typeof data === "string" && data.length > 0) {
+        errorMessage = data;
+      }
+
+      return {
+        data: undefined,
+        error: { code: String(response.status), message: errorMessage },
+      };
+    }
+
+    if (data === "null") data = null;
+
+    if (cacheHeader === "miss") {
+      const end = typeof performance !== "undefined" ? performance.now() : Date.now();
+      const durationMs = Math.max(0, end - start);
+      trackAiAnalysisDuration(durationMs, { cache: "miss" });
+    }
+
+    return { data: data as TeamPreferenceSummary };
+  } catch (e) {
+    return {
+      data: undefined,
+      error: { code: "NETWORK_ERROR", message: e instanceof Error ? e.message : "Netzwerkfehler" },
+    };
+  }
 }
 
 export async function getActivitySuggestionsForEvent(eventCode: string): Promise<ApiResult<AiRecommendation[]>> {

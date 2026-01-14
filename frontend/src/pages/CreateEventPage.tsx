@@ -30,6 +30,7 @@ import { createEvent, getActivities, getFavoriteActivityIds } from "@/services/a
 import type { Activity, Region, Season, EventTimeWindow } from "@/types/domain";
 import { RegionLabels, SeasonLabels, MonthLabels, CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { trackKeyFlowCounter } from "@/lib/metrics";
 
 type TimeWindowType = "season" | "month" | "weekRange" | "freeText";
 
@@ -114,6 +115,18 @@ export default function CreateEventPage() {
     try {
       const timeWindow = buildTimeWindow();
       const result = await createEvent(accessCode, { ...data, proposedActivityIds: allActivityIds, timeWindow });
+
+      if (result.error || !result.data) {
+        trackKeyFlowCounter("event.create", "failure");
+        toast({
+          title: "Fehler",
+          description: "Event konnte nicht erstellt werden.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      trackKeyFlowCounter("event.create", "success");
       
       toast({
         title: "Event erstellt!",
@@ -122,6 +135,7 @@ export default function CreateEventPage() {
       
       navigate(`/rooms/${accessCode}/events/${result.data.shortCode || result.data.id}`);
     } catch (error) {
+      trackKeyFlowCounter("event.create", "failure");
       toast({
         title: "Fehler",
         description: "Event konnte nicht erstellt werden.",

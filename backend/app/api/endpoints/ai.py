@@ -8,7 +8,7 @@ Provides AI-powered features:
 - Voting reminder generation
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from starlette.concurrency import run_in_threadpool
 import logging
 import hashlib
@@ -150,6 +150,7 @@ def _calculate_normalized_category_distribution(
 @router.get("/rooms/{room_id}/recommendations", response_model=TeamPreferenceSummary)
 async def get_team_recommendations(
     room_id: UUID,
+    response: Response,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -230,6 +231,7 @@ async def get_team_recommendations(
 
     if cached_result:
         logger.info(f"Returning cached team analysis for room {room_id}")
+        response.headers["X-AI-Cache"] = "hit"
         cached_result["categoryDistribution"] = (
             normalized_distribution if total_favorites > 0 else []
         )
@@ -315,6 +317,7 @@ async def get_team_recommendations(
     result["memberCount"] = len(members)
         
     TEAM_ANALYSIS_CACHE[cache_key] = result
+    response.headers["X-AI-Cache"] = "miss"
     return result
 
 
