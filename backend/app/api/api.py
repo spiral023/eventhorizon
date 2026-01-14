@@ -98,14 +98,19 @@ async def search_global(
     )
     rooms = rooms_result.scalars().all()
     
-    # Calculate member counts for rooms
-    for room in rooms:
-        member_count_result = await db.execute(
-            select(func.count())
-            .select_from(RoomMember)
-            .where(RoomMember.room_id == room.id)
+    # Calculate member counts for rooms in one query (avoid N+1)
+    room_ids = [room.id for room in rooms]
+    counts_map: dict[UUID, int] = {}
+    if room_ids:
+        member_counts_result = await db.execute(
+            select(RoomMember.room_id, func.count().label("cnt"))
+            .where(RoomMember.room_id.in_(room_ids))
+            .group_by(RoomMember.room_id)
         )
-        room.member_count = member_count_result.scalar_one() + 1 # +1 for creator
+        counts_map = {row.room_id: row.cnt for row in member_counts_result}
+
+    for room in rooms:
+        room.member_count = counts_map.get(room.id, 0) + 1  # +1 for creator
 
     # 3. Events (In user's rooms)
     # Get IDs of rooms user has access to
@@ -428,6 +433,22 @@ async def resolve_event_identifier(event_identifier: str, db: AsyncSession, opti
         raise HTTPException(status_code=404, detail="Event not found")
 
     return event
+
+
+async def require_event_organizer(event: Event, db: AsyncSession, current_user: User) -> None:
+    if event.created_by_user_id == current_user.id:
+        return
+
+    result = await db.execute(
+        select(EventParticipant).where(
+            EventParticipant.event_id == event.id,
+            EventParticipant.user_id == current_user.id,
+            EventParticipant.is_organizer.is_(True),
+        )
+    )
+    participant = result.scalar_one_or_none()
+    if not participant:
+        raise HTTPException(status_code=403, detail="Only event organizers can perform this action")
 
 # --- Activities ---
 @router.get("/activities", response_model=List[ActivitySchema])
@@ -961,7 +982,11 @@ async def leave_room(
     return {"message": "Room left successfully"}
 
 @router.get("/rooms/{room_identifier}/members")
-async def get_room_members(room_identifier: str, db: AsyncSession = Depends(get_db)):
+async def get_room_members(
+    room_identifier: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
     Get all members of a room including the creator.
     Returns a list with: id, name, email, avatar_url, role, joined_at
@@ -970,6 +995,17 @@ async def get_room_members(room_identifier: str, db: AsyncSession = Depends(get_
 
     # Get the room and its creator
     room = await resolve_room_identifier(room_identifier, db)
+
+    # Check permission
+    if room.created_by_user_id != current_user.id:
+        member_check = await db.execute(
+            select(RoomMember).where(
+                RoomMember.room_id == room.id,
+                RoomMember.user_id == current_user.id
+            )
+        )
+        if not member_check.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Not a member of this room")
 
     # Get the creator
     creator_result = await db.execute(select(User).where(User.id == room.created_by_user_id))
@@ -1011,8 +1047,25 @@ async def get_room_members(room_identifier: str, db: AsyncSession = Depends(get_
     return members_list
 
 @router.get("/rooms/{room_identifier}/events", response_model=List[EventSchema])
-async def get_room_events(room_identifier: str, db: AsyncSession = Depends(get_db)):
+async def get_room_events(
+    room_identifier: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from app.models.domain import RoomMember
+
     room = await resolve_room_identifier(room_identifier, db)
+
+    # Check permission
+    if room.created_by_user_id != current_user.id:
+        member_check = await db.execute(
+            select(RoomMember).where(
+                RoomMember.room_id == room.id,
+                RoomMember.user_id == current_user.id
+            )
+        )
+        if not member_check.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Not a member of this room")
 
     result = await db.execute(
         select(Event)
@@ -1037,6 +1090,17 @@ async def create_event(
 
     room = await resolve_room_identifier(room_identifier, db)
     room_id = room.id
+
+    # Check permission
+    if room.created_by_user_id != current_user.id:
+        member_check = await db.execute(
+            select(RoomMember).where(
+                RoomMember.room_id == room.id,
+                RoomMember.user_id == current_user.id
+            )
+        )
+        if not member_check.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Not a member of this room")
 
     # Generate unique short code for the event
     short_code: Optional[str] = None
@@ -1092,7 +1156,13 @@ async def create_event(
 
 # --- Events ---
 @router.get("/events/{event_identifier}", response_model=EventSchema)
-async def get_event(event_identifier: str, db: AsyncSession = Depends(get_db)):
+async def get_event(
+    event_identifier: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from app.models.domain import RoomMember
+
     event = await resolve_event_identifier(
         event_identifier,
         db,
@@ -1102,6 +1172,27 @@ async def get_event(event_identifier: str, db: AsyncSession = Depends(get_db)):
             selectinload(Event.participants).selectinload(EventParticipant.user),
         ],
     )
+
+    # Check permission
+    is_participant = any(p.user_id == current_user.id for p in event.participants)
+    is_creator = event.created_by_user_id == current_user.id
+
+    if not (is_participant or is_creator):
+        # Fallback: Check if user is a member of the room (e.g. joined after event creation)
+        member_check = await db.execute(
+            select(RoomMember).where(
+                RoomMember.room_id == event.room_id,
+                RoomMember.user_id == current_user.id
+            )
+        )
+        if not member_check.scalar_one_or_none():
+            # Check if user is the room creator (implicitly a member/owner)
+            room_check = await db.execute(
+                select(Room).where(Room.id == event.room_id)
+            )
+            room = room_check.scalar_one_or_none()
+            if not room or room.created_by_user_id != current_user.id:
+                raise HTTPException(status_code=403, detail="Not authorized to view this event")
 
     return enhance_event_full(event)
 
@@ -1250,8 +1341,14 @@ async def delete_event(
     return {"message": "Event deleted successfully"}
 
 @router.patch("/events/{event_identifier}/phase", response_model=EventSchema)
-async def update_event_phase(event_identifier: str, phase_in: PhaseUpdate, db: AsyncSession = Depends(get_db)):
+async def update_event_phase(
+    event_identifier: str,
+    phase_in: PhaseUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     event = await resolve_event_identifier(event_identifier, db)
+    await require_event_organizer(event, db, current_user)
     event.phase = phase_in.phase
     await db.commit()
     await db.refresh(event)
@@ -1481,16 +1578,28 @@ async def respond_to_date(
     return enhance_event_full(updated_event)
 
 @router.post("/events/{event_identifier}/select-activity", response_model=EventSchema)
-async def select_activity(event_identifier: str, selection: SelectActivity, db: AsyncSession = Depends(get_db)):
+async def select_activity(
+    event_identifier: str,
+    selection: SelectActivity,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     event = await resolve_event_identifier(event_identifier, db)
+    await require_event_organizer(event, db, current_user)
     event.chosen_activity_id = selection.activity_id
     event.phase = "scheduling"
     await db.commit()
     return await get_event(str(event.id), db)
 
 @router.post("/events/{event_identifier}/finalize-date", response_model=EventSchema)
-async def finalize_date(event_identifier: str, selection: FinalizeDate, db: AsyncSession = Depends(get_db)):
+async def finalize_date(
+    event_identifier: str,
+    selection: FinalizeDate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     event = await resolve_event_identifier(event_identifier, db)
+    await require_event_organizer(event, db, current_user)
     event.final_date_option_id = selection.date_option_id
     event.phase = "info"
     await db.commit()
