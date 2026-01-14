@@ -6,7 +6,7 @@ Alle Calls verwenden Structured Outputs für type-safe Responses.
 """
 
 from openai import OpenAI
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import json
 import os
 import logging
@@ -97,7 +97,7 @@ class AIService:
         room_id: str,
         members: List[Dict],
         activities: List[Dict],
-        current_distribution: Optional[List[Dict]] = None,
+        current_distribution: Optional[Union[Dict[str, Any], List[Dict]]] = None,
     ) -> Dict[str, Any]:
         """
         Analysiere Team-Präferenzen für einen Room
@@ -106,7 +106,9 @@ class AIService:
             room_id: Room UUID
             members: Liste von User-Objekten mit Präferenzen
             activities: Verfügbare Aktivitäten aus der Datenbank
-            current_distribution: Optionale Liste der echten Kategorie-Verteilung [{category, percentage}]
+            current_distribution: Optionaler Kontext zur Kategorie-Verteilung
+                - dict: {"normalized": [...], "raw": [...], "availability": [...], "totalFavorites": int}
+                - list: Legacy (roh) [{category, percentage, count}]
 
         Returns:
             TeamPreferenceSummary als Dict mit:
@@ -187,14 +189,7 @@ class AIService:
         # Prepare context
         members_summary = self._summarize_members(members)
         activities_summary = self._summarize_activities(activities, include_price=False)
-        distribution_context = ""
-        if current_distribution:
-            distribution_context = (
-                "\n**Tatsächliches Abstimmungsverhalten (Favoriten):**\n"
-            )
-            for item in current_distribution:
-                distribution_context += f"- {item['category']}: {item['percentage']}%\n"
-
+        distribution_context = self._format_distribution_context(current_distribution)
         messages = [
             {
                 "role": "system",
@@ -218,7 +213,7 @@ class AIService:
 {activities_summary}
 
 Aufgabe (STRIKTE LÄNGENVORGABEN):
-1. Ermittle die bevorzugten Aktivitätskategorien (Prozentverteilung). Nutze die Favoritendaten als primäre Quelle, falls vorhanden.
+1. Ermittle die bevorzugten Aktivit?tskategorien (Prozentverteilung). Nutze die normalisierte Verteilung als primaere Quelle, Rohdaten nur als Plausibilitaets-/Konfidenzsignal.
 2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
 3. Empfehle 6-9 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
 4. Bestimme den Team-Vibe (action/relax/mixed).
@@ -512,6 +507,97 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen""",
         return json.loads(response)
 
     # Helper methods
+    def _format_distribution_context(
+        self,
+        distribution_context: Optional[Union[Dict[str, Any], List[Dict]]],
+    ) -> str:
+        if not distribution_context:
+            return ""
+
+        raw_distribution = []
+        normalized_distribution = []
+        availability_distribution = []
+
+        if isinstance(distribution_context, list):
+            raw_distribution = distribution_context
+        elif isinstance(distribution_context, dict):
+            raw_distribution = (
+                distribution_context.get("raw")
+                or distribution_context.get("rawDistribution")
+                or []
+            )
+            normalized_distribution = (
+                distribution_context.get("normalized")
+                or distribution_context.get("normalizedDistribution")
+                or []
+            )
+            availability_distribution = (
+                distribution_context.get("availability")
+                or distribution_context.get("availabilityCounts")
+                or []
+            )
+        else:
+            return ""
+
+        def format_items(items: List[Dict], include_percentage: bool = True) -> str:
+            lines = []
+            for item in items:
+                category = item.get("category")
+                if not category:
+                    continue
+                count = item.get("count")
+                percentage = item.get("percentage")
+                if include_percentage and percentage is not None:
+                    count_label = f"{count} Favoriten" if count is not None else "n/a"
+                    lines.append(f"- {category}: {percentage}% ({count_label})")
+                elif count is not None:
+                    lines.append(f"- {category}: {count}")
+                else:
+                    lines.append(f"- {category}")
+            return "\n".join(lines)
+
+        parts = []
+        if normalized_distribution:
+            parts.append(
+                "\n**Normalisierte Kategorie-Verteilung (Favoriten je User relativ zum Katalog):**\n"
+                + format_items(normalized_distribution)
+            )
+        if raw_distribution:
+            parts.append(
+                "\n**Favoriten-Verteilung (roh):**\n" + format_items(raw_distribution)
+            )
+        if availability_distribution:
+            availability_lines = []
+            for item in availability_distribution:
+                category = item.get("category")
+                if not category:
+                    continue
+                count = item.get("count")
+                if count is None:
+                    continue
+                availability_lines.append(f"- {category}: {count} Aktivitaeten")
+            if availability_lines:
+                parts.append(
+                    "\n**Katalog-Verfuegbarkeit je Kategorie:**\n"
+                    + "\n".join(availability_lines)
+                )
+
+        if not parts:
+            return ""
+
+        if normalized_distribution:
+            guidance = (
+                "\n**Hinweis fuer die Auswertung:**\n"
+                "- Fuer die Kategorie-Priorisierung primaer die normalisierte Verteilung verwenden.\n"
+                "- Rohverteilung und Verfuegbarkeit nur als Plausibilitaets-/Konfidenzsignal nutzen.\n"
+            )
+        else:
+            guidance = (
+                "\n**Hinweis fuer die Auswertung:**\n"
+                "- Nutze die Favoriten-Verteilung als primaere Quelle.\n"
+            )
+
+        return "".join(parts) + guidance
 
     def _summarize_members(self, members: List[Dict]) -> str:
         """Format member data for AI context"""

@@ -51,7 +51,7 @@ def _category_value(category: object) -> str:
 def _calculate_normalized_category_distribution(
     members: List[User],
     activities: List[Activity],
-) -> Tuple[List[dict], List[dict], int]:
+) -> Tuple[List[dict], List[dict], List[dict], int]:
     availability_counts: Dict[str, int] = {}
     for activity in activities:
         cat_val = _category_value(activity.category)
@@ -59,7 +59,7 @@ def _calculate_normalized_category_distribution(
 
     total_available = sum(availability_counts.values())
     if total_available == 0:
-        return [], [], 0
+        return [], [], [], 0
 
     categories = list(availability_counts.keys())
     favorites_counts = {cat: 0 for cat in categories}
@@ -78,7 +78,7 @@ def _calculate_normalized_category_distribution(
         per_member_counts.append(member_counts)
 
     if total_favorites == 0:
-        return [], [], 0
+        return [], [], [], 0
 
     availability_share = {
         cat: availability_counts[cat] / total_available for cat in categories
@@ -98,18 +98,18 @@ def _calculate_normalized_category_distribution(
             normalized_scores[cat] += user_share / availability_share[cat]
 
     if contributing_users == 0:
-        return [], [], total_favorites
+        return [], [], [], total_favorites
 
     for cat in categories:
         normalized_scores[cat] /= contributing_users
 
     display_categories = [cat for cat in categories if favorites_counts[cat] > 0]
     if not display_categories:
-        return [], [], total_favorites
+        return [], [], [], total_favorites
 
     score_sum = sum(normalized_scores[cat] for cat in display_categories)
     if score_sum <= 0:
-        return [], [], total_favorites
+        return [], [], [], total_favorites
 
     normalized_distribution = []
     raw_distribution = []
@@ -133,7 +133,16 @@ def _calculate_normalized_category_distribution(
 
     normalized_distribution.sort(key=lambda x: x["percentage"], reverse=True)
     raw_distribution.sort(key=lambda x: x["percentage"], reverse=True)
-    return normalized_distribution, raw_distribution, total_favorites
+    availability_distribution = [
+        {"category": cat, "count": availability_counts[cat]} for cat in categories
+    ]
+    availability_distribution.sort(key=lambda x: x["count"], reverse=True)
+    return (
+        normalized_distribution,
+        raw_distribution,
+        availability_distribution,
+        total_favorites,
+    )
 # ... (rest of imports)
 
 # ... (TestAIRequest, TestAIResponse, test_ai_connection)
@@ -212,9 +221,12 @@ async def get_team_recommendations(
     # Get all activities
     activities_result = await db.execute(select(Activity))
     activities = activities_result.scalars().all()
-    normalized_distribution, raw_distribution, total_favorites = (
-        _calculate_normalized_category_distribution(members, activities)
-    )
+    (
+        normalized_distribution,
+        raw_distribution,
+        availability_distribution,
+        total_favorites,
+    ) = _calculate_normalized_category_distribution(members, activities)
 
     if cached_result:
         logger.info(f"Returning cached team analysis for room {room_id}")
@@ -258,7 +270,16 @@ async def get_team_recommendations(
             str(room_id),
             members_data,
             activities_data,
-            raw_distribution if total_favorites > 0 else None
+            (
+                {
+                    "normalized": normalized_distribution,
+                    "raw": raw_distribution,
+                    "availability": availability_distribution,
+                    "totalFavorites": total_favorites,
+                }
+                if total_favorites > 0
+                else None
+            ),
         )
     except Exception as e:
         ai_error = str(e)
