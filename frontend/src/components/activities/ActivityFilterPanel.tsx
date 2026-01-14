@@ -411,7 +411,7 @@ export function ActivityFilterPanel({
           <div className="px-2">
             <Slider
               value={filters.physicalIntensity}
-              min={1}
+              min={0}
               max={5}
               step={1}
               onValueChange={(value) => 
@@ -446,7 +446,7 @@ export function ActivityFilterPanel({
           <div className="px-2">
             <Slider
               value={filters.mentalChallenge}
-              min={1}
+              min={0}
               max={5}
               step={1}
               onValueChange={(value) => 
@@ -481,7 +481,7 @@ export function ActivityFilterPanel({
           <div className="px-2">
             <Slider
               value={filters.competitionLevel}
-              min={1}
+              min={0}
               max={5}
               step={1}
               onValueChange={(value) =>
@@ -516,7 +516,7 @@ export function ActivityFilterPanel({
           <div className="px-2">
             <Slider
               value={filters.socialInteractionLevel}
-              min={1}
+              min={0}
               max={5}
               step={1}
               onValueChange={(value) =>

@@ -85,14 +85,14 @@ export const ActivitySchema = z.object({
   recommendedGroupSizeMin: z.number().optional(),
   recommendedGroupSizeMax: z.number().optional(),
   minParticipants: z.number().optional(),
-  // Scales 1-5
-  physicalIntensity: z.number().min(1).max(5).optional(),
-  mentalChallenge: z.number().min(1).max(5).optional(),
+  // Scales 0-5
+  physicalIntensity: z.number().min(0).max(5).optional(),
+  mentalChallenge: z.number().min(0).max(5).optional(),
   funFactor: z.number().min(1).max(5).optional(),
   teamworkLevel: z.number().min(1).max(5).optional(),
   creativityLevel: z.number().min(1).max(5).optional(),
-  socialInteractionLevel: z.number().min(1).max(5).optional(),
-  competitionLevel: z.number().min(1).max(5).optional(),
+  socialInteractionLevel: z.number().min(0).max(5).optional(),
+  competitionLevel: z.number().min(0).max(5).optional(),
   // Logistics
   travelTimeMinutes: z.number().optional(),
   travelTimeMinutesWalking: z.number().optional(),

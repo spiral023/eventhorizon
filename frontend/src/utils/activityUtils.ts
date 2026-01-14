@@ -30,11 +30,11 @@ export const defaultFilters: ActivityFilters = {
   durationRange: [0, 480], // in minutes
   travelTimeRange: [0, 60], // in minutes
   travelTimeWalkingRange: [0, 60], // in minutes
-  physicalIntensity: [1, 5],
-  mentalChallenge: [1, 5],
+  physicalIntensity: [0, 5],
+  mentalChallenge: [0, 5],
   teamworkLevel: [1, 5],
-  competitionLevel: [1, 5],
-  socialInteractionLevel: [1, 5],
+  competitionLevel: [0, 5],
+  socialInteractionLevel: [0, 5],
   primaryGoals: [],
   indoorOnly: false,
   outdoorOnly: false,
@@ -87,11 +87,11 @@ export const getActiveFilterCount = (filters: ActivityFilters): number => {
   if (filters.travelTimeRange[0] > 0 || filters.travelTimeRange[1] < 60) count += 1;
   if (filters.travelTimeWalkingRange[0] > 0 || filters.travelTimeWalkingRange[1] < 60) count += 1;
   
-  if (filters.physicalIntensity[0] > 1 || filters.physicalIntensity[1] < 5) count += 1;
-  if (filters.mentalChallenge[0] > 1 || filters.mentalChallenge[1] < 5) count += 1;
+  if (filters.physicalIntensity[0] > 0 || filters.physicalIntensity[1] < 5) count += 1;
+  if (filters.mentalChallenge[0] > 0 || filters.mentalChallenge[1] < 5) count += 1;
   if (filters.teamworkLevel[0] > 1 || filters.teamworkLevel[1] < 5) count += 1;
-  if (filters.competitionLevel[0] > 1 || filters.competitionLevel[1] < 5) count += 1;
-  if (filters.socialInteractionLevel[0] > 1 || filters.socialInteractionLevel[1] < 5) count += 1;
+  if (filters.competitionLevel[0] > 0 || filters.competitionLevel[1] < 5) count += 1;
+  if (filters.socialInteractionLevel[0] > 0 || filters.socialInteractionLevel[1] < 5) count += 1;
   
   if (filters.indoorOnly) count += 1;
   if (filters.outdoorOnly) count += 1;

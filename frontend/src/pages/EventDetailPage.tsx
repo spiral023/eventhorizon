@@ -322,7 +322,9 @@ export default function EventDetailPage() {
   };
 
   const rankedActivities = [...nonExcludedProposedActivities].sort((a, b) => {
-    return getActivityScore(b.id) - getActivityScore(a.id);
+    const scoreDiff = getActivityScore(b.id) - getActivityScore(a.id);
+    if (scoreDiff !== 0) return scoreDiff;
+    return (b.favoritesInRoomCount || 0) - (a.favoritesInRoomCount || 0);
   });
   const rankByActivityId = new Map<string, number>();
   rankedActivities.forEach((activity, index) => {
