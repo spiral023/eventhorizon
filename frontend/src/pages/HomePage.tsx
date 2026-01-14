@@ -24,6 +24,13 @@ import { useAuthStore } from "@/stores/authStore";
 import { getGreeting } from "@/utils/greeting";
 import { cn } from "@/lib/utils";
 
+const sortRoomsByMembers = (input: Room[]) =>
+  [...input].sort((a, b) => {
+    const diff = (b.memberCount ?? 0) - (a.memberCount ?? 0);
+    if (diff !== 0) return diff;
+    return a.name.localeCompare(b.name, "de");
+  });
+
 export default function HomePage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
@@ -65,8 +72,9 @@ export default function HomePage() {
       setFavoriteIds(favoritesResult.data || []);
 
       const roomsData = roomsResult.data || [];
-      setRooms(roomsData.slice(0, 3));
-      setRoomCount(roomsData.length);
+      const sortedRooms = sortRoomsByMembers(roomsData);
+      setRooms(sortedRooms.slice(0, 3));
+      setRoomCount(sortedRooms.length);
       
       const eventsData = eventsResult.data || [];
       setEvents(eventsData.slice(0, 3));

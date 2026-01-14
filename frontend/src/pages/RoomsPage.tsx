@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button";
 import { getRooms } from "@/services/apiClient";
 import type { Room } from "@/types/domain";
 
+const sortRoomsByMembers = (input: Room[]) =>
+  [...input].sort((a, b) => {
+    const diff = (b.memberCount ?? 0) - (a.memberCount ?? 0);
+    if (diff !== 0) return diff;
+    return a.name.localeCompare(b.name, "de");
+  });
+
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +24,8 @@ export default function RoomsPage() {
 
   const fetchRooms = async () => {
     const result = await getRooms();
-    setRooms(result.data);
+    const roomsData = result.data || [];
+    setRooms(sortRoomsByMembers(roomsData));
     setLoading(false);
   };
 
@@ -26,7 +34,7 @@ export default function RoomsPage() {
   }, []);
 
   const handleRoomCreated = (newRoom: Room) => {
-    setRooms((prev) => [...prev, newRoom]);
+    setRooms((prev) => sortRoomsByMembers([...prev, newRoom]));
   };
 
   const actionButtons = (

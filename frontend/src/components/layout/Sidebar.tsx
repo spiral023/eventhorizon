@@ -48,7 +48,12 @@ import { cn } from "@/lib/utils";
 
 import { LegalNoticeDialog } from "@/components/shared/LegalNoticeDialog";
 
-
+const sortRoomsByMembers = (input: Room[]) =>
+  [...input].sort((a, b) => {
+    const diff = (b.memberCount ?? 0) - (a.memberCount ?? 0);
+    if (diff !== 0) return diff;
+    return a.name.localeCompare(b.name, "de");
+  });
 
 interface NavItem {
 
@@ -190,12 +195,11 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
         return;
 
       }
-
-
+      const sortedRooms = sortRoomsByMembers(roomsData);
 
       const roomsWithEventsData = await Promise.all(
 
-        roomsData.map(async (room) => {
+        sortedRooms.map(async (room) => {
 
           const eventsResult = await getEventsByAccessCode(room.inviteCode);
 

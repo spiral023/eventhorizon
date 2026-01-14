@@ -26,6 +26,13 @@ import { CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+const sortRoomsByMembers = (input: Room[]) =>
+  [...input].sort((a, b) => {
+    const diff = (b.memberCount ?? 0) - (a.memberCount ?? 0);
+    if (diff !== 0) return diff;
+    return a.name.localeCompare(b.name, "de");
+  });
+
 const vibeIcons = {
   action: Zap,
   relax: Coffee,
@@ -61,16 +68,17 @@ export default function TeamPage() {
       // Fetch rooms to populate the dropdown
       const roomsResult = await getRooms();
       const availableRooms = roomsResult.data || [];
-      setRooms(availableRooms);
+      const sortedRooms = sortRoomsByMembers(availableRooms);
+      setRooms(sortedRooms);
 
       let targetRoomId = roomId;
 
       // If no room in URL, try to use first available room
-      if (!targetRoomId && availableRooms.length > 0) {
-        targetRoomId = availableRooms[0].id;
+      if (!targetRoomId && sortedRooms.length > 0) {
+        targetRoomId = sortedRooms[0].id;
       }
       
-      const foundRoom = availableRooms.find(r => r.id === targetRoomId);
+      const foundRoom = sortedRooms.find(r => r.id === targetRoomId);
       setCurrentRoom(foundRoom || null);
 
       if (!targetRoomId) {
