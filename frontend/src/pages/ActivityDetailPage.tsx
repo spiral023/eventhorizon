@@ -422,7 +422,9 @@ export default function ActivityDetailPage() {
                     <div className="flex items-center justify-center text-primary mb-1">
                       <Euro className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <p className="text-lg sm:text-xl md:text-2xl font-bold">ab {activity.estPricePerPerson}€</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold">
+                      ab {activity.estPricePerPerson ?? 0}€
+                    </p>
                     <p className="text-xs text-muted-foreground">pro Person</p>
                   </div>
 
@@ -922,7 +924,9 @@ export default function ActivityDetailPage() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <span className="text-xs text-muted-foreground">Ab </span>
-                <span className="text-xl font-bold">{activity.estPricePerPerson}€</span>
+                <span className="text-xl font-bold">
+                  {activity.estPricePerPerson ?? 0}€
+                </span>
                 <span className="text-sm text-muted-foreground"> / Person</span>
               </div>
               <motion.button

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, TrendingUp, Heart, Zap, Coffee, Mountain, 
   Brain, ShieldCheck, AlertTriangle, Trophy, Users2, 
-  BarChart3, Rocket, MessageSquare
+  BarChart3, Rocket, MessageSquare, Info
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getTeamRecommendations, getActivities, getFavoriteActivityIds, toggleFavorite, getRooms } from "@/services/apiClient";
 import type { TeamPreferenceSummary } from "@/services/apiClient";
 import type { Activity, Room } from "@/types/domain";
@@ -340,6 +341,25 @@ export default function TeamPage() {
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" />
                 Interessen-Radar
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Info zur Berechnung der Interessen"
+                      className="ml-1 inline-flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs">
+                    <p className="text-xs leading-relaxed text-foreground">
+                      Die Prozentwerte zeigen normalisierte Präferenzen: Favoriten
+                      pro Kategorie werden pro User ins Verhältnis zur Anzahl
+                      verfügbarer Aktivitäten gesetzt und dann gemittelt. Die
+                      Favoritenzahl ist der rohe Count.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
               </CardTitle>
               <CardDescription>
                 Normalisierte Präferenzen basierend auf euren Favoriten

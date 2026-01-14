@@ -1398,16 +1398,16 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "Schloss Café Linz: BBQ & Sommerabend fürs Team",
+    "title": "BBQ im Schloss Café Linz",
     "category": "food",
     "tags": [
       "cafe",
       "restaurant",
-      "bbq",
-      "grill",
       "gastgarten",
+      "aussicht",
+      "grill",
       "gruppen",
-      "teamevent",
+      "indoor",
       "outdoor"
     ],
     "location_region": "OOE",
@@ -1445,14 +1445,15 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "Zum Schiefen Apfelbaum: Wirtshaus-Genuss mit Charme",
+    "title": "Gasthaus „Zum Schiefen Apfelbaum“",
     "category": "food",
     "tags": [
       "gasthaus",
       "tradition",
-      "österreichisch",
-      "essen",
-      "gruppen"
+      "oesterreichisch",
+      "mittagsmenue",
+      "gruppen",
+      "indoor"
     ],
     "location_region": "OOE",
     "est_price_pp": 22,
@@ -1490,16 +1491,15 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "HALL.O Swingolf Linz: Die entspannte Team-Challenge",
+    "title": "Swingolf Linz (HALL.O Swingolf)",
     "category": "action",
     "tags": [
       "swingolf",
       "discgolf",
-      "sport",
-      "fun",
-      "teambuilding",
+      "outdoor",
       "gruppen",
-      "outdoor"
+      "teambuilding",
+      "spaß"
     ],
     "location_region": "OOE",
     "est_price_pp": 14,
@@ -1535,15 +1535,15 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "Stiegl-Klosterhof Linz: Biergarten-Vibes & Feierabendrunde",
+    "title": "Stiegl-Klosterhof Linz",
     "category": "food",
     "tags": [
       "braurestaurant",
       "biergarten",
-      "bier",
-      "genuss",
+      "oesterreichisch",
       "gruppen",
-      "teamevent"
+      "indoor",
+      "outdoor"
     ],
     "location_region": "OOE",
     "est_price_pp": 26,
@@ -1581,15 +1581,14 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "Game & Dine: Zocken, Snacken & Teamspaß",
+    "title": "Zocken im Game & Dine",
     "category": "relax",
     "tags": [
       "boardgames",
       "videogames",
-      "gaming",
-      "fun",
+      "pub",
+      "nerd",
       "gruppen",
-      "teambuilding",
       "indoor"
     ],
     "location_region": "OOE",
@@ -1627,15 +1626,15 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "Jack the Ripperl: Ripperl-Feast für hungrige Teams",
+    "title": "Jack the Ripperl",
     "category": "food",
     "tags": [
       "ripperl",
       "bbq",
-      "grill",
       "restaurant",
       "gruppen",
-      "teamevent"
+      "indoor",
+      "outdoor"
     ],
     "location_region": "OOE",
     "est_price_pp": 30,
@@ -1674,17 +1673,11 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "RAITEC Kellerstüberl: Pokerabend mit Chips & Cheers",
+    "title": "Pokerabend im RAITEC Kellerstüberl",
     "category": "action",
     "tags": [
-      "raitec",
-      "kellerstüberl",
       "pokern",
-      "kartenspiel",
-      "drinks",
-      "gruppen",
-      "teamevent",
-      "indoor"
+      "kellerstüberl"
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
@@ -1692,12 +1685,9 @@
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
-    "short_description": "Gemütlicher Pokerabend im RAITEC Kellerstüberl – Karten, Chips und gute Laune im Team.",
-    "long_description": "Das RAITEC Kellerstüberl wird zur kleinen Casino-Nacht: Poker-Setup aufbauen, Chips verteilen, Regeln kurz erklären (Texas Hold’em geht immer) – und schon läuft ein entspannter Abend, bei dem Strategie, Bluffs und viel Gelächter im Vordergrund stehen. Perfekt für Teams, die lieber in kleiner Runde zusammensitzen, nebenbei reden und trotzdem ein „Event-Gefühl“ haben. Optional könnt ihr eine Mini-Siegerehrung machen (z. B. Süßigkeiten, kleines Gadget, Wanderpokal).",
     "physical_intensity": 1,
     "mental_challenge": 3,
     "social_interaction_level": 5,
-    "price_comment": "im Prinzip nur Snacks & Getränke (ca. 5–15 € p.P.); optional kleiner „Buy-in“ (z.B. 5 €) für einen Team-Preis.",
     "risk_level": "low",
     "travel_time_from_office_minutes": 0,
     "provider": "Selbstorganisation",
@@ -1716,17 +1706,12 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "RAITEC Kellerstüberl: Lecker Bierchen & Feierabendtalk",
+    "title": "1-X Bierchen im RAITEC Kellerstüberl",
     "category": "party",
     "tags": [
-      "raitec",
-      "kellerstüberl",
       "bier",
-      "trinken",
-      "afterwork",
-      "gruppen",
-      "teamevent",
-      "indoor"
+      "kellerstüberl",
+      "raitec"
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
@@ -1734,12 +1719,9 @@
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
-    "short_description": "Entspannte Bier-Runde im Kellerstüberl – anstoßen, plaudern und den Tag gemeinsam ausklingen lassen.",
-    "long_description": "Unkomplizierter geht’s kaum: Nach der Arbeit runter ins Kellerstüberl, ein (oder zwei) Bierchen aufmachen und einfach den Kopf auslüften. Ohne Programm, ohne Druck – dafür mit Raum für echte Gespräche, gemeinsames Lachen und das berühmte „Wie war dein Tag wirklich?“. Ideal als Afterwork-Format, um neue Kolleg:innen einzubinden, Themen informell zu klären und den Team-Zusammenhalt zu stärken. Snacks, Musik im Hintergrund oder eine kleine Runde Kartenspiele machen’s noch gemütlicher.",
     "physical_intensity": 1,
     "mental_challenge": 1,
     "social_interaction_level": 5,
-    "price_comment": "Getränke nach Konsum (meist 3–10 € p.P.), dazu Chips/Pizza auf Selbstkostenbasis – kaum Fixkosten.",
     "risk_level": "low",
     "travel_time_from_office_minutes": 0,
     "provider": "Selbstorganisation",
@@ -1758,17 +1740,12 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "RAITEC Chill-Out-Zone: Runterkommen, Quatschen, Auftanken",
+    "title": "Feierabend in der RAITEC Chill-Out-Zone",
     "category": "party",
     "tags": [
-      "raitec",
-      "chill-out-zone",
-      "afterwork",
-      "relax",
       "outdoor",
       "bier",
-      "gruppen",
-      "teamevent"
+      "raitec"
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
@@ -1776,12 +1753,9 @@
     "weather_dependent": true,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "summer",
-    "short_description": "Locker abhängen in der Chill-Out-Zone – entspannen, austauschen und neue Energie fürs Team tanken.",
-    "long_description": "Die Chill-Out-Zone ist das Gegenprogramm zum Meeting-Marathon: kurz raus aus dem Kopf, rein in den Feierabendmodus. Ob draußen sitzen, etwas trinken, ein bisschen (leise) Musik oder einfach nur plaudern – hier entsteht Teamgefühl ganz nebenbei, weil niemand „performen“ muss. Besonders gut als lockerer Wochenteiler oder zum Start ins Wochenende: 30–60 Minuten entspannen, gemeinsam abschalten, und danach gehen alle mit besserer Laune nach Hause.",
     "physical_intensity": 1,
     "mental_challenge": 1,
     "social_interaction_level": 5,
-    "price_comment": "Quasi gratis: je nach Setup nur Getränke/Snacks (0–10 € p.P.); ideal als spontanes Teamformat ohne Budgetfreigabe.",
     "risk_level": "low",
     "travel_time_from_office_minutes": 0,
     "provider": "Selbstorganisation",
@@ -1800,18 +1774,13 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
-    "title": "Büroparty Deluxe: Musik, Drinks & Smalltalk-Marathon",
+    "title": "Büroparty Deluxe: Bier, Spaß & Smalltalk",
     "category": "party",
     "tags": [
-      "raitec",
       "büro",
       "party",
-      "musik",
-      "drinks",
       "bier",
-      "gruppen",
-      "teamevent",
-      "indoor"
+      "raitec"
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
@@ -1819,12 +1788,9 @@
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
-    "short_description": "Afterwork-Büroparty mit Musik und Drinks – unkompliziert feiern und gemeinsam Spaß haben.",
-    "long_description": "Wenn’s mal ein bisschen mehr sein darf: Büro auf „Party-Modus“ schalten – Musik an, Drinks kaltstellen, Snacks bereitstellen und die Arbeitswoche mit einer kleinen Feier ausklingen lassen. Das Format ist super flexibel: von gemütlichem Get-together bis „wir tanzen wirklich“. Mit ein paar einfachen Extras wird’s gleich eventiger (Playlist-Wunschbox, Mini-Quiz, Fotospot, Themenabend). Perfekt für Teamerfolge, Geburtstage, Projektabschlüsse oder einfach als moraleboostender Klassiker.",
     "physical_intensity": 1,
     "mental_challenge": 1,
     "social_interaction_level": 5,
-    "price_comment": "meist „BYO + Snacks“ (5–15 € p.P.) Technik/Musik meist vorhanden, daher wenig Zusatzkosten.",
     "risk_level": "low",
     "travel_time_from_office_minutes": 0,
     "provider": "Selbstorganisation",

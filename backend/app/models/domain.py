@@ -193,6 +193,8 @@ class Activity(Base):
     # Travel
     travel_time_from_office_minutes = Column(Integer)
     travel_time_from_office_minutes_walking = Column(Integer)
+
+    weather_dependent = Column(Boolean, default=False)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     
