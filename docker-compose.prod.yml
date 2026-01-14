@@ -69,7 +69,14 @@ services:
       retries: 3
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+        VITE_SENTRY_ENVIRONMENT: ${VITE_SENTRY_ENVIRONMENT:-production}
+        VITE_SENTRY_TRACES_SAMPLE_RATE: ${VITE_SENTRY_TRACES_SAMPLE_RATE:-0.1}
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-1.0.0}
+        VITE_USE_MOCKS: ${VITE_USE_MOCKS:-false}
     restart: always
     networks:
       - traefik # Public facing

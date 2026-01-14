@@ -25,7 +25,7 @@ if (sentryDsn) {
     // Release tracking
     release: import.meta.env.VITE_APP_VERSION || "1.0.0",
     // Tunnel to bypass ad-blockers
-    tunnel: "http://localhost:8000/api/v1/sentry-tunnel",
+    tunnel: "/api/v1/sentry-tunnel",
   });
 }
 
