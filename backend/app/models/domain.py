@@ -237,6 +237,7 @@ class Event(Base):
     participants = relationship("EventParticipant", back_populates="event", cascade="all, delete-orphan", lazy="selectin")
     votes = relationship("Vote", back_populates="event", cascade="all, delete-orphan", lazy="selectin")
     date_options = relationship("DateOption", back_populates="event", cascade="all, delete-orphan", lazy="selectin")
+    comments = relationship("EventComment", back_populates="event", cascade="all, delete-orphan", passive_deletes=True)
 
 class EventParticipant(Base):
     __tablename__ = "event_participant"
@@ -295,14 +296,14 @@ class EventComment(Base):
     __tablename__ = "event_comment"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    event_id = Column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey("event.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     phase = Column(SQLEnum(EventPhase), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User")
-    event = relationship("Event")
+    event = relationship("Event", back_populates="comments")
 
 class ActivityComment(Base):
     __tablename__ = "activity_comment"
