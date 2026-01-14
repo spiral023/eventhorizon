@@ -164,7 +164,7 @@ export default function LoginPage() {
           setVerificationEmail(targetEmail);
           toast({
             title: "E-Mail bestätigen",
-            description: `Wir haben dir einen Bestätigungslink an ${targetEmail} gesendet. Bitte bestätige deine Adresse und melde dich danach an.`,
+            description: `Wir haben dir einen Bestätigungslink an ${targetEmail} gesendet. Bevor du dich einloggen kannst musst du deine E-Mail-Adresse bestätigen. In Firmennetzen kann die Zustellung bis zu 3 Minuten dauern. Schau zur Sicherheit auch im Spam-Ordner.`,
           });
           setMode("login");
           setAuthVariant("password");
@@ -226,7 +226,7 @@ export default function LoginPage() {
                 <MailCheck className="h-4 w-4" />
                 <AlertTitle>E-Mail-Bestätigung erforderlich</AlertTitle>
                 <AlertDescription>
-                  Wir haben dir einen Bestätigungslink an {verificationEmail} gesendet. Bitte bestätige deine Adresse und melde dich danach an.
+                  Wir haben dir einen Bestätigungslink an {verificationEmail} gesendet. Bitte bestätige deine Adresse und melde dich danach an. In Firmennetzen kann die Zustellung bis zu 3 Minuten dauern.
                 </AlertDescription>
               </Alert>
             )}

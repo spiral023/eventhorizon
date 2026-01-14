@@ -508,6 +508,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { logout, isAuthenticated } = useAuthStore();
 
   const navigate = useNavigate();
+  const location = useLocation();
 
 
 
@@ -570,6 +571,34 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         {isAuthenticated ? (
 
           <>
+
+                        <Button
+
+                          variant="ghost"
+
+                          className={cn(
+
+                            "w-full justify-start gap-3 px-4 py-2.5 h-auto rounded-xl text-sm font-medium",
+
+                            "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+
+                          )}
+
+                          onClick={() => {
+
+                            onNavigate?.();
+
+                            navigate("/onboarding", { state: { from: location } });
+
+                          }}
+
+                        >
+
+                          <Sparkles className="h-5 w-5" />
+
+                          <span>Einleitung</span>
+
+                        </Button>
 
                         {bottomNavItems.map((item) => (
 

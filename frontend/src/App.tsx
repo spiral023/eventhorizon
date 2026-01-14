@@ -3,13 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { AnimatePresence } from "framer-motion";
 import { GuestAccessNotice } from "@/components/auth/GuestAccessNotice";
 import { useAuthStore } from "@/stores/authStore";
+import { useOnboardingStore } from "@/stores/onboardingStore";
 import * as Sentry from "@sentry/react";
 
 // Pages
@@ -31,12 +32,17 @@ import RequestResetPasswordPage from "@/pages/RequestResetPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import DevSentryTest from "@/pages/DevSentryTest";
+import OnboardingPage from "@/pages/OnboardingPage";
 
 const queryClient = new QueryClient();
 
 // Keep layout mounted across route changes
 function AppShell() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const completedByUserId = useOnboardingStore((state) => state.completedByUserId);
+  const isOnboardingComplete = user ? !!completedByUserId[user.id] : false;
 
   useEffect(() => {
     const isOverview = location.pathname === "/";
@@ -46,6 +52,27 @@ function AppShell() {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !user) {
+      return;
+    }
+    if (location.pathname.startsWith("/onboarding")) {
+      return;
+    }
+    if (isOnboardingComplete) {
+      return;
+    }
+
+    navigate("/onboarding", { replace: true, state: { from: location } });
+  }, [
+    isLoading,
+    isAuthenticated,
+    user,
+    isOnboardingComplete,
+    location,
+    navigate,
+  ]);
 
   return (
     <AppLayout>
@@ -139,6 +166,7 @@ function AppRoutes() {
 
         {/* Strictly protected routes */}
         <Route element={<AuthenticatedSection />}>
+          <Route path="onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
           <Route path="profile" element={<PageTransition><ProfilePage /></PageTransition>} />
           <Route path="settings" element={<PageTransition><SettingsPage /></PageTransition>} />
         </Route>

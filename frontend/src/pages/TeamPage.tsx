@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
@@ -59,6 +60,7 @@ export default function TeamPage() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
+  const [hasEnoughMembers, setHasEnoughMembers] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,21 +71,31 @@ export default function TeamPage() {
       const roomsResult = await getRooms();
       const availableRooms = roomsResult.data || [];
       const sortedRooms = sortRoomsByMembers(availableRooms);
+      const eligibleRooms = sortedRooms.filter((room) => (room.memberCount ?? 0) >= 2);
       setRooms(sortedRooms);
 
       let targetRoomId = roomId;
 
       // If no room in URL, try to use first available room
       if (!targetRoomId && sortedRooms.length > 0) {
-        targetRoomId = sortedRooms[0].id;
+        targetRoomId = eligibleRooms.length > 0 ? eligibleRooms[0].id : sortedRooms[0].id;
       }
       
       const foundRoom = sortedRooms.find(r => r.id === targetRoomId);
       setCurrentRoom(foundRoom || null);
+      const roomHasEnoughMembers = (foundRoom?.memberCount ?? 0) >= 2;
+      setHasEnoughMembers(roomHasEnoughMembers);
 
       if (!targetRoomId) {
           setLoading(false);
           return;
+      }
+      if (!roomHasEnoughMembers) {
+        setRecommendations(null);
+        setActivities([]);
+        setFavoriteIds([]);
+        setLoading(false);
+        return;
       }
 
       try {
@@ -127,9 +139,9 @@ export default function TeamPage() {
     navigate(`/team/${newRoomId}`);
   };
 
-  const recommendedActivities = activities.filter((a) =>
-    recommendations?.recommendedActivityIds.includes(a.id)
-  );
+  const recommendedActivities = recommendations?.recommendedActivityIds?.length
+    ? activities.filter((a) => recommendations.recommendedActivityIds.includes(a.id))
+    : [];
 
   if (loading) {
     return (
@@ -186,6 +198,26 @@ export default function TeamPage() {
 
   // If loading is done but no room/recommendations found (e.g. user has no rooms)
   if (!loading && (!currentRoom || !recommendations)) {
+    if (currentRoom && !hasEnoughMembers) {
+      return (
+        <div className="p-8 text-center">
+          <PageHeader title="Team-Analyse" />
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <p className="text-muted-foreground">
+                Die Team-Analyse ist erst ab zwei Mitgliedern im Raum verfügbar.
+              </p>
+              {currentRoom.inviteCode && (
+                <Button onClick={() => navigate(`/rooms/${currentRoom.inviteCode}`)} className="rounded-xl">
+                  Mitglieder einladen
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
     return (
       <div className="p-8 text-center">
         <PageHeader title="Team-Analyse" />
