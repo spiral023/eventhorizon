@@ -11,6 +11,13 @@ import { PageLoading } from "@/components/shared/PageLoading";
 import { PageError } from "@/components/shared/PageError";
 import { getCurrentUser } from "@/services/apiClient";
 
+interface ActivityPreferences {
+  physical: number; // 0-5
+  mental: number;
+  social: number;
+  competition: number;
+}
+
 export interface UserProfile {
   name: string;
   firstName: string;
@@ -26,14 +33,29 @@ export interface UserProfile {
   // Neue Felder
   dietaryRestrictions: string[];
   allergies: string[];
-  activityPreferences?: {
-    physical: number; // 1-5
-    mental: number;
-    social: number;
-    creative: number;
-  };
+  activityPreferences?: ActivityPreferences;
   bio?: string;
 }
+
+const normalizeActivityPreferences = (prefs: unknown): ActivityPreferences | undefined => {
+  if (!prefs || typeof prefs !== "object") return undefined;
+  const raw = prefs as Record<string, unknown>;
+  const physical = typeof raw.physical === "number" ? raw.physical : undefined;
+  const mental = typeof raw.mental === "number" ? raw.mental : undefined;
+  const social = typeof raw.social === "number" ? raw.social : undefined;
+  const competition = typeof raw.competition === "number" ? raw.competition : undefined;
+  const hasAnyValue = [physical, mental, social, competition].some(
+    (value) => typeof value === "number"
+  );
+  if (!hasAnyValue) return undefined;
+  const defaultValue = 3;
+  return {
+    physical: physical ?? defaultValue,
+    mental: mental ?? defaultValue,
+    social: social ?? defaultValue,
+    competition: competition ?? defaultValue,
+  };
+};
 
 export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -69,7 +91,7 @@ export default function ProfilePage() {
           hobbies: result.data.hobbies || [],
           dietaryRestrictions: result.data.dietaryRestrictions || [],
           allergies: result.data.allergies || [],
-          activityPreferences: result.data.activityPreferences,
+          activityPreferences: normalizeActivityPreferences(result.data.activityPreferences),
         });
       }
     } catch (err) {
@@ -264,10 +286,10 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Kreativ</span>
-                      <span className="text-muted-foreground">{user.activityPreferences.creative}/5</span>
+                      <span>Wettbewerb</span>
+                      <span className="text-muted-foreground">{user.activityPreferences.competition}/5</span>
                     </div>
-                    <Progress value={user.activityPreferences.creative * 20} className="h-2" />
+                    <Progress value={user.activityPreferences.competition * 20} className="h-2" />
                   </div>
                 </div>
               ) : (

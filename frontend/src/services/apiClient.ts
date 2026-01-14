@@ -1810,7 +1810,7 @@ export async function getTeamRecommendations(roomId: string): Promise<ApiResult<
         { category: "food", percentage: 25 },
         { category: "outdoor", percentage: 20 },
         { category: "relax", percentage: 15 },
-        { category: "creative", percentage: 5 },
+        { category: "culture", percentage: 5 },
       ],
       preferredGoals: ["teambuilding", "fun"],
       recommendedActivityIds: ["act-1"],

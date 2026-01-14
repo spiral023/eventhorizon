@@ -15,6 +15,7 @@ import type { Activity } from "@/types/domain";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   getActivityDurationMinutes, 
   getActiveFilterCount, 
@@ -41,6 +42,7 @@ export default function ActivitiesPage() {
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const isMobile = useIsMobile();
 
   const activeFilterCount = useMemo(() => getActiveFilterCount(filters), [filters]);
 
@@ -191,10 +193,11 @@ export default function ActivitiesPage() {
   }, [filteredActivities]);
 
   const visibleActivities = useMemo(() => {
+    if (!isMobile) return sortedActivities;
     return sortedActivities.slice(0, visibleCount);
-  }, [sortedActivities, visibleCount]);
+  }, [sortedActivities, visibleCount, isMobile]);
 
-  const hasMore = visibleCount < sortedActivities.length;
+  const hasMore = isMobile && visibleCount < sortedActivities.length;
 
   const loadMore = () => {
     setVisibleCount(prev => prev + ITEMS_PER_PAGE);

@@ -61,7 +61,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [physical, setPhysical] = useState([user.activityPreferences?.physical ?? 3]);
   const [mental, setMental] = useState([user.activityPreferences?.mental ?? 3]);
   const [social, setSocial] = useState([user.activityPreferences?.social ?? 3]);
-  const [creative, setCreative] = useState([user.activityPreferences?.creative ?? 3]);
+  const [competition, setCompetition] = useState([user.activityPreferences?.competition ?? 3]);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || "");
 
   const [loading, setLoading] = useState(false);
@@ -171,7 +171,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
           physical: physical[0],
           mental: mental[0],
           social: social[0],
-          creative: creative[0],
+          competition: competition[0],
         },
       });
 
@@ -196,7 +196,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
           physical: physical[0],
           mental: mental[0],
           social: social[0],
-          creative: creative[0],
+          competition: competition[0],
         },
         avatarUrl: avatarUrl || undefined,
       };
@@ -232,7 +232,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
           physical: 3,
           mental: 3,
           social: 3,
-          creative: 3,
+          competition: 3,
         },
       });
 
@@ -253,7 +253,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
       setPhysical([3]);
       setMental([3]);
       setSocial([3]);
-      setCreative([3]);
+      setCompetition([3]);
       setAvatarUrl("");
       
       // Update parent/global state
@@ -496,7 +496,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                         <span>Körperliche Aktivität</span>
                         <span className="text-muted-foreground">{physical[0]}/5</span>
                       </div>
-                      <Slider value={physical} onValueChange={setPhysical} min={1} max={5} step={1} />
+                      <Slider value={physical} onValueChange={setPhysical} min={0} max={5} step={1} />
                     </div>
                     
                     <div>
@@ -504,7 +504,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                         <span>Mentale Herausforderung</span>
                         <span className="text-muted-foreground">{mental[0]}/5</span>
                       </div>
-                      <Slider value={mental} onValueChange={setMental} min={1} max={5} step={1} />
+                      <Slider value={mental} onValueChange={setMental} min={0} max={5} step={1} />
                     </div>
                     
                     <div>
@@ -512,15 +512,15 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                         <span>Soziale Interaktion</span>
                         <span className="text-muted-foreground">{social[0]}/5</span>
                       </div>
-                      <Slider value={social} onValueChange={setSocial} min={1} max={5} step={1} />
+                      <Slider value={social} onValueChange={setSocial} min={0} max={5} step={1} />
                     </div>
                     
                     <div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span>Kreativität</span>
-                        <span className="text-muted-foreground">{creative[0]}/5</span>
+                        <span>Wettbewerbslevel</span>
+                        <span className="text-muted-foreground">{competition[0]}/5</span>
                       </div>
-                      <Slider value={creative} onValueChange={setCreative} min={1} max={5} step={1} />
+                      <Slider value={competition} onValueChange={setCompetition} min={0} max={5} step={1} />
                     </div>
                   </div>
                 </div>

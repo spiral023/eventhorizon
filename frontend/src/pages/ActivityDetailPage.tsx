@@ -737,16 +737,6 @@ export default function ActivityDetailPage() {
                       gradientTo="to-pink-500"
                     />
                   )}
-                  {activity.creativityLevel !== undefined && (
-                    <ScaleRow
-                      icon={Sparkles}
-                      iconColor="text-emerald-500"
-                      label="Kreativität"
-                      value={activity.creativityLevel}
-                      gradientFrom="from-emerald-400"
-                      gradientTo="to-emerald-500"
-                    />
-                  )}
                 </div>
               </CardContent>
             </Card>

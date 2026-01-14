@@ -86,7 +86,7 @@ class User(Base):
     bio = Column(Text)
     hobbies = Column(ARRAY(String))
     # Preferences
-    activity_preferences = Column(JSON)  # {physical, mental, social, creative}
+    activity_preferences = Column(JSON)  # {physical, mental, social, competition}
     dietary_restrictions = Column(ARRAY(String))
     allergies = Column(ARRAY(String))
     hashed_password = Column(String, nullable=False)

@@ -38,7 +38,7 @@ docker exec eventhorizon-backend-1 python scripts/json_to_xlsx.py
   - *Beispiel Accessibility:* `wheelchair, parking`
 - **Koordinaten:** Müssen als JSON-Liste `[lat, lng]` eingetragen bleiben oder als `lat, lng` (Komma getrennt).
   - *Beispiel:* `[48.3061, 14.2869]` oder `48.3061, 14.2869`
-- **Kategorien (Category):** Nur erlaubte Werte verwenden: `action`, `food`, `relax`, `party`, `culture`, `outdoor`, `creative`.
+- **Kategorien (Category):** Nur erlaubte Werte verwenden: `action`, `food`, `relax`, `party`, `culture`, `outdoor`.
 - **Regionen (Region):** Kürzel verwenden: `OOE`, `WIE`, `SBG`, etc.
 
 ---

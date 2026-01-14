@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { DivIcon, LatLngBounds } from "leaflet";
 import { motion } from "framer-motion";
-import { MapPin, Euro, Clock, ExternalLink, Car, FootprintsIcon, X, Zap, UtensilsCrossed, Sparkles, PartyPopper, Landmark, TreePine, Palette } from "lucide-react";
+import { MapPin, Euro, Clock, ExternalLink, Car, FootprintsIcon, X, Zap, UtensilsCrossed, Sparkles, PartyPopper, Landmark, TreePine } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,6 @@ const CategoryIcons: Record<EventCategory, React.ReactNode> = {
   party: <PartyPopper className="h-4 w-4" />,
   culture: <Landmark className="h-4 w-4" />,
   outdoor: <TreePine className="h-4 w-4" />,
-  creative: <Palette className="h-4 w-4" />,
 };
 
 // Helper function to get color based on walking time
