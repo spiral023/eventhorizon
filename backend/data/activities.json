@@ -1,5 +1,6 @@
 [
   {
+    "listing_id": 1,
     "title": "Masters of Escape: Team-Rätselspaß in Linz",
     "category": "action",
     "tags": [
@@ -46,6 +47,7 @@
     "customer_voice": "Die Kunden loben die authentische Atmosphäre und die liebevoll, detailreich gestalteten Räume. Besonders das überaus freundliche und kompetente Personal wird hervorgehoben. Die Rätsel beschreiben Besucher als abwechslungsreich, logisch und technisch beeindruckend. Egal ob „Prison Break“ oder „Wudang“, die spannenden Geschichten und der hohe Spaßfaktor machen den Anbieter zu einer Top-Empfehlung für Gruppen."
   },
   {
+    "listing_id": 2,
     "title": "Lasertron: Actionreiches Lasertag Battle",
     "category": "action",
     "tags": [
@@ -91,6 +93,7 @@
     "customer_voice": "Die Besucher heben den extremen Spaßfaktor hervor. Sie beschreiben Lasertron als ideales Erlebnis für Familienausflüge, Kindergeburtstage und Gruppen. Das Personal wird in vielen Rezensionen als sehr freundlich, hilfsbereit und kompetent bei der Einweisung gelobt. Kunden schätzen die coole Arena, die verständlichen Regeln und die Möglichkeit, sich sportlich richtig auszupowern."
   },
   {
+    "listing_id": 3,
     "title": "Exit the Room: Das Escape Abenteuer Linz",
     "category": "action",
     "tags": [
@@ -136,6 +139,7 @@
     "customer_voice": "Die Besucher sind begeistert vom hohen Spaßfaktor und der Spannung. Sie beschreiben die Räume, insbesondere das Zombie- und Murder-Szenario, als gut durchdacht und unterhaltsam. Das Personal wird vielfach als sehr freundlich, sympathisch und hilfsbereit gelobt. Kunden schätzen die kniffligen, logischen Rätsel und empfehlen das Erlebnis für Freunde, Familien und Kollegen weiter."
   },
   {
+    "listing_id": 4,
     "title": "NoWayOut: Premium Escape Room Erlebnis",
     "category": "action",
     "tags": [
@@ -181,6 +185,7 @@
     "customer_voice": "Die Besucher loben die detailreiche und liebevolle Gestaltung der Räume, insbesondere die magische Atmosphäre in „School of Magic“. Das Personal wird vielfach als überaus herzlich, hilfsbereit und kompetent beschrieben. Viele Kunden betonen den hohen Spaßfaktor für Familien und Einsteiger. Die Rätsel werden als unterhaltsam und die Kulissen als immersiv wahrgenommen."
   },
   {
+    "listing_id": 5,
     "title": "Ocean Park: Bowling & Dinner Teamevent",
     "category": "action",
     "tags": [
@@ -228,6 +233,7 @@
     "customer_voice": "Die Kunden bewerten die Anlage grundsätzlich als modern und das Angebot an Bowling, Billard und Arcade-Spielen als unterhaltsam, besonders für Gruppen und Kinder. Das Ambiente wird oft als ansprechend beschrieben. Jedoch wird der Service massiv kritisiert: Das Personal wird überwiegend als unfreundlich, unmotiviert und langsam wahrgenommen. Viele Kunden berichten von technischen Mängeln an den Bowlingbahnen und defekten Spielautomaten. Ein häufiger Beschwerdegrund ist zudem die Preispolitik, insbesondere der verpflichtende Getränkekonsum, hohe Preise für Getränke sowie Probleme bei der Kautionsrückgabe. Auch die Hygiene der Leihschuhe wird vereinzelt bemängelt."
   },
   {
+    "listing_id": 6,
     "title": "JUMP DOME Linz: Trampolin-Action pur",
     "category": "action",
     "tags": [
@@ -274,6 +280,7 @@
     "customer_voice": "Die Kunden sind begeistert vom hohen Spaßfaktor und beschreiben die Anlage als idealen Ort zum Auspowern für Kinder und Erwachsene. Besonders gelobt werden die abwechslungsreichen Sprungbereiche, die Sauberkeit der Halle und das überwiegend freundliche, hilfsbereite Personal. Auch die Organisation von Geburtstagsfeiern wird positiv hervorgehoben. Kritisch sehen Kunden hingegen das Preis-Leistungs-Verhältnis: Die Eintrittspreise sowie die zusätzlichen Kosten für obligatorische Socken und Armbänder werden von vielen als zu hoch empfunden. Vereinzelt werden zudem die hohen Temperaturen und die schlechte Belüftung in der Halle bemängelt."
   },
   {
+    "listing_id": 7,
     "title": "Linzer Bier: Brauereiführung & Verkostung",
     "category": "food",
     "tags": [
@@ -323,6 +330,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 8,
     "title": "Ruff Indoor Golf: Die Team-Challenge Linz",
     "category": "action",
     "tags": [
@@ -368,6 +376,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 9,
     "title": "Another World: VR Team-Abenteuer erleben",
     "category": "action",
     "tags": [
@@ -415,6 +424,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 10,
     "title": "Deep Space 8K: Zukunftstrip im AEC Linz",
     "category": "relax",
     "tags": [
@@ -461,6 +471,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 11,
     "title": "Segway Tour: Linz schwebend entdecken",
     "category": "action",
     "tags": [
@@ -506,6 +517,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 12,
     "title": "Mural Harbor: Graffiti Walk & Spray Class",
     "category": "relax",
     "tags": [
@@ -553,6 +565,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 13,
     "title": "Stahlwelt Linz: Werkstour & Industriekultur",
     "category": "relax",
     "tags": [
@@ -599,6 +612,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 14,
     "title": "Stefan's Stubm: Kulinarik & Gemütlichkeit",
     "category": "food",
     "tags": [
@@ -647,6 +661,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 15,
     "title": "Il Teatro: Italienischer Abend fürs Team",
     "category": "food",
     "tags": [
@@ -695,6 +710,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 16,
     "title": "Das Josef: Der Linzer Gastro-Klassiker",
     "category": "food",
     "tags": [
@@ -743,6 +759,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 17,
     "title": "PAULs am Dom: Stylisches Dinner & Drinks",
     "category": "food",
     "tags": [
@@ -791,6 +808,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 18,
     "title": "Weinstadl Urfahr: Uriges Dinner & Wein",
     "category": "food",
     "tags": [
@@ -839,6 +857,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 19,
     "title": "Eisstockschießen & Bratl: Winter-Teamevent",
     "category": "party",
     "tags": [
@@ -885,6 +904,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 20,
     "title": "Hollywood Megaplex: Privates Kino-Event",
     "category": "relax",
     "tags": [
@@ -931,6 +951,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 21,
     "title": "Cocktail-Kurs im Lennox: Mix it up Team!",
     "category": "party",
     "tags": [
@@ -977,6 +998,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 22,
     "title": "ÄNGUS Downtown: Bestes Steak-Dinner Linz",
     "category": "food",
     "tags": [
@@ -1024,6 +1046,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 23,
     "title": "Glorious Bastards: Pizza, Grill & Vibes",
     "category": "food",
     "tags": [
@@ -1073,6 +1096,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 24,
     "title": "Bratwurstglöckerl: Linzer Wirtshauskultur",
     "category": "food",
     "tags": [
@@ -1121,6 +1145,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 25,
     "title": "Stadtliebe Linz: Urbanes Wirtshaus-Event",
     "category": "food",
     "tags": [
@@ -1169,6 +1194,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 26,
     "title": "Wia z'haus Lehner: Schmankerl & Ausblick",
     "category": "food",
     "tags": [
@@ -1215,6 +1241,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 27,
     "title": "Zur Eisernen Hand: Tradition & Genuss",
     "category": "food",
     "tags": [
@@ -1260,6 +1287,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 28,
     "title": "Rotax MAX Dome: High-Speed E-Kart Action",
     "category": "action",
     "tags": [
@@ -1306,6 +1334,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 29,
     "title": "Booosters Kartbahn: Rennfeeling für Teams",
     "category": "action",
     "tags": [
@@ -1352,6 +1381,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 30,
     "title": "Mission Games: Die Live Game-Show Linz",
     "category": "action",
     "tags": [
@@ -1398,6 +1428,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 31,
     "title": "Schloss Café Linz: BBQ & Sommerabend fürs Team",
     "category": "food",
     "tags": [
@@ -1445,6 +1476,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 32,
     "title": "Zum Schiefen Apfelbaum: Wirtshaus-Genuss mit Charme",
     "category": "food",
     "tags": [
@@ -1490,6 +1522,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 33,
     "title": "HALL.O Swingolf Linz: Die entspannte Team-Challenge",
     "category": "action",
     "tags": [
@@ -1535,6 +1568,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 34,
     "title": "Stiegl-Klosterhof Linz: Biergarten-Vibes & Feierabendrunde",
     "category": "food",
     "tags": [
@@ -1581,6 +1615,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 35,
     "title": "Game & Dine: Zocken, Snacken & Teamspaß",
     "category": "relax",
     "tags": [
@@ -1627,6 +1662,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 36,
     "title": "Jack the Ripperl: Ripperl-Feast für hungrige Teams",
     "category": "food",
     "tags": [
@@ -1674,6 +1710,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 37,
     "title": "RAITEC Kellerstüberl: Pokerabend mit Chips & Cheers",
     "category": "action",
     "tags": [
@@ -1716,6 +1753,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 38,
     "title": "RAITEC Kellerstüberl: Lecker Bierchen & Feierabendtalk",
     "category": "party",
     "tags": [
@@ -1758,6 +1796,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 39,
     "title": "RAITEC Chill-Out-Zone: Runterkommen, Quatschen, Auftanken",
     "category": "party",
     "tags": [
@@ -1800,6 +1839,7 @@
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
   {
+    "listing_id": 40,
     "title": "Büroparty Deluxe: Musik, Drinks & Smalltalk-Marathon",
     "category": "party",
     "tags": [

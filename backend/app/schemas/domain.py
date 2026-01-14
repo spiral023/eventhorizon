@@ -95,6 +95,7 @@ class RoomUpdate(BaseSchema):
 class ActivityBase(BaseSchema):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
+    listing_id: Optional[int] = None
     title: str
     category: str
     tags: Optional[List[str]] = []

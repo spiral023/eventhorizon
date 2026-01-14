@@ -23,6 +23,11 @@ def json_to_xlsx():
     # 2. Convert to DataFrame
     df = pd.json_normalize(data)
 
+    if "listing_id" in df.columns:
+        df["listing_id"] = pd.to_numeric(df["listing_id"], errors="ignore")
+        columns = ["listing_id"] + [col for col in df.columns if col != "listing_id"]
+        df = df[columns]
+
     # 3. Handle Lists/Arrays (e.g. tags, accessibility_flags, coordinates)
     # Convert lists to comma-separated strings for Excel compatibility
     list_columns = []

@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 from datetime import datetime
-import ast
+from collections import OrderedDict
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,7 +34,7 @@ def xlsx_to_json():
     records = df.to_dict(orient='records')
     
     cleaned_records = []
-    
+
     for record in records:
         # Filter out NaN values (empty cells in Excel become NaN/float)
         cleaned_record = {k: v for k, v in record.items() if pd.notna(v)}
@@ -59,8 +59,22 @@ def xlsx_to_json():
                         cleaned_record[field] = [x.strip() for x in val.split(",")]
                     else:
                         cleaned_record[field] = []
+
+        if "listing_id" in cleaned_record:
+            try:
+                cleaned_record["listing_id"] = int(cleaned_record["listing_id"])
+            except (ValueError, TypeError):
+                pass
+
+        ordered_record = OrderedDict()
+        if "listing_id" in cleaned_record:
+            ordered_record["listing_id"] = cleaned_record["listing_id"]
+        for key, value in cleaned_record.items():
+            if key == "listing_id":
+                continue
+            ordered_record[key] = value
         
-        cleaned_records.append(cleaned_record)
+        cleaned_records.append(ordered_record)
 
     # 3. Create Backup of existing JSON
     if os.path.exists(JSON_FILE):

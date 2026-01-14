@@ -20,6 +20,7 @@ from app.services.slug_service import generate_unique_slug
 # Mapping von JSON-Feldern zu Backend-Modell
 FIELD_MAPPING = {
     # Direct mappings
+    "listing_id": "listing_id",
     "title": "title",
     "category": "category",
     "tags": "tags",

@@ -136,6 +136,7 @@ class Activity(Base):
     __tablename__ = "activity"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    listing_id = Column(Integer, unique=True, index=True)
     title = Column(String, nullable=False)
     slug = Column(String, unique=True, nullable=False, index=True)
     category = Column(SQLEnum(EventCategory), nullable=False)
