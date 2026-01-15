@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ThumbsUp, ThumbsDown, Minus, Check, Trophy, Heart, Star, Globe, Mail, MapPin, CalendarCheck, UtensilsCrossed } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -197,7 +198,14 @@ export function VotingCard({
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-1">{activity.title}</h3>
+              <h3 className="font-semibold text-lg mb-1">
+                <Link
+                  to={`/activities/${activity.slug}`}
+                  className="transition-colors hover:text-primary"
+                >
+                  {activity.title}
+                </Link>
+              </h3>
               <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                 {activity.shortDescription}
               </p>
@@ -319,11 +327,16 @@ export function VotingCard({
                         <span className={cn("font-medium", userIsFor ? "text-success" : "text-muted-foreground")}>{forVotes}</span>
                         <ThumbsUp className={cn("h-3.5 w-3.5", userIsFor ? "text-success" : "text-muted-foreground")}/>
                         <div className="flex -space-x-2 overflow-hidden">
-                          {forVoters.map(voter => (
-                            <Avatar key={voter.userId} className="h-6 w-6 border-2 border-white">
-                              <AvatarImage src={voter.avatarUrl} />
-                              <AvatarFallback>{voter.userName.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                          {forVoters.map((voter) => (
+                            <Tooltip key={voter.userId}>
+                              <TooltipTrigger asChild>
+                                <Avatar className="h-6 w-6 border-2 border-white">
+                                  <AvatarImage src={voter.avatarUrl} />
+                                  <AvatarFallback>{voter.userName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                              </TooltipTrigger>
+                              <TooltipContent>{voter.userName}</TooltipContent>
+                            </Tooltip>
                           ))}
                         </div>
                     </div>
@@ -331,11 +344,16 @@ export function VotingCard({
                         <span className={cn("font-medium", userIsAgainst ? "text-destructive" : "text-muted-foreground")}>{againstVotes}</span>
                         <ThumbsDown className={cn("h-3.5 w-3.5", userIsAgainst ? "text-destructive" : "text-muted-foreground")}/>
                         <div className="flex -space-x-2 overflow-hidden">
-                          {againstVoters.map(voter => (
-                            <Avatar key={voter.userId} className="h-6 w-6 border-2 border-white">
-                              <AvatarImage src={voter.avatarUrl} />
-                              <AvatarFallback>{voter.userName.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                          {againstVoters.map((voter) => (
+                            <Tooltip key={voter.userId}>
+                              <TooltipTrigger asChild>
+                                <Avatar className="h-6 w-6 border-2 border-white">
+                                  <AvatarImage src={voter.avatarUrl} />
+                                  <AvatarFallback>{voter.userName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                              </TooltipTrigger>
+                              <TooltipContent>{voter.userName}</TooltipContent>
+                            </Tooltip>
                           ))}
                         </div>
                     </div>

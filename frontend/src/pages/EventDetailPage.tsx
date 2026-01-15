@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Check, ArrowRight, ChevronDown, Info, MoreVertical, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -620,7 +620,14 @@ export default function EventDetailPage() {
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-start justify-between gap-2">
                          <div className="flex flex-col gap-1">
-                            <h4 className="font-semibold line-clamp-1">{activity.title}</h4>
+                            <h4 className="font-semibold line-clamp-1">
+                              <Link
+                                to={`/activities/${activity.slug}`}
+                                className="transition-colors hover:text-primary"
+                              >
+                                {activity.title}
+                              </Link>
+                            </h4>
                             {activity.favoritesInRoomCount !== undefined && activity.favoritesInRoomCount > 0 && (
                               <span className="flex items-center gap-1 text-[10px] text-pink-500 font-medium">
                                 <Heart className="h-3 w-3 fill-current" />
