@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 import { useAuthStore } from "@/stores/authStore";
+import { useOnboardingStore } from "@/stores/onboardingStore";
 
 import { getRooms, getEventsByAccessCode } from "@/services/apiClient";
 
@@ -47,6 +48,16 @@ import type { Room, Event } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
 import { LegalNoticeDialog } from "@/components/shared/LegalNoticeDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const sortRoomsByMembers = (input: Room[]) =>
   [...input].sort((a, b) => {
@@ -86,7 +97,17 @@ const bottomNavItems: NavItem[] = [
 
 
 
-function NavItemComponent({ item, onNavigate, locked, subtitle }: { item: NavItem; onNavigate?: () => void; locked?: boolean; subtitle?: string }) {
+function NavItemComponent({
+  item,
+  onNavigate,
+  locked,
+  subtitle,
+}: {
+  item: NavItem;
+  onNavigate?: (targetPath: string, event?: React.MouseEvent) => void;
+  locked?: boolean;
+  subtitle?: string;
+}) {
 
   const Icon = item.icon;
 
@@ -114,7 +135,7 @@ function NavItemComponent({ item, onNavigate, locked, subtitle }: { item: NavIte
 
       activeClassName="bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
 
-      onClick={onNavigate}
+      onClick={(event) => onNavigate?.(item.to, event)}
 
       title={locked ? "Nur fÃ¼r angemeldete Nutzer" : undefined}
 
@@ -154,7 +175,11 @@ interface RoomWithEvents {
 
 
 
-function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
+function RoomsNavSection({
+  onNavigate,
+}: {
+  onNavigate?: (targetPath: string, event?: React.MouseEvent) => void;
+}) {
 
   const location = useLocation();
 
@@ -281,7 +306,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
         item={{ label: "Räume", to: "/rooms", icon: Users }}
 
-        onNavigate={onNavigate}
+        onNavigate={handleNavigate}
 
         locked
 
@@ -345,7 +370,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
           activeClassName="bg-primary/10 text-primary not-italic"
 
-          onClick={onNavigate}
+          onClick={(event) => onNavigate?.("/rooms", event)}
 
         >
 
@@ -379,7 +404,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                     )}
 
-                    onClick={onNavigate}
+                    onClick={(event) => onNavigate?.(`/rooms/${room.inviteCode}`, event)}
 
                   >
 
@@ -445,7 +470,9 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                       )}
 
-                      onClick={onNavigate}
+                      onClick={(event) =>
+                        onNavigate?.(`/rooms/${room.inviteCode}/events/${event.shortCode || event.id}`, event)
+                      }
 
                     >
 
@@ -479,7 +506,7 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
                 )}
 
-                onClick={onNavigate}
+                onClick={(event) => onNavigate?.(`/rooms/${room.inviteCode}`, event)}
 
               >
 
@@ -505,12 +532,45 @@ function RoomsNavSection({ onNavigate }: { onNavigate?: () => void }) {
 
 export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
-  const { logout, isAuthenticated } = useAuthStore();
+  const { logout, isAuthenticated, user } = useAuthStore();
+  const completedByUserId = useOnboardingStore((state) => state.completedByUserId);
+  const markComplete = useOnboardingStore((state) => state.markComplete);
 
   const navigate = useNavigate();
   const location = useLocation();
+  const isOnboardingComplete = user ? !!completedByUserId[user.id] : true;
+  const [isOnboardingDialogOpen, setIsOnboardingDialogOpen] = useState(false);
+  const [pendingTargetPath, setPendingTargetPath] = useState<string | null>(null);
 
+  const handleNavigate = useCallback(
+    (targetPath: string, event?: React.MouseEvent) => {
+      const isOnboardingRoute = location.pathname.startsWith("/onboarding");
+      const shouldBlock = !!user && !isOnboardingComplete && isOnboardingRoute && targetPath !== "/onboarding";
 
+      if (!shouldBlock) {
+        onNavigate?.();
+        return;
+      }
+
+      event?.preventDefault();
+      setPendingTargetPath(targetPath);
+      setIsOnboardingDialogOpen(true);
+    },
+    [isOnboardingComplete, location.pathname, onNavigate, user]
+  );
+
+  const handleSkipOnboarding = useCallback(() => {
+    if (!user) {
+      return;
+    }
+    markComplete(user.id);
+    onNavigate?.();
+    const nextPath = pendingTargetPath && pendingTargetPath !== "/onboarding"
+      ? pendingTargetPath
+      : "/activities";
+    navigate(nextPath, { replace: true });
+    setIsOnboardingDialogOpen(false);
+  }, [markComplete, navigate, onNavigate, pendingTargetPath, user]);
 
   const handleLogout = async () => {
 
@@ -540,9 +600,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
         </div>
 
-        <NavItemComponent item={staticNavItems[0]} onNavigate={onNavigate} />
+        <NavItemComponent item={staticNavItems[0]} onNavigate={handleNavigate} />
 
-        <RoomsNavSection onNavigate={onNavigate} />
+        <RoomsNavSection onNavigate={handleNavigate} />
 
         {staticNavItems.slice(1).map((item) => (
 
@@ -552,7 +612,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
             item={item} 
 
-            onNavigate={onNavigate} 
+            onNavigate={handleNavigate} 
 
             locked={!isAuthenticated && item.to === "/team"}
 
@@ -602,7 +662,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
                         {bottomNavItems.map((item) => (
 
-                          <NavItemComponent key={item.to} item={item} onNavigate={onNavigate} />
+                          <NavItemComponent key={item.to} item={item} onNavigate={handleNavigate} />
 
                         ))}
 
@@ -709,6 +769,23 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="mt-auto px-4 py-2 text-[10px] text-muted-foreground/40 text-center font-mono">
         v{import.meta.env.PACKAGE_VERSION}
       </div>
+
+      <AlertDialog open={isOnboardingDialogOpen} onOpenChange={setIsOnboardingDialogOpen}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader className="text-left">
+            <AlertDialogTitle>Onboarding zuerst abschließen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bitte beende das Onboarding. Du kannst es auch überspringen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-end">
+            <AlertDialogCancel className="rounded-xl">Weiter im Onboarding</AlertDialogCancel>
+            <AlertDialogAction className="rounded-xl" onClick={handleSkipOnboarding}>
+              Onboarding überspringen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
 

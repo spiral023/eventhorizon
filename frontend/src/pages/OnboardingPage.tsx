@@ -20,6 +20,16 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
 import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
 import { RoomCard, RoomCardSkeleton } from "@/components/shared/RoomCard";
@@ -82,6 +92,7 @@ export default function OnboardingPage() {
   const [roomsLoading, setRoomsLoading] = useState(true);
   const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(() => getPendingInviteCode());
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
 
   const isCompleted = user ? !!completedByUserId[user.id] : false;
   const progressValue = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
@@ -253,6 +264,20 @@ export default function OnboardingPage() {
     navigate("/activities", { replace: true });
   };
 
+  const handleSkipOnboarding = useCallback((targetPath?: string) => {
+    if (!user) {
+      return;
+    }
+    markComplete(user.id);
+    setIsExitDialogOpen(false);
+    const nextPath = targetPath && targetPath !== "/onboarding" ? targetPath : "/activities";
+    navigate(nextPath, { replace: true });
+  }, [user, markComplete, navigate, setIsExitDialogOpen]);
+
+  const handleAttemptExit = useCallback(() => {
+    setIsExitDialogOpen(true);
+  }, [setIsExitDialogOpen]);
+
   if (!user) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -264,9 +289,9 @@ export default function OnboardingPage() {
     );
   }
 
-  return (
-    <div className="mx-auto w-full max-w-5xl pb-24 sm:pb-8">
-      <Card className="bg-card/60 backdrop-blur-xl border-border/50 rounded-3xl shadow-2xl">
+    return (
+      <div className="mx-auto w-full max-w-5xl pb-24 sm:pb-8">
+        <Card className="bg-card/60 backdrop-blur-xl border-border/50 rounded-3xl shadow-2xl">
         <CardHeader className="space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -278,11 +303,13 @@ export default function OnboardingPage() {
                 <CardDescription>Deine kurze Einleitung zu EventHorizon.</CardDescription>
               </div>
             </div>
-            {isCompleted && (
-              <Button variant="ghost" className="rounded-xl" onClick={handleFinish}>
-                Schließen
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              className="rounded-xl"
+              onClick={isCompleted ? handleFinish : handleAttemptExit}
+            >
+              Schließen
+            </Button>
           </div>
 
           <div className="space-y-2">
@@ -635,7 +662,26 @@ export default function OnboardingPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
-    </div>
-  );
-}
+        </Card>
+        <AlertDialog open={isExitDialogOpen} onOpenChange={setIsExitDialogOpen}>
+          <AlertDialogContent className="rounded-2xl">
+            <AlertDialogHeader className="text-left">
+              <AlertDialogTitle>Onboarding zuerst abschließen</AlertDialogTitle>
+              <AlertDialogDescription>
+                Bitte beende das Onboarding. Du kannst es auch überspringen.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="sm:justify-end">
+              <AlertDialogCancel className="rounded-xl">Weiter im Onboarding</AlertDialogCancel>
+              <AlertDialogAction
+                className="rounded-xl"
+                onClick={() => handleSkipOnboarding(fromPath)}
+              >
+                Onboarding überspringen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  }
