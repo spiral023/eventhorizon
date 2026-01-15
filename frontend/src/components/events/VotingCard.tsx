@@ -1,4 +1,5 @@
-import { ThumbsUp, ThumbsDown, Minus, Check, Trophy, Heart } from "lucide-react";
+import type { ReactNode } from "react";
+import { ThumbsUp, ThumbsDown, Minus, Check, Trophy, Heart, Star, Globe, Mail, MapPin, CalendarCheck, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Activity, ActivityVote, VoteType, EventParticipant } from "@/types/domain";
 import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -59,6 +61,110 @@ export function VotingCard({
 
   const forVoters = participants.filter(p => forVoterIds.includes(p.userId));
   const againstVoters = participants.filter(p => againstVoterIds.includes(p.userId));
+  const favoritesCount = typeof activity.favoritesInRoomCount === "number" ? activity.favoritesInRoomCount : undefined;
+
+  const formatNumber = (value: number, options: Intl.NumberFormatOptions) =>
+    new Intl.NumberFormat("de-DE", options).format(value);
+
+  const priceLabel =
+    typeof activity.estPricePerPerson === "number"
+      ? `ab ${formatNumber(activity.estPricePerPerson, {
+          maximumFractionDigits: activity.estPricePerPerson % 1 === 0 ? 0 : 1,
+        })} € p.P.`
+      : undefined;
+
+  const durationLabel =
+    typeof activity.typicalDurationHours === "number"
+      ? `ca. ${formatNumber(activity.typicalDurationHours, {
+          minimumFractionDigits: activity.typicalDurationHours % 1 === 0 ? 0 : 1,
+          maximumFractionDigits: 1,
+        })}h`
+      : undefined;
+
+  const ratingLabel =
+    typeof activity.externalRating === "number"
+      ? formatNumber(activity.externalRating, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+      : undefined;
+
+  const priceComment = activity.priceComment?.trim();
+
+  const mapsQuery = [activity.title, activity.locationAddress ?? activity.locationCity ?? RegionLabels[activity.locationRegion]]
+    .filter(Boolean)
+    .join(" ");
+  const mapsUrl = (activity.locationAddress || activity.locationCity)
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`
+    : undefined;
+
+  const links: Array<{ href: string; label: string; icon: JSX.Element; isMail?: boolean }> = [];
+
+  if (activity.website) {
+    links.push({ href: activity.website, label: "Website", icon: <Globe className="h-4 w-4" /> });
+  }
+  if (activity.contactEmail) {
+    links.push({
+      href: `mailto:${activity.contactEmail}`,
+      label: "E-Mail",
+      icon: <Mail className="h-4 w-4" />,
+      isMail: true,
+    });
+  }
+  if (mapsUrl) {
+    links.push({ href: mapsUrl, label: "Standort (Google Maps)", icon: <MapPin className="h-4 w-4" /> });
+  }
+  if (activity.reservationUrl) {
+    links.push({ href: activity.reservationUrl, label: "Reservieren", icon: <CalendarCheck className="h-4 w-4" /> });
+  }
+  if (activity.menuUrl) {
+    links.push({ href: activity.menuUrl, label: "Speisekarte", icon: <UtensilsCrossed className="h-4 w-4" /> });
+  }
+
+  const metaItems: Array<{ key: string; content: ReactNode; tooltip: string; className?: string }> = [];
+
+  if (favoritesCount !== undefined) {
+    metaItems.push({
+      key: "favorites",
+      className: "gap-1 text-pink-500 font-medium",
+      tooltip: "Favoriten im Raum",
+      content: (
+        <>
+          <Heart className="h-3.5 w-3.5 fill-current" />
+          <span>{favoritesCount}</span>
+        </>
+      ),
+    });
+  }
+
+  if (priceLabel) {
+    metaItems.push({
+      key: "price",
+      className: "gap-1.5",
+      tooltip: "Preis pro Person",
+      content: <span>{priceLabel}</span>,
+    });
+  }
+
+  if (durationLabel) {
+    metaItems.push({
+      key: "duration",
+      className: "gap-1.5",
+      tooltip: "Typische Dauer",
+      content: <span>{durationLabel}</span>,
+    });
+  }
+
+  if (ratingLabel) {
+    metaItems.push({
+      key: "rating",
+      className: "gap-1.5",
+      tooltip: "Externes Rating",
+      content: (
+        <>
+          <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+          <span>{ratingLabel}</span>
+        </>
+      ),
+    });
+  }
 
   return (
     <Card className="bg-card/60 border-border/50 rounded-2xl overflow-hidden">
@@ -95,22 +201,55 @@ export function VotingCard({
               <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                 {activity.shortDescription}
               </p>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span>{RegionLabels[activity.locationRegion]}</span>
-                <span>•</span>
-                <span>ab {activity.estPricePerPerson} € p.P.</span>
-                <span>•</span>
-                <span>{activity.duration}</span>
-                {activity.favoritesInRoomCount !== undefined && activity.favoritesInRoomCount > 0 && (
-                  <>
-                    <span>•</span>
-                    <span className="flex items-center gap-1 text-pink-500 font-medium">
-                      <Heart className="h-3 w-3 fill-current" />
-                      {activity.favoritesInRoomCount} {activity.favoritesInRoomCount === 1 ? "Favorit" : "Favoriten"}
+              {(metaItems.length > 0 || links.length > 0) && (
+                <div className="flex flex-wrap items-center text-xs text-muted-foreground gap-x-3 gap-y-1 sm:gap-x-0">
+                  {metaItems.map((item, index) => (
+                    <Tooltip key={item.key}>
+                      <TooltipTrigger asChild>
+                        <span
+                          className={cn(
+                            "inline-flex items-center",
+                            index > 0 &&
+                              "sm:before:mx-2 sm:before:text-muted-foreground/60 sm:before:content-['•']",
+                            item.className
+                          )}
+                        >
+                          {item.content}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>{item.tooltip}</TooltipContent>
+                    </Tooltip>
+                  ))}
+                  {links.length > 0 && (
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 w-full sm:w-auto mt-1 sm:mt-0",
+                        metaItems.length > 0 &&
+                          "sm:before:mx-2 sm:before:text-muted-foreground/60 sm:before:content-['•']"
+                      )}
+                    >
+                      {links.map((link) => (
+                        <a
+                          key={link.label}
+                          href={link.href}
+                          target={link.isMail ? undefined : "_blank"}
+                          rel={link.isMail ? undefined : "noopener noreferrer"}
+                          aria-label={link.label}
+                          title={link.label}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
+                        >
+                          {link.icon}
+                        </a>
+                      ))}
                     </span>
-                  </>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
+              {priceComment && (
+                <p className="mt-1 text-xs italic text-muted-foreground break-words line-clamp-none sm:line-clamp-1">
+                  {priceComment}
+                </p>
+              )}
             </div>
 
             {/* Voting Section */}
