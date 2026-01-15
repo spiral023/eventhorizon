@@ -202,7 +202,7 @@ export function VotingCard({
                 {activity.shortDescription}
               </p>
               {(metaItems.length > 0 || links.length > 0) && (
-                <div className="flex flex-wrap items-center text-xs text-muted-foreground gap-x-3 gap-y-1 sm:gap-x-0">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start text-center sm:text-left text-xs text-muted-foreground gap-x-3 gap-y-1 sm:gap-x-0">
                   {metaItems.map((item, index) => (
                     <Tooltip key={item.key}>
                       <TooltipTrigger asChild>
@@ -223,7 +223,7 @@ export function VotingCard({
                   {links.length > 0 && (
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1 w-full sm:w-auto mt-1 sm:mt-0",
+                        "inline-flex items-center justify-center sm:justify-start gap-1 w-full sm:w-auto mt-1 sm:mt-0",
                         metaItems.length > 0 &&
                           "sm:before:mx-2 sm:before:text-muted-foreground/60 sm:before:content-['•']"
                       )}
@@ -246,7 +246,7 @@ export function VotingCard({
                 </div>
               )}
               {priceComment && (
-                <p className="mt-1 text-xs italic text-muted-foreground break-words line-clamp-none sm:line-clamp-1">
+                <p className="mt-1 text-xs italic text-muted-foreground break-words line-clamp-none sm:line-clamp-1 text-center sm:text-left">
                   {priceComment}
                 </p>
               )}
