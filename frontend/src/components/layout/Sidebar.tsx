@@ -306,7 +306,7 @@ function RoomsNavSection({
 
         item={{ label: "Räume", to: "/rooms", icon: Users }}
 
-        onNavigate={handleNavigate}
+        onNavigate={onNavigate}
 
         locked
 
