@@ -332,7 +332,7 @@ export default function HomePage() {
             <CardContent className="p-6 space-y-3">
               <h4 className="font-semibold text-primary">Pro Tipp</h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Nutze die <strong>AI-Empfehlungen</strong> in deinen Räumen, um Aktivitäten zu finden, die perfekt zu deinem Team passen!
+                Drücke <strong>Strg+K</strong>, um die Suche zu öffnen und schnell zwischen Seiten, Aktivitäten und Events zu springen.
               </p>
             </CardContent>
           </Card>
