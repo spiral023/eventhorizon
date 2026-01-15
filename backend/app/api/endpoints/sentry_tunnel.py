@@ -8,8 +8,13 @@ from fastapi.responses import JSONResponse
 import httpx
 import json
 from urllib.parse import urlparse
+from app.core.config import settings
 
 router = APIRouter(prefix="/sentry-tunnel", tags=["sentry"])
+
+# Security limits
+MAX_ENVELOPE_SIZE = 200 * 1024  # 200 KB cap for Sentry envelopes
+SENTRY_TIMEOUT = 5.0  # seconds
 
 
 @router.post("")
@@ -17,10 +22,24 @@ async def sentry_tunnel(request: Request):
     """
     Tunnel endpoint for Sentry events.
     Forwards events from frontend to Sentry to bypass ad-blockers.
+    SECURED: Limits size, enforces HTTPS, restricts to configured Sentry host.
     """
     try:
-        # Get the raw body
+        # 1. Size Check
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > MAX_ENVELOPE_SIZE:
+             return JSONResponse(
+                status_code=413,
+                content={"error": "Payload too large"},
+            )
+            
+        # Get the raw body (check actual size if header was missing/lied)
         body = await request.body()
+        if len(body) > MAX_ENVELOPE_SIZE:
+            return JSONResponse(
+                status_code=413,
+                content={"error": "Payload too large"},
+            )
 
         # Parse the envelope header to extract the DSN
         envelope = body.decode("utf-8", errors="replace")
@@ -54,11 +73,27 @@ async def sentry_tunnel(request: Request):
                 content={"error": "Invalid DSN format"},
             )
 
-        sentry_host = f"{parsed.scheme}://{parsed.netloc}"
+        # 2. Host Validation (SSRF Prevention)
+        # Only allow tunneling if we have a configured SENTRY_DSN
+        if not settings.SENTRY_DSN:
+             return JSONResponse(
+                status_code=503,
+                content={"error": "Sentry tunnel not configured on server"},
+            )
+
+        allowed = urlparse(settings.SENTRY_DSN)
+        if parsed.netloc != allowed.netloc:
+             return JSONResponse(
+                status_code=403,
+                content={"error": f"Unauthorized Sentry host: {parsed.netloc}"},
+            )
+
+        # 3. Enforce HTTPS
+        sentry_host = f"https://{parsed.netloc}"
         sentry_url = f"{sentry_host}/api/{project_id}/envelope/"
 
-        # Forward to Sentry
-        async with httpx.AsyncClient() as client:
+        # Forward to Sentry with 4. Timeout
+        async with httpx.AsyncClient(timeout=SENTRY_TIMEOUT) as client:
             sentry_response = await client.post(
                 sentry_url,
                 content=body,

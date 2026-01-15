@@ -461,9 +461,15 @@ async def get_activities(
     result = await db.execute(select(Activity).offset(skip).limit(limit))
     activities = result.scalars().all()
 
-    # Attach favorites counts in bulk (Global)
+    if not activities:
+        return []
+
+    activity_ids = [a.id for a in activities]
+
+    # Attach favorites counts in bulk (Global) - SCOPED to returned activities
     counts_result = await db.execute(
         select(user_favorites.c.activity_id, func.count().label("cnt"))
+        .where(user_favorites.c.activity_id.in_(activity_ids))
         .group_by(user_favorites.c.activity_id)
     )
     counts_map = {row.activity_id: row.cnt for row in counts_result}
@@ -490,9 +496,12 @@ async def get_activities(
             stmt = (
                 select(user_favorites.c.activity_id, func.count().label("cnt"))
                 .where(
-                    or_(
-                        user_favorites.c.user_id.in_(member_subquery),
-                        user_favorites.c.user_id == room.created_by_user_id
+                    and_(
+                        or_(
+                            user_favorites.c.user_id.in_(member_subquery),
+                            user_favorites.c.user_id == room.created_by_user_id
+                        ),
+                        user_favorites.c.activity_id.in_(activity_ids)
                     )
                 )
                 .group_by(user_favorites.c.activity_id)

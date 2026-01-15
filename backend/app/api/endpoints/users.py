@@ -39,26 +39,48 @@ async def get_user_stats(
     )
     events = result.scalars().all()
     
-    upcoming_count = 0
+    upcoming_count = len(events)
     open_votes_count = 0
+
+    if not events:
+        return {"upcoming_events_count": 0, "open_votes_count": 0}
+    
+    event_ids = [e.id for e in events]
+
+    # Batch fetch: User votes per event
+    votes_result = await db.execute(
+        select(Vote.event_id, func.count(Vote.activity_id))
+        .where(Vote.event_id.in_(event_ids), Vote.user_id == current_user.id)
+        .group_by(Vote.event_id)
+    )
+    user_votes_map = {row[0]: row[1] for row in votes_result.all()}
+
+    # Batch fetch: Total date options per event
+    dopt_result = await db.execute(
+        select(DateOption.event_id, func.count(DateOption.id))
+        .where(DateOption.event_id.in_(event_ids))
+        .group_by(DateOption.event_id)
+    )
+    event_dopt_count_map = {row[0]: row[1] for row in dopt_result.all()}
+
+    # Batch fetch: User date responses per event
+    # We join DateResponse -> DateOption to group by DateOption.event_id
+    resp_result = await db.execute(
+        select(DateOption.event_id, func.count(DateResponse.date_option_id))
+        .select_from(DateResponse)
+        .join(DateOption, DateResponse.date_option_id == DateOption.id)
+        .where(DateOption.event_id.in_(event_ids), DateResponse.user_id == current_user.id)
+        .group_by(DateOption.event_id)
+    )
+    user_resp_map = {row[0]: row[1] for row in resp_result.all()}
     
     for event in events:
-        # Count as upcoming if it's not in the past (simplified: all events user is part of are considered "active/upcoming" for now, 
-        # unless we want to filter out completed ones explicitly. Let's assume Info phase is still "upcoming" until the date passes.)
-        # For now, just count all assigned events.
-        upcoming_count += 1
-            
         # Check for open votes/actions
         action_needed = False
         
         if event.phase == EventPhase.voting:
             # Check if user has voted on all proposed activities
-            votes_res = await db.execute(
-                select(func.count())
-                .select_from(Vote)
-                .where(Vote.event_id == event.id, Vote.user_id == current_user.id)
-            )
-            user_votes = votes_res.scalar() or 0
+            user_votes = user_votes_map.get(event.id, 0)
             
             # Count proposed activities
             total_activities = len(event.proposed_activity_ids) if event.proposed_activity_ids else 0
@@ -68,21 +90,10 @@ async def get_user_stats(
                 
         elif event.phase == EventPhase.scheduling:
             # Check if user has responded to all date options
-            dopt_res = await db.execute(
-                select(func.count())
-                .select_from(DateOption)
-                .where(DateOption.event_id == event.id)
-            )
-            total_dates = dopt_res.scalar() or 0
+            total_dates = event_dopt_count_map.get(event.id, 0)
             
             if total_dates > 0:
-                resp_res = await db.execute(
-                    select(func.count())
-                    .select_from(DateResponse)
-                    .join(DateOption, DateResponse.date_option_id == DateOption.id)
-                    .where(DateOption.event_id == event.id, DateResponse.user_id == current_user.id)
-                )
-                user_responses = resp_res.scalar() or 0
+                user_responses = user_resp_map.get(event.id, 0)
                 
                 if user_responses < total_dates:
                     action_needed = True

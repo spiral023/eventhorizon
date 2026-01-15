@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 TEAM_ANALYSIS_CACHE = {}
 
 from sqlalchemy.future import select
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 from datetime import datetime
@@ -50,13 +50,9 @@ def _category_value(category: object) -> str:
 
 def _calculate_normalized_category_distribution(
     members: List[User],
-    activities: List[Activity],
+    availability_counts: Dict[str, int],
 ) -> Tuple[List[dict], List[dict], List[dict], int]:
-    availability_counts: Dict[str, int] = {}
-    for activity in activities:
-        cat_val = _category_value(activity.category)
-        availability_counts[cat_val] = availability_counts.get(cat_val, 0) + 1
-
+    # availability_counts is now passed in, preventing full DB load
     total_available = sum(availability_counts.values())
     if total_available == 0:
         return [], [], [], 0
@@ -219,15 +215,21 @@ async def get_team_recommendations(
     
     cached_result = TEAM_ANALYSIS_CACHE.get(cache_key)
 
-    # Get all activities
-    activities_result = await db.execute(select(Activity))
-    activities = activities_result.scalars().all()
+    # Get availability counts only (lighter query)
+    stats_result = await db.execute(
+        select(Activity.category, func.count(Activity.id)).group_by(Activity.category)
+    )
+    availability_counts = {
+        _category_value(cat): count 
+        for cat, count in stats_result.all()
+    }
+
     (
         normalized_distribution,
         raw_distribution,
         availability_distribution,
         total_favorites,
-    ) = _calculate_normalized_category_distribution(members, activities)
+    ) = _calculate_normalized_category_distribution(members, availability_counts)
 
     if cached_result:
         logger.info(f"Returning cached team analysis for room {room_id}")
@@ -237,6 +239,10 @@ async def get_team_recommendations(
         )
         cached_result["memberCount"] = len(members)
         return cached_result
+
+    # Cache MISS - Load all activities for AI analysis
+    activities_result = await db.execute(select(Activity))
+    activities = activities_result.scalars().all()
 
     # Convert to dict for AI service
     members_data = [
