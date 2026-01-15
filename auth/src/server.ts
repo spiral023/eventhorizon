@@ -119,7 +119,7 @@ const auth = betterAuth({
     haveIBeenPwned({
       paths: ["/sign-up/email"],
       customPasswordCompromisedMessage:
-        "Dieses Passwort ist kompromittiert. Bitte nutze ein anderes.",
+        "Dieses Passwort wurde in einem Datenleck gefunden. Bitte wähle ein anderes Passwort.",
     }),
     magicLink({
       sendMagicLink: async ({ email, token, url }, ctx) => {

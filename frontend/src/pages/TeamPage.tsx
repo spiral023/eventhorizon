@@ -62,6 +62,24 @@ export default function TeamPage() {
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [hasEnoughMembers, setHasEnoughMembers] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showSlowLoadingUI, setShowSlowLoadingUI] = useState(false);
+
+  useEffect(() => {
+    let slowLoadingTimer: number | undefined;
+    
+    if (loading) {
+      // Show intensive loading UI only after 500ms
+      slowLoadingTimer = window.setTimeout(() => {
+        setShowSlowLoadingUI(true);
+      }, 500);
+    } else {
+      setShowSlowLoadingUI(false);
+    }
+    
+    return () => {
+      if (slowLoadingTimer) window.clearTimeout(slowLoadingTimer);
+    };
+  }, [loading]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -144,6 +162,8 @@ export default function TeamPage() {
     : [];
 
   if (loading) {
+    if (!showSlowLoadingUI) return null;
+    
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-in fade-in duration-700">
         <div className="relative">
