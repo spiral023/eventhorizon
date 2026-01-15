@@ -21,8 +21,6 @@ const CategoryIcons: Record<EventCategory, React.ReactNode> = {
   food: <UtensilsCrossed className="h-4 w-4" />,
   relax: <Sparkles className="h-4 w-4" />,
   party: <PartyPopper className="h-4 w-4" />,
-  culture: <Landmark className="h-4 w-4" />,
-  outdoor: <TreePine className="h-4 w-4" />,
 };
 
 // Helper function to get color based on walking time

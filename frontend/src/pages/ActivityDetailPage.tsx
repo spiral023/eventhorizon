@@ -503,7 +503,9 @@ export default function ActivityDetailPage() {
                 Schlagwörter
               </p>
               <div className="flex flex-wrap gap-2">
-                {activity.tags.map((tag) => (
+                {activity.tags
+                  .filter(tag => tag.toLowerCase() !== "kultur" && tag.toLowerCase() !== "culture")
+                  .map((tag) => (
                   <Badge
                     key={tag}
                     variant="secondary"

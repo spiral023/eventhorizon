@@ -21,7 +21,6 @@ class EventCategory(str, enum.Enum):
     food = "food"
     relax = "relax"
     party = "party"
-    culture = "culture"
 
 class Region(str, enum.Enum):
     OOE = "OOE"

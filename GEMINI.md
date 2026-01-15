@@ -88,6 +88,15 @@ When something seems inconsistent (e.g. data shape, endpoint behavior):
   - Describe expected responses and possible error codes.
   - Mention follow-up steps depending on the result.
 
+### 2.6 Operating System & Shell
+
+- **Operating System:** Windows (win32).
+- **Shell:** PowerShell.
+- **Command Style:**
+  - Use PowerShell-native commands or aliases.
+  - Avoid Linux-specific commands like `grep`, `ls -la`, `rm -rf` unless they have equivalent aliases in PowerShell.
+  - For searching file content, use `Select-String` or the built-in search tools instead of `grep`.
+
 ---
 
 ## 3. Agent Catalog

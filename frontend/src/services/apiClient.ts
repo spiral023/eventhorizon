@@ -1816,11 +1816,10 @@ export async function getTeamRecommendations(roomId: string): Promise<ApiResult<
     await delay(600);
     const summary: TeamPreferenceSummary = {
       categoryDistribution: [
-        { category: "action", percentage: 35 },
-        { category: "food", percentage: 25 },
-        { category: "outdoor", percentage: 20 },
-        { category: "relax", percentage: 15 },
-        { category: "culture", percentage: 5 },
+        { category: "action", percentage: 40 },
+        { category: "food", percentage: 30 },
+        { category: "relax", percentage: 20 },
+        { category: "party", percentage: 10 },
       ],
       preferredGoals: ["teambuilding", "fun"],
       recommendedActivityIds: ["act-1"],

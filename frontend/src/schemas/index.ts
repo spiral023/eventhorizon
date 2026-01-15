@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const EventPhaseSchema = z.enum(["proposal", "voting", "scheduling", "info"]);
 export const EventCategorySchema = z.enum([
-  "action", "food", "relax", "party", "culture"
+  "action", "food", "relax", "party"
 ]);
 export const SeasonSchema = z.enum(["all_year", "spring", "summer", "autumn", "winter"]);
 export const RegionSchema = z.enum([
