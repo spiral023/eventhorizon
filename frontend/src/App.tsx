@@ -12,6 +12,8 @@ import { GuestAccessNotice } from "@/components/auth/GuestAccessNotice";
 import { useAuthStore } from "@/stores/authStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import * as Sentry from "@sentry/react";
+import { clearPendingInviteCode, getPendingInviteCode } from "@/lib/pendingRoomInvite";
+import { joinRoom } from "@/services/apiClient";
 
 // Pages
 import HomePage from "@/pages/HomePage";
@@ -189,11 +191,49 @@ function useDarkMode() {
 
 const App = () => {
   useDarkMode();
-  const { refresh, user } = useAuthStore();
+  const { refresh, user, isAuthenticated, setRoomRole } = useAuthStore();
 
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (!user || !isAuthenticated) {
+      return;
+    }
+    const pendingInviteCode = getPendingInviteCode();
+    if (!pendingInviteCode) {
+      return;
+    }
+
+    let isActive = true;
+
+    const joinPendingRoom = async () => {
+      const result = await joinRoom(pendingInviteCode);
+      if (!isActive) {
+        return;
+      }
+      if (result.data) {
+        setRoomRole(result.data.id, "member");
+        if (result.data.inviteCode) {
+          setRoomRole(result.data.inviteCode, "member");
+        }
+        clearPendingInviteCode();
+        return;
+      }
+
+      const errorCode = result.error?.code;
+      if (errorCode === "400" || errorCode === "404") {
+        clearPendingInviteCode();
+      }
+    };
+
+    void joinPendingRoom();
+
+    return () => {
+      isActive = false;
+    };
+  }, [user, isAuthenticated, setRoomRole]);
 
   // Set Sentry user context when authenticated
   useEffect(() => {

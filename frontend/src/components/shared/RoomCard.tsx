@@ -9,23 +9,25 @@ import { cn } from "@/lib/utils";
 interface RoomCardProps {
   room: Room;
   onClick?: () => void;
+  interactive?: boolean;
 }
 
-export function RoomCard({ room, onClick }: RoomCardProps) {
+export function RoomCard({ room, onClick, interactive = true }: RoomCardProps) {
   // Determine member count display text
   const memberText = room.memberCount === 1 ? "Mitglied" : "Mitglieder";
 
   return (
     <Card
       className={cn(
-        "group cursor-pointer overflow-hidden will-change-[transform,opacity]",
-        "bg-card/60 hover:bg-card/90 border-border/50 hover:border-primary/40",
-        "transition-all duration-300 ease-out",
-        "hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1",
+        "overflow-hidden will-change-[transform,opacity]",
+        interactive ? "group" : "",
+        "bg-card/60 border-border/50 transition-all duration-300 ease-out",
+        interactive ? "cursor-pointer hover:bg-card/90 hover:border-primary/40" : "cursor-default",
+        interactive ? "hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1" : "",
         "rounded-2xl motion-reduce:transform-none motion-reduce:hover:shadow-none",
-        "active:scale-[0.98] active:shadow-md"
+        interactive ? "active:scale-[0.98] active:shadow-md" : ""
       )}
-      onClick={onClick}
+      onClick={interactive ? onClick : undefined}
     >
       <CardContent className="p-4 sm:p-5">
         <div className="flex items-start gap-4">
@@ -65,14 +67,16 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
 
           {/* Arrow indicator */}
           <div className="flex items-center self-center shrink-0">
-            <ChevronRight
-              className={cn(
-                "h-5 w-5 text-muted-foreground/40",
-                "group-hover:text-primary group-hover:translate-x-1",
-                "transition-all duration-300 ease-out",
-                "motion-reduce:translate-x-0"
-              )}
-            />
+            {interactive && (
+              <ChevronRight
+                className={cn(
+                  "h-5 w-5 text-muted-foreground/40",
+                  "group-hover:text-primary group-hover:translate-x-1",
+                  "transition-all duration-300 ease-out",
+                  "motion-reduce:translate-x-0"
+                )}
+              />
+            )}
           </div>
         </div>
       </CardContent>

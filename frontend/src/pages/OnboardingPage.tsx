@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -8,6 +8,7 @@ import {
   LogIn,
   Plus,
   Sparkles,
+  Users,
   X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +21,14 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
 import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
+import { RoomCard, RoomCardSkeleton } from "@/components/shared/RoomCard";
 import { toast } from "@/hooks/use-toast";
-import { updateUser } from "@/services/apiClient";
+import { getRooms, updateUser } from "@/services/apiClient";
 import { useAuthStore } from "@/stores/authStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { cn } from "@/lib/utils";
+import { getPendingInviteCode, PENDING_INVITE_EVENT } from "@/lib/pendingRoomInvite";
+import type { Room } from "@/types/domain";
 
 type PreferenceSet = {
   physical?: number;
@@ -48,6 +52,13 @@ const steps = [
   },
 ];
 
+const sortRoomsByMembers = (input: Room[]) =>
+  [...input].sort((a, b) => {
+    const diff = (b.memberCount ?? 0) - (a.memberCount ?? 0);
+    if (diff !== 0) return diff;
+    return a.name.localeCompare(b.name, "de");
+  });
+
 export default function OnboardingPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,10 +77,18 @@ export default function OnboardingPage() {
 
   const [hobbies, setHobbies] = useState<string[]>([]);
   const [newHobby, setNewHobby] = useState("");
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(true);
+  const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(() => getPendingInviteCode());
 
   const isCompleted = user ? !!completedByUserId[user.id] : false;
   const progressValue = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
   const fromPath = (location.state as { from?: { pathname?: string } })?.from?.pathname;
+
+  useEffect(() => {
+    // Scroll to top when step changes (important for mobile)
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   useEffect(() => {
     if (!user || isInitialized) {
@@ -84,6 +103,43 @@ export default function OnboardingPage() {
     setHobbies(user.hobbies ?? []);
     setIsInitialized(true);
   }, [user, isInitialized]);
+
+  const fetchRooms = useCallback(
+    async (showLoading = true) => {
+      if (!user) {
+        return;
+      }
+      if (showLoading) {
+        setRoomsLoading(true);
+      }
+      const result = await getRooms();
+      const roomsData = result.data || [];
+      setRooms(sortRoomsByMembers(roomsData));
+      setRoomsLoading(false);
+    },
+    [user]
+  );
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    void fetchRooms();
+  }, [user, fetchRooms]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    const handlePendingInviteChange = () => {
+      setPendingInviteCode(getPendingInviteCode());
+      void fetchRooms(false);
+    };
+    window.addEventListener(PENDING_INVITE_EVENT, handlePendingInviteChange);
+    return () => {
+      window.removeEventListener(PENDING_INVITE_EVENT, handlePendingInviteChange);
+    };
+  }, [user, fetchRooms]);
 
   const addHobby = () => {
     const trimmed = newHobby.trim();
@@ -107,6 +163,13 @@ export default function OnboardingPage() {
       event.preventDefault();
       addHobby();
     }
+  };
+
+  const handleRoomCreated = (newRoom?: Room | null) => {
+    if (!newRoom) {
+      return;
+    }
+    setRooms((prev) => sortRoomsByMembers([...prev, newRoom]));
   };
 
   const savePreferences = async () => {
@@ -135,10 +198,15 @@ export default function OnboardingPage() {
       return false;
     }
 
-    toast({
-      title: "Präferenzen gespeichert",
-      description: "Du kannst alles später im Profil anpassen.",
-    });
+    const isMobile = typeof window !== "undefined"
+      && window.matchMedia("(max-width: 639px)").matches;
+
+    if (!isMobile) {
+      toast({
+        title: "Präferenzen gespeichert",
+        description: "Du kannst alles später im Profil anpassen.",
+      });
+    }
 
     return true;
   };
@@ -231,7 +299,7 @@ export default function OnboardingPage() {
                     <div>
                       <h3 className="font-semibold">Deine Aktivitäts-Präferenzen</h3>
                       <p className="text-sm text-muted-foreground">
-                        Diese Werte helfen uns, passende Vorschläge für dein Team zu finden.
+                        Diese Werte sind essenziell um passende Vorschläge für dein Team zu finden. Wähle sorgfältig aus!
                       </p>
                     </div>
                   </div>
@@ -437,6 +505,7 @@ export default function OnboardingPage() {
                       </div>
                     </div>
                     <CreateRoomDialog
+                      onRoomCreated={handleRoomCreated}
                       trigger={
                         <Button className="w-full rounded-xl gap-2">
                           <Plus className="h-4 w-4" />
@@ -445,6 +514,40 @@ export default function OnboardingPage() {
                       }
                     />
                   </div>
+                </div>
+
+                <div className="rounded-2xl border border-border/60 bg-card/60 p-5 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-secondary/70 flex items-center justify-center">
+                      <Users className="h-5 w-5 text-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Deine Räume</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Du bist bereits Mitglied in diesen Räumen.
+                      </p>
+                    </div>
+                  </div>
+
+                  {roomsLoading ? (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {[1, 2].map((index) => (
+                        <RoomCardSkeleton key={`onboarding-room-skeleton-${index}`} />
+                      ))}
+                    </div>
+                  ) : rooms.length > 0 ? (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {rooms.map((room) => (
+                        <RoomCard key={room.id} room={room} interactive={false} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-border/60 bg-muted/30 p-4 text-sm text-muted-foreground">
+                      {pendingInviteCode
+                        ? "Falls du über einen Einladungslink gekommen bist, wird der Raum automatisch hinzugefügt."
+                        : "Noch keinem Raum beigetreten. Nutze oben einen Zugangscode oder erstelle einen neuen Raum."}
+                    </div>
+                  )}
                 </div>
 
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">

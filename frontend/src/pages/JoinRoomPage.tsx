@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { joinRoom } from "@/services/apiClient";
 import { useAuthStore } from "@/stores/authStore";
+import { clearPendingInviteCode, storePendingInviteCode } from "@/lib/pendingRoomInvite";
 
 export default function JoinRoomPage() {
   const { inviteCode } = useParams<{ inviteCode: string }>();
@@ -19,6 +20,9 @@ export default function JoinRoomPage() {
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
+      if (inviteCode) {
+        storePendingInviteCode(inviteCode);
+      }
       navigate('/login', {
         state: { from: { pathname: `/join/${inviteCode}` } }
       });
@@ -44,6 +48,7 @@ export default function JoinRoomPage() {
         // Set room role as member for joined rooms
         setRoomRole(result.data.id, "member");
         setRoomRole(result.data.inviteCode, "member");
+        clearPendingInviteCode();
         // Redirect to the room after a short delay
         setTimeout(() => {
           navigate(`/rooms/${result.data.inviteCode}`, { replace: true });
