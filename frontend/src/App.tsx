@@ -184,7 +184,13 @@ function AppRoutes() {
 // Dark mode initializer
 function useDarkMode() {
   useEffect(() => {
-    // Always apply dark mode
+    const storedTheme = typeof window !== "undefined"
+      ? window.localStorage.getItem("theme")
+      : null;
+    if (storedTheme === "light") {
+      document.documentElement.classList.remove("dark");
+      return;
+    }
     document.documentElement.classList.add("dark");
   }, []);
 }

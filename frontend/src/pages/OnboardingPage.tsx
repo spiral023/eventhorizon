@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
 import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
 import { RoomCard, RoomCardSkeleton } from "@/components/shared/RoomCard";
@@ -80,6 +81,7 @@ export default function OnboardingPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
   const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(() => getPendingInviteCode());
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const isCompleted = user ? !!completedByUserId[user.id] : false;
   const progressValue = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
@@ -89,6 +91,14 @@ export default function OnboardingPage() {
     // Scroll to top when step changes (important for mobile)
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+    const isDark = document.documentElement.classList.contains("dark");
+    setIsDarkMode(isDark);
+  }, []);
 
   useEffect(() => {
     if (!user || isInitialized) {
@@ -164,6 +174,18 @@ export default function OnboardingPage() {
       addHobby();
     }
   };
+
+  const handleLightModeToggle = useCallback((checked: boolean) => {
+    const nextIsDark = !checked;
+    setIsDarkMode(nextIsDark);
+    if (nextIsDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+      return;
+    }
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }, []);
 
   const handleRoomCreated = (newRoom?: Room | null) => {
     if (!newRoom) {
@@ -336,6 +358,16 @@ export default function OnboardingPage() {
                       </div>
                       <Slider value={competition} onValueChange={setCompetition} min={0} max={5} step={1} />
                     </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+                    <Label htmlFor="onboarding-light-mode" className="text-sm font-medium">
+                      Hellmodus
+                    </Label>
+                    <Switch
+                      id="onboarding-light-mode"
+                      checked={!isDarkMode}
+                      onCheckedChange={handleLightModeToggle}
+                    />
                   </div>
 
                   <div className="rounded-xl border border-border/60 bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
