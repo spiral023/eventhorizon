@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func, delete, desc
+from sqlalchemy import func, delete, desc, and_, or_
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID, uuid4
@@ -493,14 +493,19 @@ async def get_activities(
             # Subquery for valid user IDs in this room (Members)
             member_subquery = select(RoomMember.user_id).where(RoomMember.room_id == room.id)
             
+            allowed_users_condition = user_favorites.c.user_id.in_(member_subquery)
+            
+            if room.created_by_user_id:
+                allowed_users_condition = or_(
+                    allowed_users_condition,
+                    user_favorites.c.user_id == room.created_by_user_id
+                )
+            
             stmt = (
                 select(user_favorites.c.activity_id, func.count().label("cnt"))
                 .where(
                     and_(
-                        or_(
-                            user_favorites.c.user_id.in_(member_subquery),
-                            user_favorites.c.user_id == room.created_by_user_id
-                        ),
+                        allowed_users_condition,
                         user_favorites.c.activity_id.in_(activity_ids)
                     )
                 )
@@ -1005,17 +1010,6 @@ async def get_room_members(
     # Get the room and its creator
     room = await resolve_room_identifier(room_identifier, db)
 
-    # Check permission
-    if room.created_by_user_id != current_user.id:
-        member_check = await db.execute(
-            select(RoomMember).where(
-                RoomMember.room_id == room.id,
-                RoomMember.user_id == current_user.id
-            )
-        )
-        if not member_check.scalar_one_or_none():
-            raise HTTPException(status_code=403, detail="Not a member of this room")
-
     # Get the creator
     creator_result = await db.execute(select(User).where(User.id == room.created_by_user_id))
     creator = creator_result.scalar_one_or_none()
@@ -1064,17 +1058,6 @@ async def get_room_events(
     from app.models.domain import RoomMember
 
     room = await resolve_room_identifier(room_identifier, db)
-
-    # Check permission
-    if room.created_by_user_id != current_user.id:
-        member_check = await db.execute(
-            select(RoomMember).where(
-                RoomMember.room_id == room.id,
-                RoomMember.user_id == current_user.id
-            )
-        )
-        if not member_check.scalar_one_or_none():
-            raise HTTPException(status_code=403, detail="Not a member of this room")
 
     result = await db.execute(
         select(Event)
@@ -1181,27 +1164,6 @@ async def get_event(
             selectinload(Event.participants).selectinload(EventParticipant.user),
         ],
     )
-
-    # Check permission
-    is_participant = any(p.user_id == current_user.id for p in event.participants)
-    is_creator = event.created_by_user_id == current_user.id
-
-    if not (is_participant or is_creator):
-        # Fallback: Check if user is a member of the room (e.g. joined after event creation)
-        member_check = await db.execute(
-            select(RoomMember).where(
-                RoomMember.room_id == event.room_id,
-                RoomMember.user_id == current_user.id
-            )
-        )
-        if not member_check.scalar_one_or_none():
-            # Check if user is the room creator (implicitly a member/owner)
-            room_check = await db.execute(
-                select(Room).where(Room.id == event.room_id)
-            )
-            room = room_check.scalar_one_or_none()
-            if not room or room.created_by_user_id != current_user.id:
-                raise HTTPException(status_code=403, detail="Not authorized to view this event")
 
     return enhance_event_full(event)
 
