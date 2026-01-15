@@ -588,9 +588,9 @@ export default function OnboardingPage() {
                       <Sparkles className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">Team-Analyse freischalten</h3>
+                      <h3 className="font-semibold">Aktivitäten favorisieren</h3>
                       <p className="text-sm text-muted-foreground">
-                        Sobald Mitglieder im Raum sind, kannst du die Team-Analyse nutzen, um perfekte Events zu planen.
+                        Schau dir jetzt die Aktivitäten an und markiere Favoriten mit dem Herz-Symbol. Das hilft der KI-Analyse und macht die Eventplanung für dein Team noch besser.
                       </p>
                     </div>
                   </div>
