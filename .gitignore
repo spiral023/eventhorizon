@@ -19,3 +19,7 @@ __pycache__/
 /nanobanana-output/
 backend/nanobanana-output/
 backend/data/~$activities.xlsx
+backend/data/activities/*_*.json
+backend/data/activities/*/*_basic.json
+backend/data/activities/*/*_reviews.json
+backend/data/activities/*/*_customer_voice.json

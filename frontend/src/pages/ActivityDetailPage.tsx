@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -28,7 +28,8 @@ import {
   MessageCircle,
   Send,
   Loader2,
-  Share2
+  Share2,
+  ArrowRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScaleBar } from "@/components/shared/ScaleBar";
 import { ActivityMiniMap } from "@/components/shared/ActivityMiniMap";
-import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
+import { getActivities, getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
 import type { Activity, ActivityComment } from "@/types/domain";
 import {
   CategoryLabels,
@@ -150,6 +151,7 @@ export default function ActivityDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
+  const [allActivities, setAllActivities] = useState<Activity[]>([]);
 
   const { user, isAuthenticated } = useAuthStore();
   const [comments, setComments] = useState<ActivityComment[]>([]);
@@ -159,14 +161,16 @@ export default function ActivityDetailPage() {
   useEffect(() => {
     const fetchActivity = async () => {
       if (!slug) return;
-      const [activityResult, favResult, commentsResult] = await Promise.all([
+      const [activityResult, favResult, commentsResult, activitiesResult] = await Promise.all([
         getActivityById(slug),
         isAuthenticated
           ? isFavorite(slug)
           : Promise.resolve({ data: { isFavorite: false, favoritesCount: 0 } }),
-        getActivityComments(slug)
+        getActivityComments(slug),
+        getActivities()
       ]);
       setActivity(activityResult.data);
+      setAllActivities(activitiesResult.data || []);
 
       const favoritesData = favResult.data || { isFavorite: false, favoritesCount: activityResult.data?.favoritesCount ?? 0 };
       setIsFav(favoritesData.isFavorite ?? false);
@@ -195,6 +199,11 @@ export default function ActivityDetailPage() {
     setIsFav(isFavorite);
     setFavoriteCount(count);
     setActivity((prev) => (prev ? { ...prev, favoritesCount: count } : prev));
+    setAllActivities((prev) =>
+      prev.map((item) =>
+        item.id === activity?.id ? { ...item, favoritesCount: count } : item
+      )
+    );
     if (window.innerWidth >= 768) {
       toast.success(isFavorite ? "Zu Favoriten hinzugefügt" : "Aus Favoriten entfernt");
     }
@@ -251,6 +260,18 @@ export default function ActivityDetailPage() {
     toast.success("Kommentar gelöscht");
   };
 
+  const sortedActivities = useMemo(() => {
+    return [...allActivities].sort(
+      (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
+    );
+  }, [allActivities]);
+  const nextActivity = useMemo(() => {
+    if (!activity || sortedActivities.length === 0) return null;
+    const currentIndex = sortedActivities.findIndex((item) => item.id === activity.id);
+    if (currentIndex < 0 || currentIndex >= sortedActivities.length - 1) return null;
+    return sortedActivities[currentIndex + 1];
+  }, [activity, sortedActivities]);
+
   // Loading skeleton
   if (loading) {
     return (
@@ -292,13 +313,14 @@ export default function ActivityDetailPage() {
 
   const rating = activity.externalRating || activity.rating;
 
+
   return (
     <div className="pb-32 md:pb-8">
       {/* Back Button */}
       <motion.div
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
-        className="mb-6"
+        className="mb-6 flex items-center gap-2"
       >
         <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2 text-muted-foreground hover:text-foreground">
           <Link to="/activities">
@@ -306,6 +328,19 @@ export default function ActivityDetailPage() {
             Alle Aktivitäten
           </Link>
         </Button>
+        {nextActivity?.slug && (
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="gap-2 ml-auto text-muted-foreground hover:text-foreground"
+          >
+            <Link to={`/activities/${nextActivity.slug}`}>
+              Nächste Aktivität
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        )}
       </motion.div>
 
       {/* Main Content Grid */}

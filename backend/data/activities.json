@@ -10,7 +10,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 28,
-    "min_participants": 8.0,
+    "min_participants": 8,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -21,30 +21,30 @@
     "social_interaction_level": 4,
     "price_comment": "Reine Spielgebühr ca. 25–30 € p.P. (je nach Teamgröße); bei mehreren Räumen gleichzeitig oft Rabatte auf Anfrage.",
     "external_rating": 4.9,
-    "lead_time_min_days": 7.0,
+    "lead_time_min_days": 7,
     "risk_level": "low",
     "travel_time_from_office_minutes": 5,
-    "address": "Kaarstraße 9, 4040 Linz",
-    "website": "https://www.mastersofescape.at",
+    "address": "Austria, Kaarstraße 9, 4040 Linz, Österreich",
+    "website": "https://www.mastersofescape.at/",
     "provider": "Masters of Escape GmbH",
-    "phone": "0732272999",
+    "phone": "+43 732 942021",
     "email": "office@mastersofescape.at",
     "travel_time_from_office_minutes_walking": 42,
     "primary_goal": "teambuilding",
     "competition_level": 2,
-    "typical_duration_hours": 1.0,
+    "typical_duration_hours": 1,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 6,
     "coordinates": [
-      48.312061,
-      14.2810701
+      48.312122,
+      14.280969
     ],
-    "facebook": "https://facebook.com/masters-of-escape-team-r-tselspa-in-linz",
-    "instagram": "https://instagram.com/masters-of-escape-team-r-tselspa-in-linz",
-    "max_capacity": 100.0,
+    "facebook": "https://www.facebook.com/mastersofescape",
+    "instagram": "https://www.instagram.com/moescape_austria",
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.mastersofescape.at/index.php?s=c",
-    "customer_voice": "Die Kunden loben die authentische Atmosphäre und die liebevoll, detailreich gestalteten Räume. Besonders das überaus freundliche und kompetente Personal wird hervorgehoben. Die Rätsel beschreiben Besucher als abwechslungsreich, logisch und technisch beeindruckend. Egal ob „Prison Break“ oder „Wudang“, die spannenden Geschichten und der hohe Spaßfaktor machen den Anbieter zu einer Top-Empfehlung für Gruppen."
+    "customer_voice": "Die Kunden loben einhellig die spannenden, intelligenten und detailreich gestalteten Rätsel sowie das authentische, atmosphärische Setting. Besonders hervorgehoben wird das außerordentlich freundliche und motivierte Personal. Einziger kleiner Kritikpunkt ist die mangelnde Barrierefreiheit durch einige Stufen am Eingang. Die allgemeine Stimmung ist durchweg sehr positiv."
   },
   {
     "listing_id": 2,
@@ -70,27 +70,27 @@
     "external_rating": 4.3,
     "risk_level": "medium",
     "travel_time_from_office_minutes": 5,
-    "address": "Prinz-Eugen-Straße 22, 4020 Linz",
-    "website": "https://lasertron-linz.at/",
+    "address": "Prinz-Eugen-Straße 22, 4020 Lustenau, Österreich",
+    "website": "https://lasertron-linz.at/?utm_source=gmaps&utm_medium=gmaps_linz&el=gmaps_linz&htrafficsource=gmaps",
     "provider": "Lasertron Linz",
-    "phone": "0732946227",
+    "phone": "+43 660 6040000",
     "email": "info@lasertron-linz.at",
     "travel_time_from_office_minutes_walking": 17,
     "primary_goal": "teambuilding",
     "competition_level": 5,
-    "typical_duration_hours": 1.0,
+    "typical_duration_hours": 1,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.30135662042273,
-      14.321515640384213
+      48.3012966,
+      14.3215101
     ],
     "facebook": "https://facebook.com/lasertron-actionreiches-lasertag-battle",
     "instagram": "https://instagram.com/lasertron-actionreiches-lasertag-battle",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://lasertron-linz.at/#order",
-    "customer_voice": "Die Besucher heben den extremen Spaßfaktor hervor. Sie beschreiben Lasertron als ideales Erlebnis für Familienausflüge, Kindergeburtstage und Gruppen. Das Personal wird in vielen Rezensionen als sehr freundlich, hilfsbereit und kompetent bei der Einweisung gelobt. Kunden schätzen die coole Arena, die verständlichen Regeln und die Möglichkeit, sich sportlich richtig auszupowern."
+    "customer_voice": "Die Kunden loben den hohen Spaßfaktor und das Erlebnis für Familien und Gruppen sowie das häufig freundliche und hilfsbereite Personal. Kritisiert werden dagegen technische Mängel an der Ausrüstung und als zu hoch empfundene Preise, was bei einigen Besuchern zu Frustration führt. Insgesamt überwiegt die positive Stimmung deutlich."
   },
   {
     "listing_id": 3,
@@ -116,27 +116,27 @@
     "external_rating": 4.7,
     "risk_level": "low",
     "travel_time_from_office_minutes": 5,
-    "address": "Auerspergstraße 15, 4020 Linz",
-    "website": "https://www.exittheroom.at/escape-room-linz",
+    "address": "Auerspergstraße 15, 4020 Linz, Österreich",
+    "website": "https://www.exittheroom.at/linz",
     "provider": "Exit the Room Linz",
-    "phone": "06606844996",
+    "phone": "+43 316 232240",
     "email": "linz@exittheroom.at",
     "travel_time_from_office_minutes_walking": 21,
     "primary_goal": "teambuilding",
     "competition_level": 2,
-    "typical_duration_hours": 1.0,
+    "typical_duration_hours": 1,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 6,
     "coordinates": [
-      48.2972578,
-      14.2894709
+      48.2973877,
+      14.2896381
     ],
     "facebook": "https://facebook.com/exit-the-room-das-escape-abenteuer-linz",
     "instagram": "https://instagram.com/exit-the-room-das-escape-abenteuer-linz",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.exittheroom.at/buchung",
-    "customer_voice": "Die Besucher sind begeistert vom hohen Spaßfaktor und der Spannung. Sie beschreiben die Räume, insbesondere das Zombie- und Murder-Szenario, als gut durchdacht und unterhaltsam. Das Personal wird vielfach als sehr freundlich, sympathisch und hilfsbereit gelobt. Kunden schätzen die kniffligen, logischen Rätsel und empfehlen das Erlebnis für Freunde, Familien und Kollegen weiter."
+    "customer_voice": "Die Kunden loben die abwechslungsreichen und spannenden Räume sowie das freundliche Personal. Einige bemängeln jedoch die hohen Preise oder empfinden die Rätsel als zu schwer. Insgesamt überwiegt die positive Stimmung bei den Besuchern deutlich."
   },
   {
     "listing_id": 4,
@@ -162,27 +162,27 @@
     "external_rating": 4.4,
     "risk_level": "low",
     "travel_time_from_office_minutes": 5,
-    "address": "Prinz-Eugen-Straße 22, 4020 Linz",
-    "website": "https://linz.nowayout-escape.at/de/",
+    "address": "Prinz-Eugen-Straße 22, 4020 Lustenau, Österreich",
+    "website": "https://linz.nowayout-escape.at/de/?utm_source=gmaps&utm_medium=gmaps_linz&el=gmaps_linz&htrafficsource=gmaps",
     "provider": "NoWayOut Linz",
-    "phone": "0732946227",
+    "phone": "+43 660 6040000",
     "email": "linz@nowayout-escape.at",
     "travel_time_from_office_minutes_walking": 17,
     "primary_goal": "teambuilding",
     "competition_level": 2,
-    "typical_duration_hours": 1.0,
+    "typical_duration_hours": 1,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.30135779936691,
-      14.321510487345043
+      48.3012967,
+      14.3215102
     ],
     "facebook": "https://facebook.com/nowayout-premium-escape-room-erlebnis",
     "instagram": "https://instagram.com/nowayout-premium-escape-room-erlebnis",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://linz.nowayout-escape.at/de/#rooms",
-    "customer_voice": "Die Besucher loben die detailreiche und liebevolle Gestaltung der Räume, insbesondere die magische Atmosphäre in „School of Magic“. Das Personal wird vielfach als überaus herzlich, hilfsbereit und kompetent beschrieben. Viele Kunden betonen den hohen Spaßfaktor für Familien und Einsteiger. Die Rätsel werden als unterhaltsam und die Kulissen als immersiv wahrgenommen."
+    "customer_voice": "Die Kunden loben besonders freundliches und hilfsbereites Personal sowie gut gestaltete Rätsel, die den Spaßfaktor steigern. Kritisiert werden hingegen häufig unfreundliche oder inkompetente Mitarbeiter, eine schlechte technische Umsetzung und als zu hoch empfundene Preise bei mangelnder Qualität. Die Stimmung ist insgesamt gespalten."
   },
   {
     "listing_id": 5,
@@ -210,27 +210,27 @@
     "external_rating": 3.5,
     "risk_level": "low",
     "travel_time_from_office_minutes": 14,
-    "address": "Plus-Kauf-Straße 7, 4061 Pasching",
-    "website": "https://oceanparkpluscity.at/",
+    "address": "Plus-Kauf-Straße 7, 4061 Pasching, Österreich",
+    "website": "http://www.oceanparkpluscity.at/",
     "provider": "Ocean Park GmbH",
-    "phone": "0722962222",
+    "phone": "+43 732 295000",
     "email": "linz@oceanpark.at",
     "travel_time_from_office_minutes_walking": 125,
     "primary_goal": "teambuilding",
     "competition_level": 3,
-    "typical_duration_hours": 2.0,
+    "typical_duration_hours": 2,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.2434541,
-      14.2358488
+      48.2428852,
+      14.2359803
     ],
     "facebook": "https://facebook.com/ocean-park-bowling-dinner-teamevent",
     "instagram": "https://instagram.com/ocean-park-bowling-dinner-teamevent",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://oceanparkpluscity.at/packages/",
-    "customer_voice": "Die Kunden bewerten die Anlage grundsätzlich als modern und das Angebot an Bowling, Billard und Arcade-Spielen als unterhaltsam, besonders für Gruppen und Kinder. Das Ambiente wird oft als ansprechend beschrieben. Jedoch wird der Service massiv kritisiert: Das Personal wird überwiegend als unfreundlich, unmotiviert und langsam wahrgenommen. Viele Kunden berichten von technischen Mängeln an den Bowlingbahnen und defekten Spielautomaten. Ein häufiger Beschwerdegrund ist zudem die Preispolitik, insbesondere der verpflichtende Getränkekonsum, hohe Preise für Getränke sowie Probleme bei der Kautionsrückgabe. Auch die Hygiene der Leihschuhe wird vereinzelt bemängelt."
+    "customer_voice": "Die Kunden loben grundsätzlich das Freizeiterlebnis und die Atmosphäre, wenn alles funktioniert. Kritisch bewerten viele Besucher jedoch das Verhalten des Personals, das häufig als unfreundlich, abweisend oder unverschämt beschrieben wird. Ein weiterer häufiger Kritikpunkt betrifft die technische Wartung, insbesondere bei den Dartautomaten. Die allgemeine Stimmung ist gemischt, wobei die negativen Erfahrungen mit dem Service das positive Kernangebot oft überlagern."
   },
   {
     "listing_id": 6,
@@ -254,30 +254,30 @@
     "mental_challenge": 1,
     "social_interaction_level": 3,
     "price_comment": "Business-Pakete (Eintritt, Socken, Getränk, Snack) starten ab ca. 24 €; Catering für danach zubuchbar.",
-    "external_rating": 4.6,
+    "external_rating": 4.5,
     "risk_level": "high",
     "travel_time_from_office_minutes": 13,
-    "address": "Im Bäckerfeld 1, 4060 Leonding",
-    "website": "https://jumpdome.at/linz/",
+    "address": "Im Bäckerfeld 1, 4060 Leonding, Österreich",
+    "website": "https://www.jumpdome.at/linz",
     "provider": "JUMP DOME Linz GmbH",
-    "phone": "0732600600",
+    "phone": "+43 732 2724200",
     "email": "linz@jumpdome.at",
     "travel_time_from_office_minutes_walking": 110,
     "primary_goal": "teambuilding",
     "competition_level": 1,
-    "typical_duration_hours": 1.0,
+    "typical_duration_hours": 1,
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.2501706,
-      14.2467145
+      48.2521812,
+      14.2474453
     ],
     "facebook": "https://facebook.com/jump-dome-linz-trampolin-action-pur",
     "instagram": "https://instagram.com/jump-dome-linz-trampolin-action-pur",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://jumpdome.at/linz/buchen/",
-    "customer_voice": "Die Kunden sind begeistert vom hohen Spaßfaktor und beschreiben die Anlage als idealen Ort zum Auspowern für Kinder und Erwachsene. Besonders gelobt werden die abwechslungsreichen Sprungbereiche, die Sauberkeit der Halle und das überwiegend freundliche, hilfsbereite Personal. Auch die Organisation von Geburtstagsfeiern wird positiv hervorgehoben. Kritisch sehen Kunden hingegen das Preis-Leistungs-Verhältnis: Die Eintrittspreise sowie die zusätzlichen Kosten für obligatorische Socken und Armbänder werden von vielen als zu hoch empfunden. Vereinzelt werden zudem die hohen Temperaturen und die schlechte Belüftung in der Halle bemängelt."
+    "customer_voice": "Die Kunden schätzen den hohen Spaßfaktor, die Möglichkeit zum Auspowern und die freundliche Crew. Besucher bemängeln jedoch häufig die als zu hoch empfundenen Preise und die Enge bzw. Überfüllung der Halle. Die überwiegend positive Stimmung spiegelt sich in der hohen Gesamtbewertung wider."
   },
   {
     "listing_id": 7,
@@ -293,7 +293,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 19,
-    "min_participants": 8.0,
+    "min_participants": 8,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -303,11 +303,11 @@
     "mental_challenge": 1,
     "social_interaction_level": 4,
     "price_comment": "Basis-Führung inkl. Kostprobe ca. 16–19 €; mit ausgiebiger Jause/Verkostung eher 25–30 € p.P.",
-    "external_rating": 4.3,
+    "external_rating": 3.7,
     "risk_level": "low",
     "travel_time_from_office_minutes": 5,
-    "address": "Peter-Behrens-Platz 1, 4020 Linz",
-    "website": "https://www.linzerbier.at/fuehrungen/",
+    "address": "Peter-Behrens-Platz 1, 4020 Linz, Österreich",
+    "website": "http://www.linzerbier.at/",
     "provider": "Linzer Bierbrauerei",
     "phone": "0732797800",
     "email": "office@linzerbier.at",
@@ -318,15 +318,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3120734,
-      14.2988529
+      48.312151,
+      14.2990709
     ],
     "facebook": "https://facebook.com/linzer-bier-brauereif-hrung-verkostung",
     "instagram": "https://instagram.com/linzer-bier-brauereif-hrung-verkostung",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.linzerbier.at/buchungskalender/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden kritisieren vor allem das Bier, das als einfaches Industriebier ohne Bezug zur historischen Brautradition empfunden wird, und sehen die Brauerei als reine Touristenattraktion. Positive Aspekte werden in den vorliegenden negativen Rezensionen nicht genannt, sodass die allgemeine Stimmung deutlich ablehnend ist.",
     "menu_url": "https://www.zurliesl.at/"
   },
   {
@@ -350,13 +350,13 @@
     "mental_challenge": 1,
     "social_interaction_level": 3,
     "price_comment": "Box-Miete wird durch Spieler geteilt (günstig); Event-Pakete inkl. Drinks & Snacks starten meist ab 25 € p.P.",
-    "external_rating": 4.8,
+    "external_rating": 4.3,
     "risk_level": "low",
     "travel_time_from_office_minutes": 14,
-    "address": "Im Bäckerfeld 1/Parkhaus 2. OG, 4060 Leonding",
-    "website": "https://ruffgolf.eu/at/",
+    "address": "Im Bäckerfeld 1/Parkhaus 2. OG, 4060 Leonding, Österreich",
+    "website": "https://ruffgolf.eu/at/minigolf/",
     "provider": "RUFF Indoor Golf",
-    "phone": "06764600234",
+    "phone": "+43 664 5157524",
     "email": "linz@ruffgolf.at",
     "travel_time_from_office_minutes_walking": 105,
     "primary_goal": "teambuilding",
@@ -365,15 +365,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.251543295110665,
-      14.246764541104266
+      48.2519054,
+      14.2466256
     ],
     "facebook": "https://facebook.com/ruff-indoor-golf-die-team-challenge-linz",
     "instagram": "https://instagram.com/ruff-indoor-golf-die-team-challenge-linz",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://play.ruffgolf.eu/venues/ruff-leonding/booking/bays",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben besonders die gepflegte, anspruchsvolle Platzanlage und das außerordentlich freundliche Personal. Der authentische Golfcharakter und der hohe Spaßfaktor werden hervorgehoben. Kritische Aspekte werden in den vorliegenden Bewertungen nicht genannt, was das durchweg positive Gesamtbild mit einer hohen Weiterempfehlungsbereitschaft unterstreicht."
   },
   {
     "listing_id": 9,
@@ -388,7 +388,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 35.0,
+    "min_participants": 35,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -398,13 +398,13 @@
     "mental_challenge": 2,
     "social_interaction_level": 4,
     "price_comment": "Spielsession kostet ca. 30–40 € p.P.; Lounge für Feiern kann exklusiv dazu gemietet werden.",
-    "external_rating": 5.0,
+    "external_rating": 5,
     "risk_level": "medium",
     "travel_time_from_office_minutes": 10,
-    "address": "Wegscheider Str. 22, 4020 Linz",
+    "address": "Wegscheider Str. 22, 4020 Linz, Österreich",
     "website": "https://linz.another-world.com/",
     "provider": "Another World VR",
-    "phone": "06641530932",
+    "phone": "+43 677 61701824",
     "email": "linz@another-world.com",
     "travel_time_from_office_minutes_walking": 94,
     "primary_goal": "teambuilding",
@@ -413,15 +413,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.2546544,
-      14.2793947
+      48.2548309,
+      14.2793099
     ],
     "facebook": "https://facebook.com/another-world-vr-team-abenteuer-erleben",
     "instagram": "https://instagram.com/another-world-vr-team-abenteuer-erleben",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://linz.another-world.com/buy",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden sind von dem einzigartigen VR-Erlebnis, dem großen Spaßfaktor und der vielfältigen Spielauswahl begeistert und empfehlen es häufig weiter. Gelegentlich bemängeln Besucher jedoch die eher hohen Preise und die schwierige Auffindbarkeit der Location. Die überwältigend positive Grundstimmung zeigt sich in durchgehend hohen Bewertungen."
   },
   {
     "listing_id": 10,
@@ -465,7 +465,7 @@
     ],
     "facebook": "https://facebook.com/deep-space-8k-zukunftstrip-im-aec-linz",
     "instagram": "https://instagram.com/deep-space-8k-zukunftstrip-im-aec-linz",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://ars.electronica.art/center/de/deepspace-3d/",
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
@@ -494,7 +494,7 @@
     "external_rating": 4.8,
     "risk_level": "medium",
     "travel_time_from_office_minutes": 6,
-    "address": "Hauptpl. 1, 4020 Linz",
+    "address": "Hauptpl. 1, 4020 Linz, Österreich",
     "website": "https://linzerschweben.at/",
     "provider": "Linzer Schweben",
     "phone": "069910404044",
@@ -506,15 +506,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3060622,
-      14.2869766
+      48.3063673,
+      14.28765
     ],
     "facebook": "https://facebook.com/segway-tour-linz-schwebend-entdecken",
     "instagram": "https://instagram.com/segway-tour-linz-schwebend-entdecken",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://linzerschweben.at/termine/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden schätzen die hervorragende Einweisung und die fürsorgliche Betreuung durch die Guides, die bei Problemen sofort zur Stelle sind. Die Touren selbst werden als unterhaltsames und empfehlenswertes Erlebnis gelobt. Kritische Aspekte werden in den vorliegenden Bewertungen nicht genannt, was den durchweg positiven Gesamteindruck widerspiegelt."
   },
   {
     "listing_id": 12,
@@ -542,8 +542,8 @@
     "external_rating": 4.7,
     "risk_level": "low",
     "travel_time_from_office_minutes": 6,
-    "address": "Mural Harbor, Regensburger Str. 2, 4020 Linz",
-    "website": "https://muralharbor.at/tickets/",
+    "address": "Mural Harbor, Regensburger Str. 2, 4020 Linz, Österreich",
+    "website": "http://www.muralharbor.at/",
     "provider": "Verein Mural Harbor",
     "phone": "06646564619",
     "email": "info@muralharbor.at",
@@ -554,15 +554,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.31139026351853,
-      14.315165999999762
+      48.3113019,
+      14.315166
     ],
     "facebook": "https://facebook.com/mural-harbor-graffiti-walk-spray-class",
     "instagram": "https://instagram.com/mural-harbor-graffiti-walk-spray-class",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://muralharbor.at/tickets/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben die beeindruckenden, großformatigen Murals und schätzen besonders die kompetenten, kurzweiligen Führungen mit Hintergrundwissen. Das Highlight ist für viele der abschließende Graffiti-Workshop. Einige wenige Gäste bemängeln, dass das Gelände ohne Führung nur eingeschränkt zugänglich ist und die Werke verstreut liegen. Die Stimmung ist überwiegend begeistert."
   },
   {
     "listing_id": 13,
@@ -589,10 +589,10 @@
     "external_rating": 4.6,
     "risk_level": "low",
     "travel_time_from_office_minutes": 7,
-    "address": "voestalpine-Straße, 4020 Linz",
+    "address": "voestalpine-Straße, 4020 Linz, Österreich",
     "website": "https://www.voestalpine.com/stahlwelt/",
     "provider": "voestalpine Stahlwelt",
-    "phone": "050304158900",
+    "phone": "+43 50 3041 58900",
     "email": "anmeldung.stahlwelt@voestalpine.com",
     "travel_time_from_office_minutes_walking": 43,
     "primary_goal": "fun",
@@ -601,15 +601,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.2785365,
-      14.3193157
+      48.2789503,
+      14.3186127
     ],
     "facebook": "https://facebook.com/stahlwelt-linz-werkstour-industriekultur",
     "instagram": "https://instagram.com/stahlwelt-linz-werkstour-industriekultur",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.voestalpine.com/stahlwelt/Besuch-planen/Gruppen",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben die beeindruckenden und kurzweiligen Werkstouren, die professionellen sowie humorvollen Guides und die lebendigen Einblicke in die Stahlproduktion. Kritisiert wird vor allem die eingeschränkte Verfügbarkeit der Führungen. Die überwiegend positive Stimmung spiegelt die hohe Gesamtbewertung wider."
   },
   {
     "listing_id": 14,
@@ -624,7 +624,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 40,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -634,13 +634,13 @@
     "mental_challenge": 0,
     "social_interaction_level": 4,
     "price_comment": "Reiner Verzehrwert; für ein 3-Gänge-Menü inkl. Getränke solltet ihr mit ca. 40–50 € p.P. rechnen.",
-    "external_rating": 4.6,
+    "external_rating": 4.5,
     "risk_level": "low",
     "travel_time_from_office_minutes": 2,
-    "address": "Garnisonstraße 30, 4020 Linz",
-    "website": "https://www.stubm.at/",
+    "address": "Garnisonstraße 30, 4020 Linz, Österreich",
+    "website": "http://www.stubm.at/",
     "provider": "Stefan's Stubm",
-    "phone": "0732770555",
+    "phone": "+43 732 604080",
     "email": "office@stefans-stubm.at",
     "travel_time_from_office_minutes_walking": 7,
     "primary_goal": "reward",
@@ -649,15 +649,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3008538,
-      14.3106989
+      48.300863,
+      14.3107148
     ],
     "facebook": "https://facebook.com/stefan-s-stubm-kulinarik-gem-tlichkeit",
     "instagram": "https://instagram.com/stefan-s-stubm-kulinarik-gem-tlichkeit",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": true,
     "reservation_url": "https://www.stubm.at/reservieren.aspx",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben durchweg das ausgezeichnete Essen und die bodenständige Küche sowie den sehr aufmerksamen Service und das authentische Ambiente. Einige Gäste bemängeln jedoch, dass die Preise als etwas zu hoch empfunden werden. Die Stimmung ist insgesamt sehr positiv.",
     "menu_url": "https://www.stubm.at/speisen.html"
   },
   {
@@ -673,7 +673,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -686,10 +686,10 @@
     "external_rating": 4.5,
     "risk_level": "low",
     "travel_time_from_office_minutes": 6,
-    "address": "Hamerlingstraße 46, 4020 Linz",
+    "address": "Hamerlingstraße 46, 4020 Linz, Österreich",
     "website": "https://www.ilteatro.at/",
     "provider": "Ristorante Il Teatro",
-    "phone": "0732662580",
+    "phone": "+43 732 661036",
     "email": "office@ilteatro.at",
     "travel_time_from_office_minutes_walking": 14,
     "primary_goal": "reward",
@@ -698,15 +698,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.292135,
-      14.3051051
+      48.2922855,
+      14.3053401
     ],
     "facebook": "https://facebook.com/il-teatro-italienischer-abend-f-rs-team",
     "instagram": "https://instagram.com/il-teatro-italienischer-abend-f-rs-team",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.ilteatro.at/reservierung/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben das Restaurant durchweg für das ausgezeichnete Essen, den freundlichen Service und die authentische Atmosphäre. Kritik gibt es vereinzelt für als unfreundlich empfundene Bedienung, lange Wartezeiten und eine als nachlassend wahrgenommene Qualität bei einigen Gerichten. Die überwiegend positive Stimmung spiegelt sich in der hohen Gesamtbewertung wider.",
     "menu_url": "https://www.ilteatro.at/speisen/"
   },
   {
@@ -722,7 +722,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -735,10 +735,10 @@
     "external_rating": 4.1,
     "risk_level": "low",
     "travel_time_from_office_minutes": 5,
-    "address": "Landstraße 49, 4020 Linz",
-    "website": "https://josef.eu/",
+    "address": "Landstraße 49, 4020 Linz, Österreich",
+    "website": "http://josef.eu/",
     "provider": "Josef Gastro GmbH",
-    "phone": "0732773165",
+    "phone": "+43 732 773165",
     "email": "gastronomie@josef.eu",
     "travel_time_from_office_minutes_walking": 21,
     "primary_goal": "reward",
@@ -747,15 +747,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.2994467,
-      14.2914546
+      48.2997112,
+      14.2913955
     ],
     "facebook": "https://facebook.com/das-josef-der-linzer-gastro-klassiker",
     "instagram": "https://instagram.com/das-josef-der-linzer-gastro-klassiker",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": true,
     "reservation_url": "https://josef.eu/reservierung/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben die hervorragende Küche, das freundliche Personal und die gemütliche Atmosphäre. Kritisiert werden hingegen als unverschämt empfundene Preise für Getränke und Beilagen sowie vereinzelte Qualitätsmängel. Die überwiegend positive Stimmung spiegelt sich in der hohen Gesamtbewertung wider.",
     "menu_url": "https://josef.eu/food-drinks/"
   },
   {
@@ -771,7 +771,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 50,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -784,10 +784,10 @@
     "external_rating": 4.4,
     "risk_level": "low",
     "travel_time_from_office_minutes": 8,
-    "address": "Domplatz 3, 4020 Linz",
+    "address": "Domplatz 3, 4020 Linz, Österreich",
     "website": "https://www.pauls-linz.at/",
     "provider": "PAULS",
-    "phone": "0732783338",
+    "phone": "+43 732 783338",
     "email": "office@pauls-linz.at",
     "travel_time_from_office_minutes_walking": 26,
     "primary_goal": "reward",
@@ -796,15 +796,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.2995467,
-      14.2872487
+      48.3002722,
+      14.2872255
     ],
     "facebook": "https://facebook.com/pauls-am-dom-stylisches-dinner-drinks",
     "instagram": "https://instagram.com/pauls-am-dom-stylisches-dinner-drinks",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": true,
     "reservation_url": "https://www.pauls-linz.at/reservierung",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben das Restaurant für das hervorragende Essen, die tolle Atmosphäre und den zuvorkommenden Service. Die Preise werden als angemessen empfunden. Kritik gibt es vereinzelt für lange Wartezeiten, die jedoch das insgesamt sehr positive Stimmungsbild nicht trüben.",
     "menu_url": "https://www.pauls-linz.at/essen-trinken"
   },
   {
@@ -820,7 +820,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 45,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "summer",
@@ -833,10 +833,10 @@
     "external_rating": 4.5,
     "risk_level": "low",
     "travel_time_from_office_minutes": 9,
-    "address": "Griesmayrstraße 18, 4040 Linz",
-    "website": "https://weinstadl-urfahr.eatbu.com/?lang=de",
+    "address": "Griesmayrstraße 18, 4040 Linz, Österreich",
+    "website": "http://weinstadl-urfahr.eatbu.com/",
     "provider": "Weinstadl Urfahr",
-    "phone": "0732730620",
+    "phone": "+43 664 99329932",
     "email": "office@weinstadl-urfahr.at",
     "travel_time_from_office_minutes_walking": 72,
     "primary_goal": "reward",
@@ -845,16 +845,16 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3334154,
-      14.300065
+      48.333327,
+      14.3003633
     ],
     "facebook": "https://facebook.com/weinstadl-urfahr-uriges-dinner-wein",
     "instagram": "https://instagram.com/weinstadl-urfahr-uriges-dinner-wein",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": true,
     "reservation_url": "https://weinstadl-urfahr.eatbu.com/?lang=de",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
-    "menu_url": "https://weinstadl-urfahr.eatbu.com/?lang=de"
+    "customer_voice": "Die Kunden loben das leckere Essen, die großen Portionen und die gemütliche Atmosphäre im Gastgarten sowie den freundlichen Service. Einige Gäste empfinden die Preise als angemessen, während andere sie als hoch bemerken. Insgesamt überwiegt die positive Stimmung deutlich.",
+    "menu_url": "https://www.weinstadl-urfahr.at/speisekarte"
   },
   {
     "listing_id": 19,
@@ -878,13 +878,13 @@
     "mental_challenge": 1,
     "social_interaction_level": 4,
     "price_comment": "Bahnmiete (geteilt) + Leihstock ca. 10 €; das klassische \"Bratl in der Rein\" danach kostet ca. 18–20 € p.P.",
-    "external_rating": 4.5,
+    "external_rating": 4.2,
     "risk_level": "low",
     "travel_time_from_office_minutes": 6,
-    "address": "Untere Donaulände 11, 4020 Linz",
-    "website": "https://www.linzag.at/portal/de/privatkunden/freizeit/eissport/eisstockschiessen",
+    "address": "Untere Donaulände 11, 4020 Linz, Österreich",
+    "website": "http://www.linzag.at/baeder",
     "provider": "LINZ AG (Parkbad)",
-    "phone": "073234006630",
+    "phone": "+43 732 34006630",
     "email": "sport@linzag.at",
     "travel_time_from_office_minutes_walking": 28,
     "primary_goal": "fun",
@@ -893,15 +893,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3115442,
-      14.2953021
+      48.3112559,
+      14.2948095
     ],
     "facebook": "https://facebook.com/eisstockschie-en-bratl-winter-teamevent",
     "instagram": "https://instagram.com/eisstockschie-en-bratl-winter-teamevent",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://services.linzag.at/onlinereservierung/curlingrinkstep1.jsf?nav=%2Fde_1%2Fprivatkunden%2Ffreizeit%2Feissport%2Fonline_reservierung%2Fonline_reservierung_eishalle.nav.xhtml",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben besonders die Sauna mit dem engagierten Personal sowie die vielseitigen Aktivitäten wie Schwimmen und die Eisbahn. Kritik gibt es am Renovierungsbedarf der etwas in die Jahre gekommenen Einrichtung. Die überwiegend positive Stimmung spiegelt die hohe Gesamtbewertung wider."
   },
   {
     "listing_id": 20,
@@ -928,10 +928,10 @@
     "external_rating": 4.5,
     "risk_level": "low",
     "travel_time_from_office_minutes": 14,
-    "address": "Plus-Kauf-Straße 7, 4061 Pasching",
-    "website": "https://www.megaplex.at/inhalt/kino-zum-mieten",
+    "address": "Plus-Kauf-Straße 7, 4061 Pasching, Österreich",
+    "website": "https://www.megaplex.at/pasching",
     "provider": "Hollywood Megaplex",
-    "phone": "0722963500",
+    "phone": "+43 7229 6930030",
     "email": "pasching@megaplex.at",
     "travel_time_from_office_minutes_walking": 125,
     "primary_goal": "fun",
@@ -940,15 +940,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 30,
     "coordinates": [
-      48.2434541,
-      14.2358488
+      48.2435626,
+      14.2363389
     ],
     "facebook": "https://facebook.com/hollywood-megaplex-privates-kino-event",
     "instagram": "https://instagram.com/hollywood-megaplex-privates-kino-event",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.megaplex.at/inhalt/kino-zum-mieten",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden schätzen das Kino vor allem als Teil eines großzügigen und attraktiven Einkaufszentrums, das alle Bedürfnisse erfüllt. Kritik gibt es jedoch für das oft als kalt empfundene Ambiente, überteuerte Snacks und vereinzelt unfreundliches Personal am Buffet. Die Stimmung ist insgesamt positiv."
   },
   {
     "listing_id": 21,
@@ -975,10 +975,10 @@
     "external_rating": 4.8,
     "risk_level": "low",
     "travel_time_from_office_minutes": 6,
-    "address": "Marienstraße 2a, 4020 Linz",
-    "website": "https://www.lennox.at/events/cocktailkurse/",
+    "address": "Marienstraße 2a, 4020 Linz, Österreich",
+    "website": "http://www.lennox.at/",
     "provider": "Lennox Bar",
-    "phone": "06644104100",
+    "phone": "+43 677 61103570",
     "email": "bar@lennox.at",
     "travel_time_from_office_minutes_walking": 25,
     "primary_goal": "fun",
@@ -987,15 +987,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3046029,
-      14.2896724
+      48.3046899,
+      14.2897184
     ],
     "facebook": "https://facebook.com/cocktail-kurs-im-lennox-mix-it-up-team",
     "instagram": "https://instagram.com/cocktail-kurs-im-lennox-mix-it-up-team",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.lennox.at/events/cocktailkurse/#events",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden heben vor allem die unterhaltsamen und gut organisierten Cocktail-Kurse hervor, loben das außerordentlich freundliche und kompetente Personal sowie die qualitativ hochwertigen Drinks. Negative Aspekte werden in den vorliegenden Bewertungen kaum thematisiert, was die durchweg positive Stimmung unterstreicht."
   },
   {
     "listing_id": 22,
@@ -1009,7 +1009,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 60,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1022,10 +1022,10 @@
     "external_rating": 4.7,
     "risk_level": "low",
     "travel_time_from_office_minutes": 8,
-    "address": "Pfarrpl. 13, 4020 Linz",
-    "website": "https://xn--ngus-koa.at/",
+    "address": "Pfarrpl. 13, 4020 Linz, Österreich",
+    "website": "http://xn--ngus-koa.at/",
     "provider": "ÄNGUS Downtown",
-    "phone": "0732771515",
+    "phone": "+43 732 785728",
     "email": "restaurant@aengus.at",
     "travel_time_from_office_minutes_walking": 27,
     "primary_goal": "reward",
@@ -1034,16 +1034,16 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3061532,
-      14.2897106
+      48.3061066,
+      14.289668
     ],
     "facebook": "https://facebook.com/ngus-downtown-bestes-steak-dinner-linz",
     "instagram": "https://instagram.com/ngus-downtown-bestes-steak-dinner-linz",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.xn--ngus-koa.at/#contactform",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
-    "menu_url": "https://www.xn--ngus-koa.at/#speisekarten"
+    "customer_voice": "Die Gäste loben überwiegend die exzellente Qualität des Essens, insbesondere das Wagyu, sowie den sehr guten Service und die Atmosphäre. Kritik gibt es vereinzelt für inkonsistente Zubereitung, chaotische Abläufe und lange Wartezeiten. Die überwältigend positive Grundstimmung spiegelt sich in der hohen Gesamtbewertung wider.",
+    "menu_url": "https://www.xn--ngus-koa.at/assets/pdf/aengus-izakaya-speisekarte-2024.pdf"
   },
   {
     "listing_id": 23,
@@ -1059,7 +1059,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 40,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1072,10 +1072,10 @@
     "external_rating": 4.1,
     "risk_level": "low",
     "travel_time_from_office_minutes": 7,
-    "address": "Promenade 25, 4020 Linz",
+    "address": "Promenade 25, 4020 Linz, Österreich",
     "website": "https://glorious-bastards.at/",
     "provider": "Glorious Bastards",
-    "phone": "0732773322",
+    "phone": "+43 732 299800",
     "email": "linz@glorious-bastards.at",
     "travel_time_from_office_minutes_walking": 31,
     "primary_goal": "reward",
@@ -1084,16 +1084,16 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3029556,
-      14.2850119
+      48.3027411,
+      14.2850525
     ],
     "facebook": "https://facebook.com/glorious-bastards-pizza-grill-vibes",
     "instagram": "https://instagram.com/glorious-bastards-pizza-grill-vibes",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://glorious-bastards.at/linz/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
-    "menu_url": "https://glorious-bastards.at/food/"
+    "customer_voice": "Die Kunden loben besonders den hervorragenden Service, wobei die Kellner Mo und Sladan mehrfach namentlich positiv erwähnt werden, sowie die gute Qualität des Essens und das Ambiente. Die Preis-Leistung wird als angemessen bewertet, während die Lautstärke als gelegentlicher Kritikpunkt genannt wird. Die Stimmung ist überwiegend sehr positiv.",
+    "menu_url": "https://menury.com/r/bbe3f850e2/Linz/GloriousBastardsLinz/de"
   },
   {
     "listing_id": 24,
@@ -1108,7 +1108,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1121,10 +1121,10 @@
     "external_rating": 4.5,
     "risk_level": "low",
     "travel_time_from_office_minutes": 9,
-    "address": "Angerholzerweg 38, 4020 Linz",
-    "website": "https://www.bratwurstgloeckerl.at/",
+    "address": "Angerholzerweg 38, 4020 Linz, Österreich",
+    "website": "http://www.bratwurstgloeckerl.at/",
     "provider": "Bratwurstglöckerl",
-    "phone": "0732779388",
+    "phone": "+43 732 342024",
     "email": "office@bratwurstgloeckerl.at",
     "travel_time_from_office_minutes_walking": 60,
     "primary_goal": "reward",
@@ -1133,15 +1133,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.2668903,
-      14.3061821
+      48.2668593,
+      14.3061748
     ],
     "facebook": "https://facebook.com/bratwurstgl-ckerl-linzer-wirtshauskultur",
     "instagram": "https://instagram.com/bratwurstgl-ckerl-linzer-wirtshauskultur",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.bratwurstgloeckerl.at/de/reservierung/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben durchweg die ausgezeichnete österreichische Küche, das freundliche Personal und das gute Preis-Leistungs-Verhältnis. Das gemütliche Ambiente wird ebenfalls sehr geschätzt. Gelegentliche kleinere Mängel werden erwähnt, überwiegen aber nicht die durchweg positive Gesamtstimmung.",
     "menu_url": "https://www.bratwurstgloeckerl.at/de/essen_trinken/"
   },
   {
@@ -1157,7 +1157,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 40,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1170,10 +1170,10 @@
     "external_rating": 4.1,
     "risk_level": "low",
     "travel_time_from_office_minutes": 5,
-    "address": "Landstraße 31, 4020 Linz",
-    "website": "https://www.stadtliebe.at/",
+    "address": "Landstraße 31, 4020 Linz, Österreich",
+    "website": "http://www.stadtliebe.at/",
     "provider": "Stadtliebe Linz",
-    "phone": "0732770605",
+    "phone": "+43 732 770605",
     "email": "office@stadtliebe.at",
     "travel_time_from_office_minutes_walking": 24,
     "primary_goal": "reward",
@@ -1182,15 +1182,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3023997,
-      14.2904616
+      48.302236,
+      14.2902112
     ],
     "facebook": "https://facebook.com/stadtliebe-linz-urbanes-wirtshaus-event",
     "instagram": "https://instagram.com/stadtliebe-linz-urbanes-wirtshaus-event",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": true,
     "reservation_url": "https://www.stadtliebe.at/reservierung",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben den sehr freundlichen Service und das ansprechende Ambiente, während das Essen gemischte Reaktionen hervorruft. Häufig bemängelt werden die teils als enttäuschend empfundene Qualität einiger Gerichte, eine hohe Lautstärke sowie lange Wartezeiten. Die allgemeine Stimmung ist dennoch überwiegend positiv.",
     "menu_url": "https://www.stadtliebe.at/urbanfood"
   },
   {
@@ -1205,7 +1205,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1218,8 +1218,8 @@
     "external_rating": 4.4,
     "risk_level": "low",
     "travel_time_from_office_minutes": 8,
-    "address": "Harbacher Str. 38, 4040 Linz",
-    "website": "https://www.wiazhaus-lehner.at/",
+    "address": "Harbacher Str. 38, 4040 Linz, Österreich",
+    "website": "http://www.wiazhaus-lehner.at/",
     "provider": "Wia z'haus Lehner",
     "phone": "+43 732 730510",
     "email": "gasthaus@wiazhaus-lehner.at",
@@ -1230,14 +1230,14 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3270185,
-      14.2773665
+      48.3269375,
+      14.2773767
     ],
     "facebook": "https://www.facebook.com/wiazhauslehner",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": true,
     "reservation_url": "https://www.wiazhaus-lehner.at/reservierung/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben durchweg das hervorragende Essen und das außerordentlich freundliche sowie schnelle Personal, besonders für Gruppenfeiern. Einzelne Gäste bemängeln jedoch Details wie kalte Teller. Die überwiegend positiven Bewertungen zeigen eine hohe Gesamtzufriedenheit.",
     "menu_url": "https://www.wiazhaus-lehner.at/speisekarte"
   },
   {
@@ -1252,7 +1252,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 35,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1262,13 +1262,13 @@
     "mental_challenge": 0,
     "social_interaction_level": 4,
     "price_comment": "Uriges Wirtshaus; Schnitzel/Bratl + Getränke liegen im Schnitt bei 30–40 € p.P.",
-    "external_rating": 4.5,
+    "external_rating": 4.6,
     "risk_level": "low",
     "travel_time_from_office_minutes": 3,
-    "address": "Eisenhandstraße 43, 4020 Linz",
-    "website": "http://www.gasthaus-eisernehand.at/",
+    "address": "Eisenhandstraße 43, 4020 Linz, Österreich",
+    "website": "https://www.gasthaus-eisernehand.at/",
     "provider": "Gasthaus Eiserne Hand",
-    "phone": "+43 732 773335",
+    "phone": "+43 732 770182",
     "email": "gasthaus@eisernehand.at",
     "travel_time_from_office_minutes_walking": 13,
     "primary_goal": "reward",
@@ -1277,13 +1277,13 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 15,
     "coordinates": [
-      48.3028777,
-      14.2992758
+      48.3028778,
+      14.2992593
     ],
-    "max_capacity": 80.0,
+    "max_capacity": 80,
     "outdoor_seating": true,
     "reservation_url": "https://www.gasthaus-eisernehand.at/start/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben überwiegend die ausgezeichnete Hausmannskost und die authentischen österreichischen Spezialitäten sowie das sehr freundliche und zuvorkommende Personal. Die Stimmung ist durchweg positiv, wobei einige wenige Gäste kleinere Mängel anmerken, ohne diese konkret zu benennen.",
     "menu_url": "http://www.gasthaus-eisernehand.at/speisen.html"
   },
   {
@@ -1308,13 +1308,13 @@
     "mental_challenge": 2,
     "social_interaction_level": 3,
     "price_comment": "Renn-Pakete (Training, Quali, Rennen) starten ab ca. 50 €; Premium-Events mit Siegerehrung bis 80 €.",
-    "external_rating": 4.6,
+    "external_rating": 4.5,
     "risk_level": "medium",
     "travel_time_from_office_minutes": 5,
-    "address": "Holzstraße 3, 4020 Linz",
+    "address": "Holzstraße 3, 4020 Linz, Österreich",
     "website": "https://www.rotaxmaxdome.com/linz/",
     "provider": "Rotax MAX Dome",
-    "phone": "+43 732 799899",
+    "phone": "+43 732 776837",
     "email": "linz@rotaxmaxdome.com",
     "travel_time_from_office_minutes_walking": 32,
     "primary_goal": "teambuilding",
@@ -1323,15 +1323,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 20,
     "coordinates": [
-      48.3128207,
-      14.301592
+      48.3135744,
+      14.3007469
     ],
     "facebook": "https://www.facebook.com/rotaxmaxdome",
     "instagram": "https://www.instagram.com/rotaxmaxdomelinz",
-    "max_capacity": 100.0,
+    "max_capacity": 100,
     "outdoor_seating": false,
     "reservation_url": "https://www.rotaxmaxdome.com/linz/buchen",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben häufig das tolle Fahrerlebnis, die coole Strecke und die netten Mitarbeiter. Einige Besucher bemängeln gelegentlich unfreundliches Personal. Die überwiegend positiven Bewertungen zeigen eine sehr hohe Gesamtzufriedenheit."
   },
   {
     "listing_id": 29,
@@ -1358,10 +1358,10 @@
     "external_rating": 4.3,
     "risk_level": "medium",
     "travel_time_from_office_minutes": 15,
-    "address": "Wegscheider Str. 124, 4060 Leonding",
-    "website": "https://booosters.at/",
+    "address": "Im Bäckerfeld 1, 4060 Leonding, Österreich",
+    "website": "http://www.booosters.at/",
     "provider": "Booosters",
-    "phone": "+43 7229 21700",
+    "phone": "+43 732 210438",
     "email": "office@booosters.at",
     "travel_time_from_office_minutes_walking": 120,
     "primary_goal": "teambuilding",
@@ -1370,15 +1370,15 @@
     "recommended_group_size_min": 8,
     "recommended_group_size_max": 20,
     "coordinates": [
-      48.24358,
-      14.26466
+      48.2516776,
+      14.2466025
     ],
     "facebook": "https://www.facebook.com/booosters",
     "instagram": "https://www.instagram.com/booosters_official",
-    "max_capacity": 120.0,
+    "max_capacity": 120,
     "outdoor_seating": true,
     "reservation_url": "https://booosters.at/bahnmiete/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben das freundliche und professionelle Team sowie das positive Gesamterlebnis, insbesondere für Familien. Kritisiert werden hingegen häufig als überteuert empfundene Preise, lange Wartezeiten und eine als zu eng und wenig überholfreundlich wahrgenommene Strecke. Die Stimmung ist insgesamt gemischt."
   },
   {
     "listing_id": 30,
@@ -1405,27 +1405,27 @@
     "external_rating": 4.9,
     "risk_level": "low",
     "travel_time_from_office_minutes": 7,
-    "address": "Hauptstraße 51-53, 4040 Linz",
+    "address": "Hauptstraße 16/1. Stock, 4040 Linz, Österreich",
     "website": "https://missiongames.at/",
     "provider": "Mission Games",
-    "phone": "+43 660 6363063",
+    "phone": "+43 316 232240",
     "email": "office@missiongames.at",
     "travel_time_from_office_minutes_walking": 38,
     "primary_goal": "teambuilding",
     "competition_level": 4,
-    "typical_duration_hours": 3.0,
+    "typical_duration_hours": 3,
     "recommended_group_size_min": 6,
     "recommended_group_size_max": 60,
     "coordinates": [
-      48.3094,
-      14.2836
+      48.3110008,
+      14.2832802
     ],
     "facebook": "https://www.facebook.com/MissionGamesLinz",
     "instagram": "https://www.instagram.com/missiongames_linz",
-    "max_capacity": 80.0,
+    "max_capacity": 80,
     "outdoor_seating": false,
     "reservation_url": "https://missiongames.at/buchen/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben den hohen Spaßfaktor und die kreativen Rätsel für alle Altersgruppen, insbesondere für Familien und Gruppen. Sie schätzen die große Auswahl an verschiedenen Spielen und empfehlen das Zentrum weiter. Kritische Punkte werden in den vorliegenden Bewertungen nicht genannt, was das überaus positive Gesamtbild widerspiegelt."
   },
   {
     "listing_id": 31,
@@ -1443,7 +1443,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 28,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1453,11 +1453,11 @@
     "mental_challenge": 0,
     "social_interaction_level": 5,
     "price_comment": "Preisniveau grob Wirtshaus/Restaurant; Mittagsmenü-Posts zeigen Hauptspeisen um ca. 13–14 € (Beispielgerichte).",
-    "external_rating": 4.4,
+    "external_rating": 4,
     "risk_level": "low",
     "travel_time_from_office_minutes": 9,
-    "address": "Schlossberg 1, 4020 Linz",
-    "website": "https://www.donauregion.at/oesterreich-gastronomie/detail/160321/schloss-cafe-linz.html",
+    "address": "Schlossberg 1, 4020 Linz, Österreich",
+    "website": "https://schlosscafe-linz.com/",
     "provider": "Schloss Café Linz",
     "phone": "+43 660 5638249",
     "email": "reservierung@schlosscafe-linz.com",
@@ -1468,12 +1468,13 @@
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 60,
     "coordinates": [
-      48.30573502257994,
-      14.282031691527816
+      48.3056517,
+      14.282019
     ],
-    "max_capacity": 316.0,
+    "max_capacity": 316,
     "outdoor_seating": true,
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden schätzen besonders die einzigartige Lage mit der atemberaubenden Aussicht auf die Donau und das wunderschöne Ambiente. Das Personal wird häufig als sehr freundlich gelobt, jedoch gibt es auch vereinzelte Berichte über unfreundliche oder überforderte Bedienung sowie lange Wartezeiten bei der Bestellung.",
+    "menu_url": "https://schlosscafe-linz.com/"
   },
   {
     "listing_id": 32,
@@ -1488,7 +1489,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 22,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1498,11 +1499,11 @@
     "mental_challenge": 0,
     "social_interaction_level": 5,
     "price_comment": "Mittagsmenü DI–FR 11:00–14:00 inkl. Tagessuppe um 11,50 € (Stand Menüseite).",
-    "external_rating": 4.1,
+    "external_rating": 4,
     "risk_level": "low",
     "travel_time_from_office_minutes": 6,
-    "address": "Hanuschstraße 26, 4020 Linz",
-    "website": "https://zumschiefenapfelbaum.at/",
+    "address": "Hanuschstraße 26, 4020 Linz, Österreich",
+    "website": "http://zumschiefenapfelbaum.at/",
     "provider": "Zum Schiefen Apfelbaum",
     "phone": "+43 732 201179",
     "email": "office@zumschiefenapfelbaum.at",
@@ -1513,12 +1514,12 @@
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 40,
     "coordinates": [
-      48.281432002870424,
-      14.293608090970707
+      48.2812887,
+      14.2935653
     ],
     "outdoor_seating": true,
     "reservation_url": "https://zumschiefenapfelbaum.at/reservierung",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben das hervorragende Essen und die freundliche, herzliche Bedienung als große Stärken des Restaurants. Kritik äußern Besucher hingegen vor allem zu unfreundlichem Personal, langen Wartezeiten und gelegentlichen Mängeln bei der Hygiene sowie der Zubereitung der Speisen. Die überwiegend positive Grundstimmung wird durch einige deutliche negative Erfahrungen getrübt.",
     "menu_url": "https://zumschiefenapfelbaum.at/speisekarte"
   },
   {
@@ -1548,8 +1549,8 @@
     "external_rating": 4.6,
     "risk_level": "low",
     "travel_time_from_office_minutes": 6,
-    "address": "Freistädter Straße 163, 4040 Linz",
-    "website": "https://www.swingolf.at/",
+    "address": "Freistädter Str. 163, 4040 Linz, Österreich",
+    "website": "http://www.swingolf.at/",
     "provider": "HALL.O Swingolf",
     "phone": "+43 699 11042012",
     "email": "office@swingolf.at",
@@ -1560,12 +1561,12 @@
     "recommended_group_size_min": 4,
     "recommended_group_size_max": 40,
     "coordinates": [
-      48.3248913845126,
-      14.298549647330535
+      48.3247495,
+      14.2984671
     ],
     "outdoor_seating": false,
     "reservation_url": "https://reservierung.swingolf.at/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
+    "customer_voice": "Die Kunden loben den Spaßfaktor und die unkomplizierte Ausübung von Swingolf und Discgolf. Sie schätzen die gepflegte, gut organisierte Anlage sowie das attraktive Preis-Leistungs-Verhältnis. Kritische Hinweise sind selten und betreffen praktische Ratschläge, wie die Mitnahme eigener Getränke an heißen Tagen."
   },
   {
     "listing_id": 34,
@@ -1581,7 +1582,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 26,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1527168027773-0cc890bce99a?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1594,7 +1595,7 @@
     "external_rating": 4.2,
     "risk_level": "low",
     "travel_time_from_office_minutes": 5,
-    "address": "Landstraße 30, 4020 Linz",
+    "address": "Landstraße 30, 4020 Linz, Österreich",
     "website": "https://www.klosterhof.at/",
     "provider": "Stiegl-Klosterhof",
     "phone": "+43 732 773373",
@@ -1606,13 +1607,13 @@
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 80,
     "coordinates": [
-      48.3023536725517,
-      14.289336294934136
+      48.3021904,
+      14.2893494
     ],
     "outdoor_seating": true,
     "reservation_url": "https://www.klosterhof.at/kontakt-service/tischreservierung/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
-    "menu_url": "https://www.klosterhof.at/kulinarik/"
+    "customer_voice": "Die Gäste loben insbesondere die hervorragende traditionelle Küche, die gemütliche Atmosphäre und die Qualität der hauseigenen Biere. Kritik gibt es vereinzelt für überforderte Servicekräfte und als überteuert empfundene Getränkepreise. Insgesamt überwiegt die positive Stimmung deutlich.",
+    "menu_url": "https://www.klosterhof.at/"
   },
   {
     "listing_id": 35,
@@ -1638,27 +1639,27 @@
     "mental_challenge": 3,
     "social_interaction_level": 5,
     "price_comment": "Restaurant-/Bar-Preisspanne wird häufig mit ca. 20–30 € pro Person angegeben; variiert je nach Konsum und Eventabend.",
-    "external_rating": 4.7,
+    "external_rating": 4.9,
     "risk_level": "low",
     "travel_time_from_office_minutes": 4,
-    "address": "Blumauerstraße 9, 4020 Linz",
-    "website": "https://gamedine.at/",
+    "address": "Wiener Str. 95, 4020 Linz, Österreich",
+    "website": "http://gtnm.at/ueber-uns/",
     "provider": "Game & Dine",
-    "phone": "+43 664 1365679",
+    "phone": "+43 650 4129861",
     "email": "office@gamedine.at",
     "travel_time_from_office_minutes_walking": 19,
     "primary_goal": "teambuilding",
     "competition_level": 3,
-    "typical_duration_hours": 3.0,
+    "typical_duration_hours": 3,
     "recommended_group_size_min": 4,
     "recommended_group_size_max": 40,
     "coordinates": [
-      48.29544603751299,
-      14.294202991307817
+      48.2840532,
+      14.305114
     ],
     "outdoor_seating": false,
     "reservation_url": "https://gamedine.at/reservierung/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
+    "customer_voice": "Die Kunden loben überwiegend die riesige, fachkundig kuratierte Auswahl an Spielen und die außergewöhnlich kompetente, leidenschaftliche sowie freundliche Beratung durch das Personal, insbesondere durch den Inhaber. Die allgemeine Stimmung ist sehr positiv, auch die Preise werden als fair bewertet. Ein einzelner, extremer Negativvorwurf bezüglich des Service stellt eine deutliche Ausnahme dar.",
     "menu_url": "https://gamedine.at/speisen/"
   },
   {
@@ -1675,7 +1676,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 30,
-    "min_participants": 1.0,
+    "min_participants": 1,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1685,10 +1686,10 @@
     "mental_challenge": 0,
     "social_interaction_level": 5,
     "price_comment": "Preisniveau wird je nach Quelle als mittel (typisch Restaurantbesuch) eingeordnet; ideal, wenn die Runde Ribs liebt.",
-    "external_rating": 4.5,
+    "external_rating": 4.7,
     "risk_level": "low",
     "travel_time_from_office_minutes": 6,
-    "address": "Landstraße 11, 4020 Linz",
+    "address": "Eingang Seitengasse, links vor DM, Landstraße 11, 4020 Linz, Österreich",
     "website": "https://www.jack-the-ripperl.com/linz-landstrasse/",
     "provider": "Jack the Ripperl",
     "phone": "+43 732 239899",
@@ -1700,14 +1701,14 @@
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 120,
     "coordinates": [
-      48.303974150311454,
-      14.288800007639
+      48.3038329,
+      14.2887945
     ],
-    "max_capacity": 175.0,
+    "max_capacity": 175,
     "outdoor_seating": true,
     "reservation_url": "https://www.jack-the-ripperl.com/linz-landstrasse/reservieren/",
-    "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen",
-    "menu_url": "https://www.jack-the-ripperl.com/linz-landstrasse/ripperl/"
+    "customer_voice": "Die Kunden loben vor allem das hervorragende Essen, insbesondere die Ripperl und Burger, sowie das äußerst freundliche und zuvorkommende Personal. Die Atmosphäre wird als gemütlich gelobt. Kritik wird nur vereinzelt bezüglich der Sauberkeit der Toiletten geäußert. Das allgemeine Stimmungsbild ist durchweg positiv.",
+    "menu_url": "https://www.jack-the-ripperl.com/linz-landstrasse/ripperl/speisekarte/"
   },
   {
     "listing_id": 37,
@@ -1725,7 +1726,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
-    "min_participants": 3.0,
+    "min_participants": 3,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1741,14 +1742,14 @@
     "travel_time_from_office_minutes_walking": 0,
     "primary_goal": "fun",
     "competition_level": 5,
-    "typical_duration_hours": 3.0,
+    "typical_duration_hours": 3,
     "recommended_group_size_min": 3,
     "recommended_group_size_max": 9,
     "coordinates": [
       48.29900306288296,
       14.307031818368804
     ],
-    "max_capacity": 18.0,
+    "max_capacity": 18,
     "outdoor_seating": false,
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
@@ -1768,7 +1769,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
-    "min_participants": 2.0,
+    "min_participants": 2,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1784,14 +1785,14 @@
     "travel_time_from_office_minutes_walking": 0,
     "primary_goal": "fun",
     "competition_level": 0,
-    "typical_duration_hours": 2.0,
+    "typical_duration_hours": 2,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 20,
     "coordinates": [
       48.29900306288296,
       14.307031818368804
     ],
-    "max_capacity": 30.0,
+    "max_capacity": 30,
     "outdoor_seating": false,
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
@@ -1811,7 +1812,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
-    "min_participants": 2.0,
+    "min_participants": 2,
     "weather_dependent": true,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "summer",
@@ -1827,14 +1828,14 @@
     "travel_time_from_office_minutes_walking": 0,
     "primary_goal": "fun",
     "competition_level": 0,
-    "typical_duration_hours": 2.0,
+    "typical_duration_hours": 2,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 15,
     "coordinates": [
       48.29900306288296,
       14.307031818368804
     ],
-    "max_capacity": 20.0,
+    "max_capacity": 20,
     "outdoor_seating": true,
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   },
@@ -1855,7 +1856,7 @@
     ],
     "location_region": "OOE",
     "est_price_pp": 0,
-    "min_participants": 2.0,
+    "min_participants": 2,
     "weather_dependent": false,
     "image_url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
     "season": "all_year",
@@ -1871,14 +1872,14 @@
     "travel_time_from_office_minutes_walking": 0,
     "primary_goal": "fun",
     "competition_level": 0,
-    "typical_duration_hours": 3.0,
+    "typical_duration_hours": 3,
     "recommended_group_size_min": 2,
     "recommended_group_size_max": 10,
     "coordinates": [
       48.29900306288296,
       14.307031818368804
     ],
-    "max_capacity": 20.0,
+    "max_capacity": 20,
     "outdoor_seating": false,
     "customer_voice": "Hier sollte eine aggregierte Kundenmeinung stehen"
   }

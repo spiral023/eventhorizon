@@ -1,0 +1,8 @@
+{
+  "name": "eventhorizon-backend-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "apify-client": "^2.11.1"
+  }
+}

@@ -1,13 +1,21 @@
 # Scripts Overview
 
-Kurz-Anleitung für die Utilities im Ordner `backend/scripts`. Alle Befehle kannst du entweder lokal im venv oder im laufenden Backend-Container ausführen (z. B. `docker compose -f ../docker-compose.dev.yml exec backend python scripts/<script>.py`).
+Kurz-Anleitung für die Utilities im Ordner `backend/scripts`. Python-Skripte kannst du lokal im venv oder im laufenden Backend-Container ausführen (z. B. `docker compose -f ../docker-compose.dev.yml exec backend python scripts/<script>.py`). Node-Skripte werden lokal mit Node.js ausgeführt.
 
 ## Voraussetzungen
-- `.env` / Umgebungsvariablen für DB und Services gesetzt (siehe `backend/.env.example`).
-- Abhängigkeiten installiert: `pip install -r requirements.txt`.
-- Für DB-Schreibzugriffe: laufende Postgres-Instanz (z. B. via `docker compose -f ../docker-compose.dev.yml up backend db`).
 
-## Skripte
+- `.env` / Umgebungsvariablen für DB und Services gesetzt (siehe `backend/.env.example`).
+- Python-Abhängigkeiten installiert: `pip install -r requirements.txt`.
+- Für DB-Schreibzugriffe: laufende Postgres-Instanz (z. B. via `docker compose -f ../docker-compose.dev.yml up backend db`).
+- Für Node-Skripte: Node.js 16+ und `npm install` in `backend/scripts/`.
+
+```bash
+cd backend/scripts
+npm install
+```
+
+## Skripte (Python)
+
 - `seed_activities.py`: Lädt `data/activities.json` in die Datenbank. Optional Flags prüfen (siehe Script-Argumente). Typisch:
   ```bash
   python scripts/seed_activities.py
@@ -25,6 +33,32 @@ Kurz-Anleitung für die Utilities im Ordner `backend/scripts`. Alle Befehle kann
   python scripts/test_email.py you@example.com
   ```
 
+## Skripte (Apify / OpenRouter, Node.js)
+
+- `apify_google_maps_reviews.mjs`: Ruft Google-Maps-Daten per Apify Actor `compass/crawler-google-places` ab und speichert pro Activity eine JSON-Datei in `backend/data/activities/`. Interaktiv mit Auswahl und Überschreiben-Prompt.
+  ```bash
+  cd backend/scripts
+  node apify_google_maps_reviews.mjs
+  ```
+- `process_apify_activity_output.mjs`: Erstellt pro Activity einen Ordner `listing_id_provider` mit `*_basic.json` und `*_reviews.json`. Filtert Reviews > 400 Zeichen, fragt nach Überschreiben.
+  ```bash
+  cd backend/scripts
+  node process_apify_activity_output.mjs
+  ```
+- `openrouter_customer_voice.mjs`: Aggregiert Reviews per Activity zu einer kurzen Customer-Voice-Zusammenfassung via OpenRouter. Schreibt `*_customer_voice.json`, fragt vor Überschreiben.
+  ```bash
+  cd backend/scripts
+  node openrouter_customer_voice.mjs
+  ```
+- `update_activities.mjs`: Aktualisiert `backend/data/activities.json` aus den `*_basic.json` und `*_customer_voice.json` Dateien. Zeigt Änderungen vorab, fragt vor dem Schreiben.
+  ```bash
+  cd backend/scripts
+  node update_activities.mjs
+  ```
+
+Hinweis: Details zur Apify-Integration stehen in `APIFY.md`.
+
 ## Tipps
+
 - Im Container ausführen, damit die gleichen env vars/Netzwerke wie das Backend greifen.
 - Bei Import/Seed: vorher `alembic upgrade head`, damit das Schema aktuell ist.

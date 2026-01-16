@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "batches": [
+    {
+      "batch_id": "156461d0",
+      "env": "dev",
+      "created_at": "2026-01-16T01:58:25.874635",
+      "users": [
+        "2fa3b771-af1a-47e4-9efb-1b08eb00aea3"
+      ],
+      "rooms": [
+        "d7cab79b-c28f-4427-8a19-60722baeb532"
+      ],
+      "events": [
+        "d23c16d6-878e-433c-ab65-e2e1847c04c5"
+      ],
+      "emails": [
+        "johanna.lehmann.5510b8@eventhorizon.test"
+      ]
+    }
+  ]
+}
