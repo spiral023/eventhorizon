@@ -215,7 +215,7 @@ class AIService:
 Aufgabe (STRIKTE LÄNGENVORGABEN):
 1. Ermittle die bevorzugten Aktivit?tskategorien (Prozentverteilung). Nutze die normalisierte Verteilung als primaere Quelle, Rohdaten nur als Plausibilitaets-/Konfidenzsignal.
 2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
-3. Empfehle 6-9 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
+3. Empfehle 1-3 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
 4. Bestimme den Team-Vibe (action/relax/mixed).
 5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
 6. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).

@@ -3,7 +3,7 @@ Pydantic Schemas für AI-related Responses
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 
 class CategoryDistribution(BaseModel):
@@ -11,6 +11,21 @@ class CategoryDistribution(BaseModel):
     category: str
     percentage: float = Field(ge=0, le=100, description="Prozentanteil der Kategorie")
     count: int = Field(ge=0, description="Anzahl der Favoriten in dieser Kategorie")
+
+
+class TeamPreferenceAverages(BaseModel):
+    """Durchschnittliche Team-Präferenzen (0-5)"""
+    physical: Optional[float] = Field(default=None, ge=0, le=5)
+    mental: Optional[float] = Field(default=None, ge=0, le=5)
+    social: Optional[float] = Field(default=None, ge=0, le=5)
+    competition: Optional[float] = Field(default=None, ge=0, le=5)
+
+
+class CoverageStat(BaseModel):
+    """Abdeckung/Teilnahme in Prozent"""
+    count: int = Field(ge=0)
+    total: int = Field(ge=0)
+    percentage: float = Field(ge=0, le=100)
 
 
 class TeamPreferenceSummary(BaseModel):
@@ -58,6 +73,18 @@ class TeamPreferenceSummary(BaseModel):
         alias="memberCount",
         ge=1,
         description="Anzahl der analysierten Teammitglieder"
+    )
+    team_preferences: Optional[TeamPreferenceAverages] = Field(
+        alias="teamPreferences",
+        description="Durchschnittliche Team-Präferenzen (0-5)"
+    )
+    favorites_participation: CoverageStat = Field(
+        alias="favoritesParticipation",
+        description="Anteil Mitglieder mit Favoriten"
+    )
+    preferences_coverage: CoverageStat = Field(
+        alias="preferencesCoverage",
+        description="Anteil Mitglieder mit Aktivitäts-Präferenzen"
     )
 
     class Config:

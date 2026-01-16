@@ -25,7 +25,7 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 from datetime import datetime
-from typing import List, Literal, Dict, Tuple
+from typing import List, Literal, Dict, Tuple, Optional
 from pydantic import BaseModel, Field
 
 from app.db.session import get_db
@@ -139,6 +139,39 @@ def _calculate_normalized_category_distribution(
         availability_distribution,
         total_favorites,
     )
+
+
+def _calculate_team_preference_averages(members: List[User]) -> Dict[str, Optional[float]]:
+    totals = {"physical": 0.0, "mental": 0.0, "social": 0.0, "competition": 0.0}
+    counts = {"physical": 0, "mental": 0, "social": 0, "competition": 0}
+
+    for member in members:
+        prefs = member.activity_preferences or {}
+        for key in totals.keys():
+            value = prefs.get(key)
+            if isinstance(value, (int, float)):
+                totals[key] += float(value)
+                counts[key] += 1
+
+    averages = {}
+    for key in totals.keys():
+        averages[key] = totals[key] / counts[key] if counts[key] > 0 else None
+    return averages
+
+
+def _has_activity_preferences(prefs: Optional[dict]) -> bool:
+    if not isinstance(prefs, dict):
+        return False
+    for key in ("physical", "mental", "social", "competition"):
+        value = prefs.get(key)
+        if isinstance(value, (int, float)):
+            return True
+    return False
+
+
+def _build_coverage_stat(count: int, total: int) -> Dict[str, float]:
+    percentage = (count / total * 100) if total > 0 else 0
+    return {"count": count, "total": total, "percentage": percentage}
 # ... (rest of imports)
 
 # ... (TestAIRequest, TestAIResponse, test_ai_connection)
@@ -230,6 +263,15 @@ async def get_team_recommendations(
         availability_distribution,
         total_favorites,
     ) = _calculate_normalized_category_distribution(members, availability_counts)
+    team_preferences = _calculate_team_preference_averages(members)
+    favorites_participation = _build_coverage_stat(
+        sum(1 for m in members if len(m.favorite_activities) > 0),
+        len(members),
+    )
+    preferences_coverage = _build_coverage_stat(
+        sum(1 for m in members if _has_activity_preferences(m.activity_preferences)),
+        len(members),
+    )
 
     if cached_result:
         logger.info(f"Returning cached team analysis for room {room_id}")
@@ -238,6 +280,9 @@ async def get_team_recommendations(
             normalized_distribution if total_favorites > 0 else []
         )
         cached_result["memberCount"] = len(members)
+        cached_result["teamPreferences"] = team_preferences
+        cached_result["favoritesParticipation"] = favorites_participation
+        cached_result["preferencesCoverage"] = preferences_coverage
         return cached_result
 
     # Cache MISS - Load all activities for AI analysis
@@ -321,6 +366,9 @@ async def get_team_recommendations(
     
     # Ensure memberCount is set
     result["memberCount"] = len(members)
+    result["teamPreferences"] = team_preferences
+    result["favoritesParticipation"] = favorites_participation
+    result["preferencesCoverage"] = preferences_coverage
         
     TEAM_ANALYSIS_CACHE[cache_key] = result
     response.headers["X-AI-Cache"] = "miss"

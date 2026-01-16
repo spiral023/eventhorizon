@@ -1803,6 +1803,22 @@ export interface TeamPreferenceSummary {
   socialVibe: "low" | "medium" | "high";
   insights: string[];
   memberCount: number;
+  teamPreferences?: {
+    physical?: number;
+    mental?: number;
+    social?: number;
+    competition?: number;
+  };
+  favoritesParticipation?: {
+    count: number;
+    total: number;
+    percentage: number;
+  };
+  preferencesCoverage?: {
+    count: number;
+    total: number;
+    percentage: number;
+  };
 }
 
 export interface AiRecommendation {
@@ -1816,10 +1832,10 @@ export async function getTeamRecommendations(roomId: string): Promise<ApiResult<
     await delay(600);
     const summary: TeamPreferenceSummary = {
       categoryDistribution: [
-        { category: "action", percentage: 40 },
-        { category: "food", percentage: 30 },
-        { category: "relax", percentage: 20 },
-        { category: "party", percentage: 10 },
+        { category: "action", percentage: 40, count: 5 },
+        { category: "food", percentage: 30, count: 3 },
+        { category: "relax", percentage: 20, count: 2 },
+        { category: "party", percentage: 10, count: 1 },
       ],
       preferredGoals: ["teambuilding", "fun"],
       recommendedActivityIds: ["act-1"],
@@ -1833,6 +1849,22 @@ export async function getTeamRecommendations(roomId: string): Promise<ApiResult<
       teamPersonality: "Die Action-Helden",
       strengths: ["Schnelle Entscheidungen"],
       challenges: ["Ruhige Momente"],
+      teamPreferences: {
+        physical: 4.1,
+        mental: 2.9,
+        social: 3.6,
+        competition: 3.2,
+      },
+      favoritesParticipation: {
+        count: 7,
+        total: 8,
+        percentage: 87.5,
+      },
+      preferencesCoverage: {
+        count: 6,
+        total: 8,
+        percentage: 75,
+      },
     };
     return { data: summary };
   }

@@ -256,6 +256,63 @@ export default function TeamPage() {
   if (!recommendations) return null;
 
   const VibeIcon = vibeIcons[recommendations.teamVibe];
+  const formatPercent = (value: number) =>
+    new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+  const formatPercentInteger = (value: number) =>
+    new Intl.NumberFormat("de-DE", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+  const formatPreference = (value?: number) =>
+    typeof value === "number"
+      ? new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)
+      : "–";
+
+  const teamPreferenceItems = [
+    {
+      key: "physical",
+      label: "Körperliche Aktivität",
+      icon: Zap,
+      value: recommendations.teamPreferences?.physical,
+    },
+    {
+      key: "mental",
+      label: "Mentale Herausforderung",
+      icon: Brain,
+      value: recommendations.teamPreferences?.mental,
+    },
+    {
+      key: "social",
+      label: "Soziale Interaktion",
+      icon: MessageSquare,
+      value: recommendations.teamPreferences?.social,
+    },
+    {
+      key: "competition",
+      label: "Wettbewerbslevel",
+      icon: Trophy,
+      value: recommendations.teamPreferences?.competition,
+    },
+  ];
+
+  const teamPreferenceRanking = teamPreferenceItems
+    .filter((item): item is (typeof teamPreferenceItems)[number] & { value: number } => typeof item.value === "number")
+    .sort((a, b) => b.value - a.value);
+  const participation = recommendations.favoritesParticipation;
+  const preferencesCoverage = recommendations.preferencesCoverage;
+  const participationLabel =
+    participation
+      ? participation.percentage >= 75
+        ? "Hohe Beteiligung"
+        : participation.percentage >= 50
+        ? "Mittlere Beteiligung"
+        : "Geringe Beteiligung"
+      : "Beteiligung";
+  const coverageLabel =
+    preferencesCoverage
+      ? preferencesCoverage.percentage >= 75
+        ? "Hohe Präferenz-Abdeckung"
+        : preferencesCoverage.percentage >= 50
+        ? "Mittlere Präferenz-Abdeckung"
+        : "Geringe Präferenz-Abdeckung"
+      : "Präferenz-Abdeckung";
 
   return (
     <div className="space-y-8 pb-12">
@@ -413,43 +470,78 @@ export default function TeamPage() {
                   </TooltipTrigger>
                   <TooltipContent side="right" className="max-w-xs">
                     <p className="text-xs leading-relaxed text-foreground">
-                      Die Prozentwerte zeigen normalisierte Präferenzen: Favoriten
-                      pro Kategorie werden pro User ins Verhältnis zur Anzahl
-                      verfügbarer Aktivitäten gesetzt und dann gemittelt. Die
-                      Favoritenzahl ist der rohe Count.
+                      Kategorie-Anteile zeigen normalisierte Favoriten je
+                      Kategorie (pro Person relativ zur Verfügbarkeit). Die
+                      Team-Präferenzen sind Durchschnittswerte der
+                      Profilangaben (Skala 0–5).
                     </p>
                   </TooltipContent>
                 </Tooltip>
               </CardTitle>
               <CardDescription>
-                Normalisierte Präferenzen basierend auf euren Favoriten
+                Favoriten-Verteilung und Team-Präferenzen im Überblick
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {recommendations.categoryDistribution.map((cat, index) => (
-                <div key={cat.category} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium flex items-center gap-2">
-                      <span className={cn("w-2 h-2 rounded-full", CategoryColors[cat.category])} />
-                      {CategoryLabels[cat.category]}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">
-                        {cat.count} {cat.count === 1 ? 'Favorit' : 'Favoriten'}
-                      </span>
-                      <span className="text-muted-foreground font-mono">{cat.percentage}%</span>
-                    </div>
-                  </div>
-                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                    <motion.div
-                      className={cn("h-full rounded-full bg-primary", index === 0 && "bg-gradient-to-r from-primary to-primary/60")}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${cat.percentage}%` }}
-                      transition={{ delay: 0.5 + index * 0.1, duration: 0.8 }}
-                    />
-                  </div>
+              <div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground uppercase tracking-wide">
+                  <span>Team-Präferenzen (Ø 0–5)</span>
+                  <span>Ranking</span>
                 </div>
-              ))}
+                {teamPreferenceRanking.length > 0 ? (
+                  <div className="mt-3 space-y-3">
+                    {teamPreferenceRanking.map((item, index) => {
+                      const Icon = item.icon;
+                      return (
+                        <div key={item.key} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground">
+                                {index + 1}
+                              </span>
+                              <Icon className="h-4 w-4 text-primary/80" />
+                              <span className="font-medium">{item.label}</span>
+                            </div>
+                            <span className="text-muted-foreground font-mono">
+                              {formatPreference(item.value)}/5
+                            </span>
+                          </div>
+                          <Progress value={(item.value / 5) * 100} className="h-2" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Keine Team-Präferenzen vorhanden.
+                  </p>
+                )}
+              </div>
+              <div className="pt-4 border-t border-border/50">
+                <div className="flex items-center justify-between text-xs text-muted-foreground uppercase tracking-wide">
+                  <span>Favoriten-Verteilung</span>
+                  <span>Ranking</span>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {recommendations.categoryDistribution.map((cat, index) => (
+                    <div key={cat.category} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground">
+                            {index + 1}
+                          </span>
+                          <span className={cn("h-2 w-2 rounded-full", CategoryColors[cat.category])} />
+                          <span className="font-medium">{CategoryLabels[cat.category]}</span>
+                        </div>
+                        <span className="text-muted-foreground font-mono">
+                          {formatPercentInteger(cat.percentage)}% · {cat.count}
+                        </span>
+                      </div>
+                      <Progress value={cat.percentage} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -495,6 +587,31 @@ export default function TeamPage() {
                     {c}
                   </li>
                 ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-sky-500/5 border-sky-500/20 rounded-3xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sky-600 text-lg">
+                <TrendingUp className="w-5 h-5" />
+                Beteiligung & Präferenzen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="grid gap-3">
+                <li className="flex items-start gap-3 text-sm text-muted-foreground">
+                  <div className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0 mt-1.5" />
+                  {participation
+                    ? `${participationLabel}: ${participation.count}/${participation.total} Mitglieder haben Favoriten gesetzt (${formatPercent(participation.percentage)}%).`
+                    : "Noch keine Favoriten vorhanden."}
+                </li>
+                <li className="flex items-start gap-3 text-sm text-muted-foreground">
+                  <div className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0 mt-1.5" />
+                  {preferencesCoverage
+                    ? `${coverageLabel}: ${preferencesCoverage.count}/${preferencesCoverage.total} Mitglieder haben Präferenzen gesetzt (${formatPercent(preferencesCoverage.percentage)}%).`
+                    : "Noch keine Präferenzen vorhanden."}
+                </li>
               </ul>
             </CardContent>
           </Card>
