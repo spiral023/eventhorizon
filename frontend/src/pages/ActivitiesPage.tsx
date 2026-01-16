@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
 import { PageError } from "@/components/shared/PageError";
@@ -12,6 +12,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
+import { CategoryLabels } from "@/types/domain";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -31,6 +32,7 @@ const ITEMS_PER_PAGE = 9;
 
 export default function ActivitiesPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
@@ -45,6 +47,20 @@ export default function ActivitiesPage() {
   const isMobile = useIsMobile();
 
   const activeFilterCount = useMemo(() => getActiveFilterCount(filters), [filters]);
+  const openSectionsFromParams = useMemo(() => {
+    if (isMobile) return undefined;
+    const sections = new Set<string>();
+    const categoryParam = searchParams.get("category");
+    if (categoryParam && categoryParam in CategoryLabels) {
+      sections.add("category");
+    }
+    const prefParam = searchParams.get("pref");
+    if (prefParam === "physical") sections.add("physical");
+    if (prefParam === "mental") sections.add("mental");
+    if (prefParam === "social") sections.add("social");
+    if (prefParam === "competition") sections.add("competition");
+    return sections.size > 0 ? Array.from(sections) : undefined;
+  }, [isMobile, searchParams]);
 
   const loadData = useCallback(async () => {
     setIsLoadingActivities(true);
@@ -69,6 +85,27 @@ export default function ActivitiesPage() {
     if (authLoading) return;
     loadData();
   }, [authLoading, loadData]);
+
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam && categoryParam in CategoryLabels) {
+      const categoryKey = categoryParam as keyof typeof CategoryLabels;
+      setFilters((prev) => ({ ...prev, categories: [categoryKey] }));
+    }
+    const prefParam = searchParams.get("pref");
+    const minParam = searchParams.get("min");
+    const minValue = minParam ? Math.max(0, Math.min(5, Math.floor(Number(minParam)))) : undefined;
+    if (prefParam && typeof minValue === "number" && !Number.isNaN(minValue)) {
+      setFilters((prev) => {
+        const next = { ...prev };
+        if (prefParam === "physical") next.physicalIntensity = [minValue, 5];
+        if (prefParam === "mental") next.mentalChallenge = [minValue, 5];
+        if (prefParam === "social") next.socialInteractionLevel = [minValue, 5];
+        if (prefParam === "competition") next.competitionLevel = [minValue, 5];
+        return next;
+      });
+    }
+  }, [searchParams]);
 
   const filteredActivities = useMemo(() => {
     return activities.filter((activity) => {
@@ -240,6 +277,7 @@ export default function ActivitiesPage() {
                 filters={filters}
                 onChange={setFilters}
                 onReset={() => setFilters(defaultFilters)}
+                defaultOpenSections={openSectionsFromParams}
               />
             </div>
           </div>
@@ -288,6 +326,7 @@ export default function ActivitiesPage() {
                   filters={filters}
                   onChange={setFilters}
                   onReset={() => setFilters(defaultFilters)}
+                  defaultOpenSections={openSectionsFromParams}
                 />
               </SheetContent>
             </Sheet>

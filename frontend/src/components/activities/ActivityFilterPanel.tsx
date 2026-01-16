@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, ChevronDown, Clock, Users, Dumbbell, Brain, Sparkles, Footprints, Car, Sun, AlertTriangle, Euro, Heart, Target, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ interface ActivityFilterPanelProps {
   onChange: (filters: ActivityFilters) => void;
   onReset: () => void;
   className?: string;
+  defaultOpenSections?: string[];
 }
 
 const PrimaryGoalLabels: Record<string, string> = {
@@ -30,9 +31,16 @@ export function ActivityFilterPanel({
   filters = defaultFilters, 
   onChange, 
   onReset,
-  className 
+  className,
+  defaultOpenSections
 }: ActivityFilterPanelProps) {
-  const [openSections, setOpenSections] = useState<string[]>(["category"]);
+  const [openSections, setOpenSections] = useState<string[]>(defaultOpenSections ?? ["category"]);
+
+  useEffect(() => {
+    if (defaultOpenSections && defaultOpenSections.length > 0) {
+      setOpenSections(defaultOpenSections);
+    }
+  }, [defaultOpenSections]);
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) =>

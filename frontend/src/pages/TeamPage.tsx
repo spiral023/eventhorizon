@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, TrendingUp, Heart, Zap, Coffee, Mountain, 
@@ -458,29 +458,7 @@ export default function TeamPage() {
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" />
                 Interessen-Radar
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Info zur Berechnung der Interessen"
-                      className="ml-1 inline-flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <Info className="h-4 w-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-xs">
-                    <p className="text-xs leading-relaxed text-foreground">
-                      Kategorie-Anteile zeigen normalisierte Favoriten je
-                      Kategorie (pro Person relativ zur Verfügbarkeit). Die
-                      Team-Präferenzen sind Durchschnittswerte der
-                      Profilangaben (Skala 0–5).
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
               </CardTitle>
-              <CardDescription>
-                Favoriten-Verteilung und Team-Präferenzen im Überblick
-              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -492,22 +470,30 @@ export default function TeamPage() {
                   <div className="mt-3 space-y-3">
                     {teamPreferenceRanking.map((item, index) => {
                       const Icon = item.icon;
+                      const minLevel = Math.max(0, Math.floor(item.value));
                       return (
-                        <div key={item.key} className="space-y-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground">
-                                {index + 1}
+                        <Link
+                          key={item.key}
+                          to={`/activities?pref=${encodeURIComponent(item.key)}&min=${minLevel}`}
+                          className="block rounded-xl transition-colors hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                          aria-label={`Aktivitäten mit ${item.label} ab ${minLevel} anzeigen`}
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground">
+                                  {index + 1}
+                                </span>
+                                <Icon className="h-4 w-4 text-primary/80" />
+                                <span className="font-medium">{item.label}</span>
+                              </div>
+                              <span className="text-muted-foreground font-mono">
+                                {formatPreference(item.value)}/5
                               </span>
-                              <Icon className="h-4 w-4 text-primary/80" />
-                              <span className="font-medium">{item.label}</span>
                             </div>
-                            <span className="text-muted-foreground font-mono">
-                              {formatPreference(item.value)}/5
-                            </span>
+                            <Progress value={(item.value / 5) * 100} className="h-2" />
                           </div>
-                          <Progress value={(item.value / 5) * 100} className="h-2" />
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
@@ -524,21 +510,47 @@ export default function TeamPage() {
                 </div>
                 <div className="mt-3 space-y-3">
                   {recommendations.categoryDistribution.map((cat, index) => (
-                    <div key={cat.category} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground">
-                            {index + 1}
-                          </span>
-                          <span className={cn("h-2 w-2 rounded-full", CategoryColors[cat.category])} />
-                          <span className="font-medium">{CategoryLabels[cat.category]}</span>
+                    <Link
+                      key={cat.category}
+                      to={`/activities?category=${encodeURIComponent(cat.category)}`}
+                      className="block rounded-xl transition-colors hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      aria-label={`Aktivitäten in der Kategorie ${CategoryLabels[cat.category]} anzeigen`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground">
+                              {index + 1}
+                            </span>
+                            <span className={cn("h-2 w-2 rounded-full", CategoryColors[cat.category])} />
+                            <span className="font-medium">{CategoryLabels[cat.category]}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground font-mono">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1">
+                                  {formatPercentInteger(cat.percentage)}%
+                                  <span className="text-muted-foreground/60">·</span>
+                                  {cat.count}
+                                  <Heart className="h-3.5 w-3.5 text-pink-500/80" />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="max-w-xs">
+                                <p className="text-xs leading-relaxed text-foreground">
+                                  Der Prozentwert zeigt, wie beliebt diese Kategorie
+                                  im Team ist. Er zeigt den Anteil an Favoriten der
+                                  Kategorie im Verhältnis zu der Anzahl der
+                                  Aktivitäten der Kategorie. Die Zahl daneben zeigt,
+                                  wie viele Aktivitäten dieser Kategorie favorisiert
+                                  wurden.
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
                         </div>
-                        <span className="text-muted-foreground font-mono">
-                          {formatPercentInteger(cat.percentage)}% · {cat.count}
-                        </span>
+                        <Progress value={cat.percentage} className="h-2" />
                       </div>
-                      <Progress value={cat.percentage} className="h-2" />
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -661,7 +673,7 @@ export default function TeamPage() {
               <Rocket className="w-6 h-6 text-primary" />
               Top-Empfehlungen
             </h3>
-            <p className="text-muted-foreground">Exklusiv für euer Profil ausgewählt</p>
+            <p className="text-muted-foreground">Exklusiv für diesen Raum ausgewählt</p>
           </div>
           <Users2 className="w-8 h-8 text-muted-foreground/20" />
         </div>
