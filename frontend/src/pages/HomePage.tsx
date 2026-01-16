@@ -36,6 +36,7 @@ export default function HomePage() {
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [roomCount, setRoomCount] = useState(0);
+  const [roomAccessCodesById, setRoomAccessCodesById] = useState<Record<string, string>>({});
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({ upcomingEventsCount: 0, openVotesCount: 0 });
   const [loading, setLoading] = useState(true);
@@ -75,6 +76,9 @@ export default function HomePage() {
       const sortedRooms = sortRoomsByMembers(roomsData);
       setRooms(sortedRooms.slice(0, 3));
       setRoomCount(sortedRooms.length);
+      setRoomAccessCodesById(
+        Object.fromEntries(roomsData.map((room) => [room.id, room.inviteCode || room.id]))
+      );
       
       const eventsData = eventsResult.data || [];
       setEvents(eventsData.slice(0, 3));
@@ -211,13 +215,17 @@ export default function HomePage() {
             ) : isAuthenticated ? (
               events.length > 0 ? (
                 <div className="grid gap-4">
-                  {events.map((event) => (
-                    <EventCard 
-                      key={event.id} 
-                      event={event} 
-                      onClick={() => navigate(`/events/${event.shortCode}`)} 
-                    />
-                  ))}
+                  {events.map((event) => {
+                    const accessCode = roomAccessCodesById[event.roomId] ?? event.roomId;
+                    const eventCode = event.shortCode || event.id;
+                    return (
+                      <EventCard 
+                        key={event.id} 
+                        event={event} 
+                        onClick={() => navigate(`/rooms/${accessCode}/events/${eventCode}`)} 
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 <EmptyState icon={Calendar} title="Keine anstehenden Events" description="Erstelle ein Event in einem deiner Räume, um zu starten." />
