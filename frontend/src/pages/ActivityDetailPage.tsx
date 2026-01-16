@@ -29,7 +29,8 @@ import {
   Send,
   Loader2,
   Share2,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +54,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { BookingRequestDialog } from "@/components/activities/BookingRequestDialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const PrimaryGoalLabels: Record<string, string> = {
   teambuilding: "Teambuilding",
@@ -520,6 +522,20 @@ export default function ActivityDetailPage() {
               <div className="flex items-center gap-2 mb-4">
                 <MessageCircle className="h-5 w-5 text-primary" />
                 <h2 className="text-xl font-semibold">Die Kunden sagen</h2>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition"
+                      aria-label="Info zur KI-Zusammenfassung"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs leading-5">
+                    KI-generierte Zusammenfassung; kann fehlerhaft oder unvollständig sein und spiegelt nicht alle Bewertungen wider.
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <Card className="bg-muted/30 border-border/50 rounded-2xl">
                 <CardContent className="p-6 italic text-muted-foreground leading-7 relative">
@@ -541,13 +557,14 @@ export default function ActivityDetailPage() {
                 {activity.tags
                   .filter(tag => tag.toLowerCase() !== "kultur" && tag.toLowerCase() !== "culture")
                   .map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="rounded-full px-4 py-1.5 text-sm font-normal"
-                  >
-                    {tag}
-                  </Badge>
+                  <Link key={tag} to={`/activities?q=${encodeURIComponent(tag)}`}>
+                    <Badge
+                      variant="secondary"
+                      className="rounded-full px-4 py-1.5 text-sm font-normal hover:bg-secondary/80 transition"
+                    >
+                      {tag}
+                    </Badge>
+                  </Link>
                 ))}
               </div>
             </motion.section>

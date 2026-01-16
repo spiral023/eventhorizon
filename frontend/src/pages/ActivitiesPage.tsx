@@ -92,6 +92,10 @@ export default function ActivitiesPage() {
       const categoryKey = categoryParam as keyof typeof CategoryLabels;
       setFilters((prev) => ({ ...prev, categories: [categoryKey] }));
     }
+    const queryParam = searchParams.get("q");
+    if (queryParam !== null) {
+      setSearchQuery(queryParam);
+    }
     const prefParam = searchParams.get("pref");
     const minParam = searchParams.get("min");
     const minValue = minParam ? Math.max(0, Math.min(5, Math.floor(Number(minParam)))) : undefined;
