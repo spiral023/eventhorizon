@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { ThumbsUp, ThumbsDown, Minus, Check, Trophy, Heart, Star, Globe, Mail, MapPin, CalendarCheck, UtensilsCrossed } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { ThumbsUp, ThumbsDown, Minus, Check, Trophy, Heart, Star, Globe, Mail, MapPin, CalendarCheck, UtensilsCrossed, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,6 +46,8 @@ export function VotingCard({
   rank,
   participants = [],
 }: VotingCardProps) {
+  const [showAgainstDialog, setShowAgainstDialog] = useState(false);
+
   const forVotes = votes?.votes.filter((v) => v.vote === "for").length || 0;
   const againstVotes = votes?.votes.filter((v) => v.vote === "against").length || 0;
   const abstainVotes = votes?.votes.filter((v) => v.vote === "abstain").length || 0;
@@ -80,6 +82,11 @@ export function VotingCard({
           minimumFractionDigits: activity.typicalDurationHours % 1 === 0 ? 0 : 1,
           maximumFractionDigits: 1,
         })}h`
+      : undefined;
+
+  const groupSizeLabel = 
+    (activity.recommendedGroupSizeMin || activity.recommendedGroupSizeMax)
+      ? `${activity.recommendedGroupSizeMin || 2}-${activity.recommendedGroupSizeMax || 20} Pers.`
       : undefined;
 
   const ratingLabel =
@@ -150,6 +157,20 @@ export function VotingCard({
       className: "gap-1.5",
       tooltip: "Typische Dauer",
       content: <span>{durationLabel}</span>,
+    });
+  }
+
+  if (groupSizeLabel) {
+    metaItems.push({
+      key: "groupSize",
+      className: "gap-1.5",
+      tooltip: "Empfohlene Gruppengröße",
+      content: (
+        <>
+          <Users className="h-3.5 w-3.5" />
+          <span>{groupSizeLabel}</span>
+        </>
+      ),
     });
   }
 
@@ -300,7 +321,13 @@ export function VotingCard({
                         : "border-border bg-secondary/70 text-foreground hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-600"
                     )}
                     type="button"
-                    onClick={() => onVote(activity.id, "against")}
+                    onClick={() => {
+                        if (userVote !== "against") {
+                            setShowAgainstDialog(true);
+                        } else {
+                            onVote(activity.id, "against");
+                        }
+                    }}
                     disabled={isLoading || disabled}
                     aria-pressed={userVote === "against"}
                   >
@@ -308,6 +335,27 @@ export function VotingCard({
                     Dagegen
                     {userVote === "against" && <Check className="h-3 w-3 ml-1" />}
                   </Button>
+                  
+                  <AlertDialog open={showAgainstDialog} onOpenChange={setShowAgainstDialog}>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Dagegen stimmen?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Mit einer Dagegen-Stimme ziehst du dieser Aktivität einen Punkt ab. Bitte nutze diese Option nur, wenn du ernsthafte Einwände hast oder an dieser Aktivität keinesfalls teilnehmen möchtest.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => {
+                            onVote(activity.id, "against");
+                            setShowAgainstDialog(false);
+                        }}>
+                          Trotzdem dagegen stimmen
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
                   <Button
                     variant={userVote === "abstain" ? "secondary" : "outline"}
                     size="sm"

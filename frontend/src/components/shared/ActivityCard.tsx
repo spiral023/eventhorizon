@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MapPin, Euro, Clock, Users, Heart, Star, Zap, Brain, Target } from "lucide-react";
+import { Euro, Clock, Users, Heart, Star, Zap, Brain, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,10 +104,6 @@ export function ActivityCard({
 
         {/* Meta Info */}
         <div className="flex flex-wrap items-center gap-3 mt-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5" />
-            <span>{activity.locationCity || RegionLabels[activity.locationRegion]}</span>
-          </div>
           <div className="flex items-center gap-1.5">
             <Euro className="h-3.5 w-3.5" />
             <span>ab {activity.estPricePerPerson}€</span>

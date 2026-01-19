@@ -611,6 +611,8 @@ function mapActivityFromApi(apiActivity: ApiActivity): Activity {
     galleryUrls: apiActivity.gallery_urls || [],
     season: apiActivity.season as Season,
     typicalDurationHours: apiActivity.typical_duration_hours,
+    recommendedGroupSizeMin: apiActivity.recommended_group_size_min,
+    recommendedGroupSizeMax: apiActivity.recommended_group_size_max,
     groupSizeMin: apiActivity.recommended_group_size_min, // Fallback/Alias
     groupSizeMax: apiActivity.recommended_group_size_max, // Fallback/Alias
     minParticipants: apiActivity.recommended_group_size_min, // Fallback

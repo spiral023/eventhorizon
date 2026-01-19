@@ -73,7 +73,7 @@ def map_json_to_model(
         duration=activity_json.get("duration"),
         typical_duration_hours=activity_json.get("typical_duration_hours"),
 
-        group_size_min=activity_json.get("min_participants") or activity_json.get("recommended_group_size_min"),
+        group_size_min=activity_json.get("recommended_group_size_min") or activity_json.get("min_participants"),
         group_size_max=activity_json.get("recommended_group_size_max"),
 
         physical_intensity=activity_json.get("physical_intensity"),
