@@ -398,7 +398,10 @@ export default function ActivityDetailPage() {
                     {rating && (
                       <Badge
                         variant="outline"
-                        className="bg-white/15 backdrop-blur-md text-white border-white/30 text-sm px-3 py-1"
+                        className={cn(
+                          "bg-white/15 backdrop-blur-md border-white/30 text-sm px-3 py-1",
+                          rating < 4.0 ? "text-red-400 font-bold" : "text-white"
+                        )}
                       >
                         <Star className="h-3.5 w-3.5 fill-warning text-warning mr-1" />
                         {rating.toFixed(1)}

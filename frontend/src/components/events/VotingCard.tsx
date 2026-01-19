@@ -189,7 +189,7 @@ export function VotingCard({
       content: (
         <>
           <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
-          <span>{ratingLabel}</span>
+          <span className={cn(activity.externalRating && activity.externalRating < 4.0 && "text-red-500 font-bold")}>{ratingLabel}</span>
         </>
       ),
     });

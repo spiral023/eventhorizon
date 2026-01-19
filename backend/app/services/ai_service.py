@@ -346,9 +346,6 @@ Aufgabe:
 Empfehle die 5 besten Aktivitäten für dieses Event.
 
 Bewertungskriterien:
-- budgetMatch: Passt die Aktivität ins Budget? (100 = perfekt, 0 = zu teuer)
-- seasonMatch: Passt zur Saison/Zeitfenster? (100 = ideal, 0 = unmöglich)
-- groupSizeMatch: Passt zur Teilnehmerzahl? (100 = optimal, 0 = zu klein/groß)
 - preferenceMatch: Passt zu Team-Präferenzen? (100 = perfekt, 0 = nicht passend)
 
 Gib eine kurze, überzeugende Begründung auf Deutsch.""",
@@ -578,7 +575,7 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen""",
                 availability_lines.append(f"- {category}: {count} Aktivitaeten")
             if availability_lines:
                 parts.append(
-                    "\n**Katalog-Verfuegbarkeit je Kategorie:**\n"
+                    "\n**Katalog-Verfügbarkeit je Kategorie:**\n"
                     + "\n".join(availability_lines)
                 )
 
@@ -587,14 +584,14 @@ Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen""",
 
         if normalized_distribution:
             guidance = (
-                "\n**Hinweis fuer die Auswertung:**\n"
-                "- Fuer die Kategorie-Priorisierung primaer die normalisierte Verteilung verwenden.\n"
-                "- Rohverteilung und Verfuegbarkeit nur als Plausibilitaets-/Konfidenzsignal nutzen.\n"
+                "\n**Hinweis für die Auswertung:**\n"
+                "- Für die Kategorie-Priorisierung primär die normalisierte Verteilung verwenden.\n"
+                "- Rohverteilung und Verfügbarkeit nur als Plausibilitäts-/Konfidenzsignal nutzen.\n"
             )
         else:
             guidance = (
-                "\n**Hinweis fuer die Auswertung:**\n"
-                "- Nutze die Favoriten-Verteilung als primaere Quelle.\n"
+                "\n**Hinweis für die Auswertung:**\n"
+                "- Nutze die Favoriten-Verteilung als primäre Quelle.\n"
             )
 
         return "".join(parts) + guidance

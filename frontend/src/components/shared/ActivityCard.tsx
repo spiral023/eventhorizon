@@ -184,7 +184,9 @@ export function ActivityCard({
               </div>
               <div className="flex items-center gap-1" title="Google Rating">
                 <Star className="h-4 w-4 text-warning fill-warning" />
-                <span>
+                <span className={cn(
+                  typeof activity.externalRating === "number" && activity.externalRating < 4.0 && "text-red-500 font-bold"
+                )}>
                   {typeof activity.externalRating === "number"
                     ? activity.externalRating.toFixed(1)
                     : "-"}
