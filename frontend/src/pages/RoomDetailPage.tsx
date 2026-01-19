@@ -36,7 +36,7 @@ export default function RoomDetailPage() {
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [leaveLoading, setLeaveLoading] = useState(false);
   
-  const { user } = useAuthStore();
+  const { user, removeRoomRole } = useAuthStore();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,6 +102,10 @@ export default function RoomDetailPage() {
       if (result.error) {
         toast.error(result.error.message || "Fehler beim Verlassen des Raums");
         return;
+      }
+      if (room) {
+        removeRoomRole(room.id);
+        removeRoomRole(room.inviteCode);
       }
       toast.success("Raum verlassen");
       navigate("/rooms");

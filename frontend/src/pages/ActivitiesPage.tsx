@@ -32,7 +32,7 @@ const ITEMS_PER_PAGE = 9;
 
 export default function ActivitiesPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
@@ -95,6 +95,8 @@ export default function ActivitiesPage() {
     const queryParam = searchParams.get("q");
     if (queryParam !== null) {
       setSearchQuery(queryParam);
+    } else {
+      setSearchQuery("");
     }
     const prefParam = searchParams.get("pref");
     const minParam = searchParams.get("min");
@@ -110,6 +112,22 @@ export default function ActivitiesPage() {
       });
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const currentQuery = searchParams.get("q") ?? "";
+    const nextQuery = debouncedSearchQuery.trim();
+    if (nextQuery === "") {
+      if (currentQuery === "") return;
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("q");
+      setSearchParams(nextParams, { replace: true });
+      return;
+    }
+    if (currentQuery === nextQuery) return;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("q", nextQuery);
+    setSearchParams(nextParams, { replace: true });
+  }, [debouncedSearchQuery, searchParams, setSearchParams]);
 
   const filteredActivities = useMemo(() => {
     return activities.filter((activity) => {

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func, delete, desc, and_, or_
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from uuid import UUID, uuid4
 from datetime import datetime
@@ -11,7 +12,7 @@ from pydantic import BaseModel
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.core.utils import generate_room_invite_code, generate_event_short_code
-from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment, ActivityComment
+from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment, ActivityComment, RoomMember
 from app.schemas.domain import (
     Activity as ActivitySchema, Room as RoomSchema, RoomCreate, RoomUpdate, Event as EventSchema,
     EventCreate, VoteCreate, PhaseUpdate, DateResponseCreate, SelectActivity, FinalizeDate,
@@ -29,7 +30,7 @@ from app.services.event_avatar_service import (
     generate_event_avatar_upload_url,
     process_event_avatar_upload,
 )
-from app.api.helpers import enhance_event_full, enhance_event_with_user_names_helper
+from app.api.helpers import enhance_event_full, enhance_event_with_user_names_helper, ensure_user_in_room, ensure_event_participant
 
 router = APIRouter()
 
@@ -303,6 +304,8 @@ async def create_event_comment(
 ):
     # Verify event exists
     event = await resolve_event_identifier(event_identifier, db)
+    
+    await ensure_user_in_room(event, current_user, db)
         
     comment = EventComment(
         id=uuid4(),
@@ -1155,6 +1158,23 @@ async def get_event(
 ):
     from app.models.domain import RoomMember
 
+    # 1. Light fetch to resolve ID and check room
+    event_light = await resolve_event_identifier(event_identifier, db)
+
+    # 2. Ensure user is in room (Magic Join) AND is an event participant
+    was_added_room = await ensure_user_in_room(event_light, current_user, db)
+    was_added_participant = await ensure_event_participant(event_light, current_user, db)
+    
+    if was_added_room or was_added_participant:
+        try:
+            await db.commit()
+        except IntegrityError:
+            await db.rollback()
+            # Race condition: User was added by parallel request.
+            # This is fine, we just proceed to fetch the event.
+
+    # 3. Full fetch with relationships
+    # We fetch fresh here to avoid any expired object issues after commit
     event = await resolve_event_identifier(
         event_identifier,
         db,
@@ -1336,6 +1356,8 @@ async def vote_on_activity(
 
     event = await resolve_event_identifier(event_identifier, db)
 
+    await ensure_user_in_room(event, current_user, db)
+
     # Check if vote already exists for this user/activity/event
     existing_vote_result = await db.execute(
         select(VoteModel).where(
@@ -1407,6 +1429,8 @@ async def create_date_option(
 ):
     # Check event
     event = await resolve_event_identifier(event_identifier, db)
+
+    await ensure_user_in_room(event, current_user, db)
 
     if event.phase != "scheduling":
         raise HTTPException(status_code=400, detail="Can only add dates in scheduling phase")
@@ -1486,6 +1510,8 @@ async def respond_to_date(
     current_user: User = Depends(get_current_user)
 ):
     event = await resolve_event_identifier(event_identifier, db)
+    
+    await ensure_user_in_room(event, current_user, db)
         
     if event.phase != "scheduling":
         raise HTTPException(status_code=400, detail="Voting allowed only in scheduling phase")
@@ -1556,6 +1582,7 @@ async def select_activity(
     current_user: User = Depends(get_current_user),
 ):
     event = await resolve_event_identifier(event_identifier, db)
+    await ensure_user_in_room(event, current_user, db)
     await require_event_organizer(event, db, current_user)
     event.chosen_activity_id = selection.activity_id
     event.phase = "scheduling"
@@ -1570,6 +1597,7 @@ async def finalize_date(
     current_user: User = Depends(get_current_user),
 ):
     event = await resolve_event_identifier(event_identifier, db)
+    await ensure_user_in_room(event, current_user, db)
     await require_event_organizer(event, db, current_user)
     event.final_date_option_id = selection.date_option_id
     event.phase = "info"

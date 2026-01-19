@@ -21,6 +21,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
 import { EventActionsPanel } from "@/components/events/EventActionsPanel";
 import { BookingRequestDialog } from "@/components/activities/BookingRequestDialog";
+import { JoinSuccessOverlay } from "@/components/shared/JoinSuccessOverlay";
 import {
   getEventByCode,
   getActivities,
@@ -57,6 +58,8 @@ export default function EventDetailPage() {
   const [missingActivityDialogOpen, setMissingActivityDialogOpen] = useState(false);
   const [missingDateDialogOpen, setMissingDateDialogOpen] = useState(false);
   const [pendingVoteIds, setPendingVoteIds] = useState<Set<string>>(() => new Set());
+  const [showJoinAnimation, setShowJoinAnimation] = useState(false);
+  const [roomNameForAnimation, setRoomNameForAnimation] = useState("");
   
   // Track previous phase to only auto-switch tab when phase actually changes
   const prevPhaseRef = useRef<EventPhase | null>(null);
@@ -65,6 +68,8 @@ export default function EventDetailPage() {
 
   const currentUser = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const getRoomRole = useAuthStore((state) => state.getRoomRole);
+  const setRoomRole = useAuthStore((state) => state.setRoomRole);
   const currentUserId = currentUser?.id ?? "";
   const isCreator = !!(event?.createdByUserId && currentUserId === event.createdByUserId);
 
@@ -77,6 +82,40 @@ export default function EventDetailPage() {
       setEvent(fetchedEvent || null);
       
       if (fetchedEvent) {
+        // Check for Magic Join
+        if (isAuthenticated && fetchedEvent.roomId) {
+           const knownRole = getRoomRole(fetchedEvent.roomId);
+           const knownRoleByCode = getRoomRole(accessCode); // Also check by access code just in case
+           
+           if (!knownRole && !knownRoleByCode) {
+             // We successfully fetched the event, meaning backend added us.
+             // But frontend store doesn't know yet.
+             // Trigger animation!
+             setRoomRole(fetchedEvent.roomId, "member");
+             // Also store by access code if we have it, to be safe
+             if (accessCode) setRoomRole(accessCode, "member");
+             
+             // We need room name. fetchedEvent doesn't have it directly usually, unless expanded.
+             // Ideally event has room info. Assuming event.room.name isn't available on Event type directly?
+             // Let's just say "dem Raum".
+             setRoomNameForAnimation("dem Raum"); 
+             setShowJoinAnimation(true);
+
+             // Optimistically add user to participants if not present (to update "Dabei" count immediately)
+             if (currentUser && !fetchedEvent.participants.find(p => p.userId === currentUser.id)) {
+                fetchedEvent.participants.push({
+                  userId: currentUser.id,
+                  userName: currentUser.name,
+                  isOrganizer: false,
+                  hasVoted: false,
+                  avatarUrl: currentUser.avatarUrl
+                });
+                // Force update state
+                setEvent({ ...fetchedEvent });
+             }
+           }
+        }
+
         // Initial tab set
         setActiveTab(fetchedEvent.phase);
         prevPhaseRef.current = fetchedEvent.phase;
@@ -89,7 +128,7 @@ export default function EventDetailPage() {
       setLoading(false);
     };
     fetchData();
-  }, [eventCode]);
+  }, [eventCode, isAuthenticated]);
 
   // Update active tab when event phase advances
   useEffect(() => {
@@ -878,6 +917,11 @@ export default function EventDetailPage() {
           </div>
         </TabsContent>
       </Tabs>
+      <JoinSuccessOverlay 
+        show={showJoinAnimation} 
+        roomName={roomNameForAnimation} 
+        onComplete={() => setShowJoinAnimation(false)} 
+      />
     </div>
   );
 }

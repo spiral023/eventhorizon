@@ -119,7 +119,7 @@ export function VotingCard({
     links.push({ href: activity.menuUrl, label: "Speisekarte", icon: <UtensilsCrossed className="h-4 w-4" /> });
   }
 
-  const metaItems: Array<{ key: string; content: ReactNode; tooltip: string; className?: string }> = [];
+  const metaItems: Array<{ key: string; content: ReactNode; tooltip: ReactNode; className?: string }> = [];
 
   if (favoritesCount !== undefined) {
     metaItems.push({
@@ -157,7 +157,14 @@ export function VotingCard({
     metaItems.push({
       key: "rating",
       className: "gap-1.5",
-      tooltip: "Externes Rating",
+      tooltip: activity.customerVoice ? (
+        <div className="max-w-[280px] text-pretty text-left p-1">
+           <p className="font-semibold text-xs text-muted-foreground mb-1 uppercase tracking-wider">Kundenstimme</p>
+           <p className="italic text-sm">"{activity.customerVoice}"</p>
+        </div>
+      ) : (
+        "Externes Rating"
+      ),
       content: (
         <>
           <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />

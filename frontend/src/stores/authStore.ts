@@ -25,6 +25,7 @@ interface AuthState {
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setRoomRole: (roomId: string, role: RoomRole) => void;
+  removeRoomRole: (roomId: string) => void;
   getRoomRole: (roomId: string) => RoomRole;
   clearError: () => void;
   clearPendingVerification: () => void;
@@ -178,6 +179,14 @@ export const useAuthStore = create<AuthState>()(
         set((state) => ({
           roomRoles: { ...state.roomRoles, [roomId]: role },
         }));
+      },
+
+      removeRoomRole: (roomId: string) => {
+        set((state) => {
+          const newRoles = { ...state.roomRoles };
+          delete newRoles[roomId];
+          return { roomRoles: newRoles };
+        });
       },
 
       getRoomRole: (roomId: string) => {
