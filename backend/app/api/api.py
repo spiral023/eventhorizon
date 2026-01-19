@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
+from app.core.config import settings
 from app.core.utils import generate_room_invite_code, generate_event_short_code
 from app.models.domain import Activity, Room, Event, Vote, DateOption, DateResponse, EventParticipant, User, user_favorites, RoomRole, EventComment, ActivityComment, RoomMember
 from app.schemas.domain import (
@@ -30,7 +31,13 @@ from app.services.event_avatar_service import (
     generate_event_avatar_upload_url,
     process_event_avatar_upload,
 )
-from app.api.helpers import enhance_event_full, enhance_event_with_user_names_helper, ensure_user_in_room, ensure_event_participant
+from app.api.helpers import (
+    enhance_event_full,
+    enhance_event_with_user_names_helper,
+    ensure_event_participant,
+    ensure_user_in_room,
+    require_room_member,
+)
 
 router = APIRouter()
 
@@ -39,7 +46,8 @@ router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(ai.router)
 router.include_router(emails.router)
-router.include_router(dev.router)  # Development endpoints
+if settings.APP_ENV.lower() != "production":
+    router.include_router(dev.router)  # Development endpoints
 router.include_router(sentry_tunnel.router)  # Sentry tunnel for ad-blocker bypass
 
 @router.get("/version")
@@ -872,10 +880,15 @@ async def process_event_avatar(
     return event
 
 @router.get("/rooms/{room_identifier}", response_model=RoomSchema)
-async def get_room(room_identifier: str, db: AsyncSession = Depends(get_db)):
+async def get_room(
+    room_identifier: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     from app.models.domain import RoomMember
 
     room = await resolve_room_identifier(room_identifier, db)
+    await require_room_member(room, current_user, db)
 
     # Calculate member count (creator + members)
     member_count_result = await db.execute(
@@ -1016,6 +1029,7 @@ async def get_room_members(
 
     # Get the room and its creator
     room = await resolve_room_identifier(room_identifier, db)
+    await require_room_member(room, current_user, db)
 
     # Get the creator
     creator_result = await db.execute(select(User).where(User.id == room.created_by_user_id))

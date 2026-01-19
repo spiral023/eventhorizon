@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models.domain import Event, RoomMember, RoomRole, User, Room, EventParticipant
@@ -11,23 +13,20 @@ async def ensure_event_participant(event: Event, user: User, db: AsyncSession) -
     Ensure the user is a participant of the event.
     Returns True if user was added (requires commit), False otherwise.
     """
-    result = await db.execute(
-        select(EventParticipant).where(
-            EventParticipant.event_id == event.id,
-            EventParticipant.user_id == user.id
-        )
-    )
-    if not result.scalar_one_or_none():
-        logger.info(f"Adding user {user.id} as participant to event {event.id}")
-        new_participant = EventParticipant(
+    stmt = (
+        insert(EventParticipant)
+        .values(
             event_id=event.id,
             user_id=user.id,
             is_organizer=(event.created_by_user_id == user.id),
-            has_voted=False
+            has_voted=False,
         )
-        db.add(new_participant)
+        .on_conflict_do_nothing(index_elements=["event_id", "user_id"])
+    )
+    result = await db.execute(stmt)
+    if result.rowcount == 1:
+        logger.info(f"Adding user {user.id} as participant to event {event.id}")
         return True
-    
     return False
 
 async def ensure_user_in_room(event: Event, user: User, db: AsyncSession) -> bool:
@@ -47,25 +46,30 @@ async def ensure_user_in_room(event: Event, user: User, db: AsyncSession) -> boo
     if room.created_by_user_id == user.id:
         return False
 
-    # Check if user is already a member
-    room_member_result = await db.execute(
-        select(RoomMember).where(
-            RoomMember.room_id == event.room_id,
-            RoomMember.user_id == user.id
-        )
-    )
-    if not room_member_result.scalar_one_or_none():
-        new_member = RoomMember(
+    stmt = (
+        insert(RoomMember)
+        .values(
             room_id=event.room_id,
             user_id=user.id,
-            role=RoomRole.member
+            role=RoomRole.member,
         )
-        db.add(new_member)
-        
-        # We don't update room.member_count here as it is a computed field, not a column
-        return True
-    
-    return False
+        .on_conflict_do_nothing(index_elements=["room_id", "user_id"])
+    )
+    result = await db.execute(stmt)
+    return result.rowcount == 1
+
+async def require_room_member(room: Room, user: User, db: AsyncSession) -> None:
+    if room.created_by_user_id == user.id:
+        return
+
+    result = await db.execute(
+        select(RoomMember).where(
+            RoomMember.room_id == room.id,
+            RoomMember.user_id == user.id,
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Room not found")
 
 def enhance_event_with_user_names_helper(event: Event):
     """Add user_name to votes from user relationship"""
