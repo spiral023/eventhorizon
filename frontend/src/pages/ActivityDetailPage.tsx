@@ -30,7 +30,8 @@ import {
   Loader2,
   Share2,
   ArrowRight,
-  AlertTriangle
+  AlertTriangle,
+  ThumbsUp
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -414,6 +415,11 @@ export default function ActivityDetailPage() {
 
               {/* Top-Right Actions (Mobile & Desktop) */}
               <div className="absolute top-4 right-4 flex items-center gap-2">
+                 <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full backdrop-blur-md bg-white/20 text-white border border-white/10 cursor-help" title="Gesamte Dafür-Stimmen aus Events">
+                   <ThumbsUp className={cn("h-5 w-5", (activity.totalUpvotes ?? 0) > 0 && "text-green-400")} />
+                   <span className="font-medium text-sm">{activity.totalUpvotes ?? 0}</span>
+                </div>
+
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

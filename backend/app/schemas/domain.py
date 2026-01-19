@@ -154,6 +154,7 @@ class Activity(ActivityBase):
     created_at: datetime
     favorites_count: int = 0
     favorites_in_room_count: int = 0
+    total_upvotes: int = 0
 
 # --- EventParticipant ---
 class EventParticipant(BaseSchema):

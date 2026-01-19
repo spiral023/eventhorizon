@@ -121,6 +121,7 @@ export const ActivitySchema = z.object({
   reviewCount: z.number().optional(),
   favoritesCount: z.number().optional(),
   favoritesInRoomCount: z.number().optional(),
+  totalUpvotes: z.number().optional().default(0),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

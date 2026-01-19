@@ -626,6 +626,7 @@ function mapActivityFromApi(apiActivity: ApiActivity): Activity {
     externalRating: apiActivity.external_rating,
     favoritesCount: apiActivity.favorites_count || apiActivity.favoritesCount || 0,
     favoritesInRoomCount: apiActivity.favorites_in_room_count ?? apiActivity.favoritesInRoomCount,
+    totalUpvotes: apiActivity.total_upvotes ?? apiActivity.totalUpvotes ?? 0,
     primaryGoal: apiActivity.primary_goal as PrimaryGoal,
     travelTimeMinutes: apiActivity.travel_time_from_office_minutes,
     travelTimeMinutesWalking: apiActivity.travel_time_from_office_minutes_walking,

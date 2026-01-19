@@ -569,6 +569,10 @@ async def get_activity(identifier: str, db: AsyncSession = Depends(get_db)):
     )
     activity.favorites_count = count_result.scalar_one()
 
+    # Ensure total_upvotes is returned (it should be part of the model, but let's be safe if it's new)
+    # The Pydantic model has a default of 0, so if the DB returns None or missing, it might default.
+    # But since it's nullable=False (after migration upgrade), it should be there.
+    
     return activity
 
 @router.get("/activities/{identifier}/favorite")
@@ -1368,6 +1372,11 @@ async def vote_on_activity(
     )
     existing_vote = existing_vote_result.scalar_one_or_none()
 
+    # Track logic for global upvotes
+    # Since VoteType is (str, Enum), comparison with string "for" works
+    old_is_for = (existing_vote.vote == "for") if existing_vote else False
+    new_is_for = (vote_in.vote == "for")
+
     if existing_vote:
         existing_vote.vote = vote_in.vote
         existing_vote.voted_at = datetime.utcnow()
@@ -1380,6 +1389,33 @@ async def vote_on_activity(
             voted_at=datetime.utcnow()
         )
         db.add(new_vote)
+
+    # Update global activity upvote stats if "for" status changed
+    if old_is_for != new_is_for:
+        # Check if user has ANY other "for" votes for this activity (excluding this event)
+        other_votes_result = await db.execute(
+            select(func.count(VoteModel.event_id)).where(
+                VoteModel.user_id == current_user.id,
+                VoteModel.activity_id == vote_in.activity_id,
+                VoteModel.vote == "for",
+                VoteModel.event_id != event.id
+            )
+        )
+        other_votes_count = other_votes_result.scalar_one() or 0
+        
+        # If new is FOR and no other votes -> New Global Supporter -> Increment
+        should_increment = new_is_for and (other_votes_count == 0)
+        # If new is NOT FOR (removed or changed) and no other votes -> Lost Global Supporter -> Decrement
+        should_decrement = (not new_is_for) and (other_votes_count == 0)
+        
+        if should_increment or should_decrement:
+             activity_to_update = await db.get(Activity, vote_in.activity_id)
+             if activity_to_update:
+                 if should_increment:
+                     activity_to_update.total_upvotes += 1
+                 else:
+                     activity_to_update.total_upvotes = max(0, activity_to_update.total_upvotes - 1)
+                 db.add(activity_to_update)
 
     # Update participant status
     participant_result = await db.execute(

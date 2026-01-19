@@ -90,6 +90,8 @@ export interface ApiActivity {
   favoritesCount?: number; // Alias
   favorites_in_room_count?: number;
   favoritesInRoomCount?: number; // Alias
+  total_upvotes?: number;
+  totalUpvotes?: number; // Alias
   primary_goal?: string;
   travel_time_from_office_minutes?: number;
   travel_time_from_office_minutes_walking?: number;

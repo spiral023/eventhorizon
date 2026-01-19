@@ -190,6 +190,8 @@ class Activity(Base):
     external_rating = Column(Float)
     primary_goal = Column(String)
     
+    total_upvotes = Column(Integer, default=0, nullable=False)
+
     # Travel
     travel_time_from_office_minutes = Column(Integer)
     travel_time_from_office_minutes_walking = Column(Integer)

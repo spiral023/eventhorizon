@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Euro, Clock, Users, Heart, Star, Zap, Brain, Target } from "lucide-react";
+import { Euro, Clock, Users, Heart, Star, Zap, Brain, Target, ThumbsUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -174,11 +174,15 @@ export function ActivityCard({
               <span className="text-xs">{activity.competitionLevel ?? "-"}/5</span>
             </div>
             <div className="flex items-center gap-3 ml-auto text-xs text-muted-foreground">
-              <div className="flex items-center gap-1" title="Favoriten">
+              <div className="flex items-center gap-1" title="Dafür-Stimmen in Events (Gesamt)">
+                <ThumbsUp className={cn("h-4 w-4", (activity.totalUpvotes ?? 0) > 0 && "text-green-600")} />
+                <span>{activity.totalUpvotes ?? 0}</span>
+              </div>
+              <div className="flex items-center gap-1" title="Gesamte Favoriten">
                 <Heart className={cn("h-4 w-4", (activity.favoritesCount ?? 0) > 0 && "text-destructive")} />
                 <span>{activity.favoritesCount ?? 0}</span>
               </div>
-              <div className="flex items-center gap-1" title="Externes Rating">
+              <div className="flex items-center gap-1" title="Google Rating">
                 <Star className="h-4 w-4 text-warning fill-warning" />
                 <span>
                   {typeof activity.externalRating === "number"

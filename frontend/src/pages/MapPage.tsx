@@ -336,17 +336,6 @@ export default function MapPage() {
 
       {/* Quick Category Filters */}
       <div className="flex items-center gap-3 overflow-x-auto pb-2 hide-scrollbar">
-        {filters.categories.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
-            className="shrink-0 gap-1 text-xs h-8 rounded-lg"
-          >
-            <X className="h-3.5 w-3.5" />
-            Zurücksetzen
-          </Button>
-        )}
         {(Object.keys(CategoryLabels) as EventCategory[]).map((category) => (
           <Button
             key={category}
@@ -364,6 +353,17 @@ export default function MapPage() {
             {CategoryLabels[category]}
           </Button>
         ))}
+        {filters.categories.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="shrink-0 gap-1 text-xs h-8 rounded-lg"
+          >
+            <X className="h-3.5 w-3.5" />
+            Zurücksetzen
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
