@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import and_, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import get_current_user
 from app.api.helpers import enhance_event_full, require_room_member, resolve_room_identifier
 from app.core.utils import generate_event_short_code, generate_room_invite_code
+from app.core.limiter import limiter
 from app.db.session import get_db
 from app.models.domain import (
     DateOption,
@@ -170,7 +171,9 @@ async def process_room_avatar(
 
 
 @router.get("/rooms/{room_identifier}", response_model=RoomSchema)
+@limiter.limit("60/minute")
 async def get_room(
+    request: Request,
     room_identifier: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -205,7 +208,9 @@ async def delete_room(
 
 
 @router.post("/rooms/join", response_model=RoomSchema)
+@limiter.limit("5/minute")
 async def join_room(
+    request: Request,
     invite_code_data: dict,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from pydantic import BaseModel
 from sqlalchemy import delete, func
 from sqlalchemy.exc import IntegrityError
@@ -20,6 +20,7 @@ from app.api.helpers import (
     require_event_organizer,
     resolve_event_identifier,
 )
+from app.core.limiter import limiter
 from app.db.session import get_db
 from app.models.domain import (
     Activity,
@@ -192,7 +193,9 @@ async def process_event_avatar(
 
 # --- Events ---
 @router.get("/events/{event_identifier}", response_model=EventSchema)
+@limiter.limit("60/minute")
 async def get_event(
+    request: Request,
     event_identifier: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
