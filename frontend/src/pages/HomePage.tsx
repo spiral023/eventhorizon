@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { getGreeting } from "@/utils/greeting";
 import { cn } from "@/lib/utils";
+import { MOTION } from "@/lib/motion";
 
 const EMPTY_ACTIVITIES: Activity[] = [];
 const EMPTY_IDS: string[] = [];
@@ -348,7 +349,7 @@ export default function HomePage() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
+                      transition={MOTION.card}
                     >
                       <ActivityCard
                         activity={activity}
@@ -391,7 +392,7 @@ function StatCard({ label, value, icon: Icon, color, delay = 0 }: { label: strin
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: delay / 1000, duration: 0.5 }}
+      transition={{ delay: delay / 1000, ...MOTION.card }}
       className="h-full"
     >
       <Card className="rounded-[2rem] bg-background/60 border-border/50 hover:border-primary/30 transition-all duration-300 group overflow-hidden h-full">

@@ -26,6 +26,7 @@ import type { TeamPreferenceSummary } from "@/services/apiClient";
 import type { Activity, Room } from "@/types/domain";
 import { CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { MOTION } from "@/lib/motion";
 import { toast } from "sonner";
 import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
 import { favoriteActivityIdsQueryKey, useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
@@ -435,7 +436,7 @@ export default function TeamPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.1, ...MOTION.card }}
         >
           <Card className="h-full bg-card/40 border-border/40 rounded-3xl flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
@@ -487,7 +488,7 @@ export default function TeamPage() {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.2, ...MOTION.card }}
         >
           <Card className="bg-card/40 border-border/40 rounded-3xl h-full">
             <CardHeader>
@@ -598,7 +599,7 @@ export default function TeamPage() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.3, ...MOTION.card }}
           className="space-y-6"
         >
           <Card className="bg-green-500/5 border-green-500/20 rounded-3xl">
@@ -670,7 +671,7 @@ export default function TeamPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.4, ...MOTION.card }}
       >
         <Card className="bg-primary/5 border-primary/20 rounded-3xl overflow-hidden">
           <CardHeader>
@@ -701,7 +702,7 @@ export default function TeamPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.5, ...MOTION.card }}
       >
         <div className="flex items-center justify-between mb-6 px-2">
           <div className="space-y-1">
@@ -720,7 +721,7 @@ export default function TeamPage() {
               key={activity.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 + index * 0.1 }}
+              transition={{ delay: 0.6 + index * 0.1, ...MOTION.card }}
             >
               <ActivityCard
                 activity={activity}

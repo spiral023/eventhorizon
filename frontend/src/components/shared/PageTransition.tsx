@@ -1,10 +1,20 @@
 import { ReactNode } from "react";
+import { motion } from "framer-motion";
+import { MOTION } from "@/lib/motion";
 
 interface PageTransitionProps {
   children: ReactNode;
   className?: string;
 }
 
-// Previously wrapped children in a motion.div for transitions.
-// The extra wrapper is now unnecessary, so we render children directly.
-export const PageTransition = ({ children }: PageTransitionProps) => <>{children}</>;
+export const PageTransition = ({ children, className }: PageTransitionProps) => (
+  <motion.div
+    className={className}
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -8 }}
+    transition={MOTION.page}
+  >
+    {children}
+  </motion.div>
+);

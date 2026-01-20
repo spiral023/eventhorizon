@@ -20,6 +20,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
 import { favoriteActivityIdsQueryKey, useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
+import { MOTION } from "@/lib/motion";
 import { 
   getActivityDurationMinutes, 
   getActiveFilterCount, 
@@ -425,7 +426,7 @@ export default function ActivitiesPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                      transition={MOTION.card}
                     >
                       <ActivityCard
                         activity={activity}
