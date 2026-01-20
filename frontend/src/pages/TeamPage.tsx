@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -20,12 +21,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getTeamRecommendations, getActivities, getFavoriteActivityIds, toggleFavorite, getRooms } from "@/services/apiClient";
+import { getTeamRecommendations, toggleFavorite, getRooms } from "@/services/apiClient";
 import type { TeamPreferenceSummary } from "@/services/apiClient";
 import type { Activity, Room } from "@/types/domain";
 import { CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
+import { favoriteActivityIdsQueryKey, useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
 
 const sortRoomsByMembers = (input: Room[]) =>
   [...input].sort((a, b) => {
@@ -46,6 +49,9 @@ const vibeLabels = {
   mixed: "Ausgewogen & Vielseitig",
 };
 
+const EMPTY_ACTIVITIES: Activity[] = [];
+const EMPTY_IDS: string[] = [];
+
 const socialVibeLabels = {
   low: "Fokus auf Aktivität",
   medium: "Gute Mischung",
@@ -55,19 +61,54 @@ const socialVibeLabels = {
 export default function TeamPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [recommendations, setRecommendations] = useState<TeamPreferenceSummary | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const { data: activitiesData, isLoading: activitiesLoading } = useActivities();
+  const { data: favoriteIdsData, isLoading: favoritesLoading } = useFavoriteActivityIds(true);
+  const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
+  const resolvedFavoriteIds = favoriteIdsData ?? EMPTY_IDS;
   const [rooms, setRooms] = useState<Room[]>([]);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [hasEnoughMembers, setHasEnoughMembers] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setActivities(resolvedActivities);
+  }, [resolvedActivities]);
+
+  useEffect(() => {
+    setFavoriteIds(resolvedFavoriteIds);
+  }, [resolvedFavoriteIds]);
+
+  const isLoading = loading || activitiesLoading || favoritesLoading;
+
+  const updateFavoriteCaches = (activityId: string, isFavorite: boolean, favoritesCount?: number) => {
+    queryClient.setQueryData<string[]>(favoriteActivityIdsQueryKey, (prev) => {
+      const next = prev ?? EMPTY_IDS;
+      if (isFavorite) {
+        return next.includes(activityId) ? next : [...next, activityId];
+      }
+      return next.filter((id) => id !== activityId);
+    });
+
+    if (typeof favoritesCount === "number") {
+      queryClient.setQueryData<Activity[]>(activitiesQueryKey(), (prev) =>
+        (prev ?? EMPTY_ACTIVITIES).map((activity) =>
+          activity.id === activityId
+            ? { ...activity, favoritesCount }
+            : activity
+        )
+      );
+    }
+  };
   const [showSlowLoadingUI, setShowSlowLoadingUI] = useState(false);
 
   useEffect(() => {
     let slowLoadingTimer: number | undefined;
     
-    if (loading) {
+    if (isLoading) {
       // Show intensive loading UI only after 500ms
       slowLoadingTimer = window.setTimeout(() => {
         setShowSlowLoadingUI(true);
@@ -79,7 +120,7 @@ export default function TeamPage() {
     return () => {
       if (slowLoadingTimer) window.clearTimeout(slowLoadingTimer);
     };
-  }, [loading]);
+  }, [isLoading]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,14 +158,8 @@ export default function TeamPage() {
       }
 
       try {
-        const [recsResult, activitiesResult, favoritesResult] = await Promise.all([
-          getTeamRecommendations(targetRoomId),
-          getActivities(),
-          getFavoriteActivityIds(),
-        ]);
+        const recsResult = await getTeamRecommendations(targetRoomId);
         setRecommendations(recsResult.data);
-        setActivities(activitiesResult.data);
-        setFavoriteIds(favoritesResult.data || []);
       } catch (error) {
         console.error("Failed to fetch team data:", error);
         toast.error("Fehler beim Laden der Team-Daten");
@@ -141,8 +176,9 @@ export default function TeamPage() {
       toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
       return;
     }
-    const isFav = result.data?.isFavorite;
+    const isFav = result.data?.isFavorite ?? false;
     const count = result.data?.favoritesCount;
+    updateFavoriteCaches(activityId, isFav, count);
     setFavoriteIds((prev) =>
       isFav ? [...prev, activityId] : prev.filter((id) => id !== activityId)
     );
@@ -161,7 +197,7 @@ export default function TeamPage() {
     ? activities.filter((a) => recommendations.recommendedActivityIds.includes(a.id))
     : [];
 
-  if (loading) {
+  if (isLoading) {
     if (!showSlowLoadingUI) return null;
     
     return (
@@ -217,7 +253,7 @@ export default function TeamPage() {
   }
 
   // If loading is done but no room/recommendations found (e.g. user has no rooms)
-  if (!loading && (!currentRoom || !recommendations)) {
+  if (!isLoading && (!currentRoom || !recommendations)) {
     if (currentRoom && !hasEnoughMembers) {
       return (
         <div className="p-8 text-center">

@@ -25,8 +25,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
+import { useActivities } from "@/hooks/use-activities";
+import { useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
 import { CreateEventSchema, type CreateEventInput } from "@/schemas";
-import { createEvent, getActivities, getFavoriteActivityIds } from "@/services/apiClient";
+import { createEvent } from "@/services/apiClient";
 import type { Activity, Region, Season, EventTimeWindow } from "@/types/domain";
 import { RegionLabels, SeasonLabels, MonthLabels, CategoryLabels, CategoryColors } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -34,12 +36,19 @@ import { trackKeyFlowCounter } from "@/lib/metrics";
 
 type TimeWindowType = "season" | "month" | "weekRange" | "freeText";
 
+const EMPTY_ACTIVITIES: Activity[] = [];
+const EMPTY_IDS: string[] = [];
+
 export default function CreateEventPage() {
   const { accessCode } = useParams<{ accessCode: string }>();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [timeWindowType, setTimeWindowType] = useState<TimeWindowType>("month");
+  const { data: activitiesData, isLoading: activitiesLoading } = useActivities();
+  const { data: favoriteIdsData, isLoading: favoritesLoading } = useFavoriteActivityIds(true);
+  const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
+  const resolvedFavoriteIds = favoriteIdsData ?? EMPTY_IDS;
   
   // Calculate default month (2 months ahead, 1-based, wrapped)
   const defaultMonth = ((new Date().getMonth() + 2) % 12) + 1;
@@ -47,7 +56,6 @@ export default function CreateEventPage() {
   const [monthValue, setMonthValue] = useState<string>(String(defaultMonth));
   const [seasonValue, setSeasonValue] = useState<string>("summer");
   const [freeTextValue, setFreeTextValue] = useState<string>("");
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<CreateEventInput>({
@@ -67,23 +75,20 @@ export default function CreateEventPage() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
-      const [activitiesResult, favoritesResult] = await Promise.all([
-        getActivities(),
-        getFavoriteActivityIds(),
-      ]);
+    setActivities(resolvedActivities);
+  }, [resolvedActivities]);
 
-      setActivities(activitiesResult.data);
-      setFavoriteIds(favoritesResult.data || []);
-      
-      // Pre-select all activities to satisfy validation
-      const allIds = activitiesResult.data.map(a => a.id);
-      form.setValue("proposedActivityIds", allIds, { shouldValidate: true });
-      
-      setLoading(false);
-    };
-    fetchData();
-  }, [form]);
+  useEffect(() => {
+    setFavoriteIds(resolvedFavoriteIds);
+  }, [resolvedFavoriteIds]);
+
+  useEffect(() => {
+    if (resolvedActivities.length === 0) return;
+    const allIds = resolvedActivities.map((activity) => activity.id);
+    form.setValue("proposedActivityIds", allIds, { shouldValidate: true });
+  }, [activitiesData, form]);
+
+  const isLoading = activitiesLoading || favoritesLoading;
 
   const buildTimeWindow = (): EventTimeWindow => {
     const values = form.getValues();
@@ -146,7 +151,7 @@ export default function CreateEventPage() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="h-8 w-48 bg-secondary/30 rounded animate-pulse" />

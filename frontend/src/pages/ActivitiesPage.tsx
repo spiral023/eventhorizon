@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityCard } from "@/components/shared/ActivityCard";
@@ -10,13 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { getActivities, getFavoriteActivityIds, toggleFavorite } from "@/services/apiClient";
+import { toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { CategoryLabels } from "@/types/domain";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
+import { favoriteActivityIdsQueryKey, useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
 import { 
   getActivityDurationMinutes, 
   getActiveFilterCount, 
@@ -29,14 +32,15 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 const ITEMS_PER_PAGE = 9;
+const EMPTY_ACTIVITIES: Activity[] = [];
+const EMPTY_IDS: string[] = [];
 
 export default function ActivitiesPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,29 +66,57 @@ export default function ActivitiesPage() {
     return sections.size > 0 ? Array.from(sections) : undefined;
   }, [isMobile, searchParams]);
 
-  const loadData = useCallback(async () => {
-    setIsLoadingActivities(true);
-    setError(null);
-    try {
-      const [activitiesResult, favoritesResult] = await Promise.all([
-        getActivities(),
-        isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
-      ]);
-
-      if (activitiesResult.error) throw new Error(activitiesResult.error.message);
-      setActivities(activitiesResult.data);
-      setFavoriteIds(favoritesResult.data || []);
-    } catch (err) {
-      setError("Aktivitäten konnten nicht geladen werden.");
-    } finally {
-      setIsLoadingActivities(false);
-    }
-  }, [isAuthenticated]);
+  const favoritesEnabled = isAuthenticated && !authLoading;
+  const {
+    data: activitiesData,
+    isLoading: isLoadingActivities,
+    error: activitiesError,
+    refetch: refetchActivities,
+  } = useActivities();
+  const {
+    data: favoriteIdsData,
+    isLoading: isLoadingFavorites,
+    refetch: refetchFavorites,
+  } = useFavoriteActivityIds(favoritesEnabled);
+  const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
+  const resolvedFavoriteIds = favoritesEnabled ? (favoriteIdsData ?? EMPTY_IDS) : EMPTY_IDS;
 
   useEffect(() => {
-    if (authLoading) return;
-    loadData();
-  }, [authLoading, loadData]);
+    setActivities(resolvedActivities);
+  }, [resolvedActivities]);
+
+  useEffect(() => {
+    setFavoriteIds(resolvedFavoriteIds);
+  }, [resolvedFavoriteIds]);
+
+  const isLoading = isLoadingActivities || (favoritesEnabled && isLoadingFavorites);
+  const error = activitiesError ? "Aktivitäten konnten nicht geladen werden." : null;
+  const handleRetry = () => {
+    refetchActivities();
+    if (favoritesEnabled) {
+      refetchFavorites();
+    }
+  };
+
+  const updateFavoriteCaches = (activityId: string, isFavorite: boolean, favoritesCount?: number) => {
+    queryClient.setQueryData<string[]>(favoriteActivityIdsQueryKey, (prev) => {
+      const next = prev ?? EMPTY_IDS;
+      if (isFavorite) {
+        return next.includes(activityId) ? next : [...next, activityId];
+      }
+      return next.filter((id) => id !== activityId);
+    });
+
+    if (typeof favoritesCount === "number") {
+      queryClient.setQueryData<Activity[]>(activitiesQueryKey(), (prev) =>
+        (prev ?? EMPTY_ACTIVITIES).map((activity) =>
+          activity.id === activityId
+            ? { ...activity, favoritesCount }
+            : activity
+        )
+      );
+    }
+  };
 
   useEffect(() => {
     const categoryParam = searchParams.get("category");
@@ -274,7 +306,7 @@ export default function ActivitiesPage() {
           title="Aktivitäten"
           description="Finde Inspiration für dein nächstes Teamevent"
         />
-        <PageError message={error} onRetry={loadData} />
+        <PageError message={error} onRetry={handleRetry} />
       </div>
     );
   }
@@ -354,7 +386,7 @@ export default function ActivitiesPage() {
             </Sheet>
           </div>
 
-          {isLoadingActivities ? (
+          {isLoading ? (
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <ActivityCardSkeleton key={i} />
@@ -408,7 +440,8 @@ export default function ActivitiesPage() {
                             toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
                             return;
                           }
-                          const isFav = result.data?.isFavorite;
+                          const isFav = result.data?.isFavorite ?? false;
+                          updateFavoriteCaches(id, isFav, result.data?.favoritesCount);
                           setFavoriteIds((prev) =>
                             isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
                           );

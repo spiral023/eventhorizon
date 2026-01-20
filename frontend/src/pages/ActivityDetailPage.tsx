@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -39,7 +40,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScaleBar } from "@/components/shared/ScaleBar";
 import { ActivityMiniMap } from "@/components/shared/ActivityMiniMap";
-import { getActivities, getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
+import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
 import type { Activity, ActivityComment } from "@/types/domain";
 import {
   CategoryLabels,
@@ -49,6 +50,8 @@ import {
 } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
+import { favoriteActivityIdsQueryKey } from "@/hooks/use-favorite-activity-ids";
 import { useAuthStore } from "@/stores/authStore";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -56,6 +59,9 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { BookingRequestDialog } from "@/components/activities/BookingRequestDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const EMPTY_ACTIVITIES: Activity[] = [];
+const EMPTY_IDS: string[] = [];
 
 const PrimaryGoalLabels: Record<string, string> = {
   teambuilding: "Teambuilding",
@@ -150,30 +156,55 @@ function ScaleRow({
 // Force HMR update
 export default function ActivityDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const queryClient = useQueryClient();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
+  const { data: activitiesData } = useActivities();
+  const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
 
   const { user, isAuthenticated } = useAuthStore();
   const [comments, setComments] = useState<ActivityComment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
 
+  const updateFavoriteCaches = (activityId: string, isFavorite: boolean, favoritesCount?: number) => {
+    queryClient.setQueryData<string[]>(favoriteActivityIdsQueryKey, (prev) => {
+      const next = prev ?? EMPTY_IDS;
+      if (isFavorite) {
+        return next.includes(activityId) ? next : [...next, activityId];
+      }
+      return next.filter((id) => id !== activityId);
+    });
+
+    if (typeof favoritesCount === "number") {
+      queryClient.setQueryData<Activity[]>(activitiesQueryKey(), (prev) =>
+        (prev ?? EMPTY_ACTIVITIES).map((activity) =>
+          activity.id === activityId
+            ? { ...activity, favoritesCount }
+            : activity
+        )
+      );
+    }
+  };
+
+  useEffect(() => {
+    setAllActivities(resolvedActivities);
+  }, [resolvedActivities]);
+
   useEffect(() => {
     const fetchActivity = async () => {
       if (!slug) return;
-      const [activityResult, favResult, commentsResult, activitiesResult] = await Promise.all([
+      const [activityResult, favResult, commentsResult] = await Promise.all([
         getActivityById(slug),
         isAuthenticated
           ? isFavorite(slug)
           : Promise.resolve({ data: { isFavorite: false, favoritesCount: 0 } }),
-        getActivityComments(slug),
-        getActivities()
+        getActivityComments(slug)
       ]);
       setActivity(activityResult.data);
-      setAllActivities(activitiesResult.data || []);
 
       const favoritesData = favResult.data || { isFavorite: false, favoritesCount: activityResult.data?.favoritesCount ?? 0 };
       setIsFav(favoritesData.isFavorite ?? false);
@@ -199,6 +230,8 @@ export default function ActivityDetailPage() {
     }
     const isFavorite = result.data?.isFavorite ?? false;
     const count = result.data?.favoritesCount ?? favoriteCount;
+    const activityId = activity?.id ?? slug;
+    updateFavoriteCaches(activityId, isFavorite, count);
     setIsFav(isFavorite);
     setFavoriteCount(count);
     setActivity((prev) => (prev ? { ...prev, favoritesCount: count } : prev));

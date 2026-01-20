@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Sparkles, Users, TrendingUp, Heart, Plus, Search, Calendar, CheckCircle2, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,10 +11,10 @@ import { EventCard } from "@/components/events/EventCard";
 import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
+import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
+import { favoriteActivityIdsQueryKey, useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
 import { 
   getRooms, 
-  getActivities, 
-  getFavoriteActivityIds, 
   toggleFavorite, 
   getUserStats,
   getUserEvents 
@@ -23,6 +24,9 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { getGreeting } from "@/utils/greeting";
 import { cn } from "@/lib/utils";
+
+const EMPTY_ACTIVITIES: Activity[] = [];
+const EMPTY_IDS: string[] = [];
 
 const sortRoomsByMembers = (input: Room[]) =>
   [...input].sort((a, b) => {
@@ -44,7 +48,13 @@ export default function HomePage() {
   const debouncedSearch = useDebounce(searchQuery, 300);
   
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const favoritesEnabled = isAuthenticated && !authLoading;
+  const { data: activitiesData, isLoading: activitiesLoading } = useActivities();
+  const { data: favoriteIdsData, isLoading: favoritesLoading } = useFavoriteActivityIds(favoritesEnabled);
+  const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
+  const resolvedFavoriteIds = favoritesEnabled ? (favoriteIdsData ?? EMPTY_IDS) : EMPTY_IDS;
   const greeting = getGreeting();
   const [isReturningVisitor, setIsReturningVisitor] = useState(false);
 
@@ -58,19 +68,44 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    setAllActivities(resolvedActivities);
+  }, [resolvedActivities]);
+
+  useEffect(() => {
+    setFavoriteIds(resolvedFavoriteIds);
+  }, [resolvedFavoriteIds]);
+
+  const isLoading = loading || activitiesLoading || (favoritesEnabled && favoritesLoading);
+
+  const updateFavoriteCaches = (activityId: string, isFavorite: boolean, favoritesCount?: number) => {
+    queryClient.setQueryData<string[]>(favoriteActivityIdsQueryKey, (prev) => {
+      const next = prev ?? EMPTY_IDS;
+      if (isFavorite) {
+        return next.includes(activityId) ? next : [...next, activityId];
+      }
+      return next.filter((id) => id !== activityId);
+    });
+
+    if (typeof favoritesCount === "number") {
+      queryClient.setQueryData<Activity[]>(activitiesQueryKey(), (prev) =>
+        (prev ?? EMPTY_ACTIVITIES).map((activity) =>
+          activity.id === activityId
+            ? { ...activity, favoritesCount }
+            : activity
+        )
+      );
+    }
+  };
+
+  useEffect(() => {
     if (authLoading) return;
     const fetchData = async () => {
       setLoading(true);
-      const [activitiesResult, favoritesResult, roomsResult, statsResult, eventsResult] = await Promise.all([
-        getActivities(),
-        isAuthenticated ? getFavoriteActivityIds() : Promise.resolve({ data: [] as string[] }),
+      const [roomsResult, statsResult, eventsResult] = await Promise.all([
         isAuthenticated ? getRooms() : Promise.resolve({ data: [] as Room[] }),
         isAuthenticated ? getUserStats() : Promise.resolve({ data: { upcomingEventsCount: 0, openVotesCount: 0 } }),
         isAuthenticated ? getUserEvents() : Promise.resolve({ data: [] as Event[] }),
       ]);
-
-      setAllActivities(activitiesResult.data || []);
-      setFavoriteIds(favoritesResult.data || []);
 
       const roomsData = roomsResult.data || [];
       const sortedRooms = sortRoomsByMembers(roomsData);
@@ -117,8 +152,9 @@ export default function HomePage() {
       toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
       return;
     }
-    const isFav = result.data?.isFavorite;
+    const isFav = result.data?.isFavorite ?? false;
     const count = result.data?.favoritesCount;
+    updateFavoriteCaches(activityId, isFav, count);
     setFavoriteIds((prev) =>
       isFav ? [...prev, activityId] : prev.filter((id) => id !== activityId)
     );
@@ -208,7 +244,7 @@ export default function HomePage() {
           <section>
             <SectionHeader title="Anstehende Events" subtitle="Deine nächsten Termine und Abstimmungen" />
             
-            {loading ? (
+            {isLoading ? (
               <div className="space-y-4">
                 {[1, 2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
               </div>
@@ -239,7 +275,7 @@ export default function HomePage() {
           <section>
             <SectionHeader title="Deine Räume" subtitle="Zusammenarbeit in Teams" link="/rooms" linkLabel="Alle Räume" />
             
-            {loading ? (
+            {isLoading ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 {[1, 2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
               </div>
@@ -302,7 +338,7 @@ export default function HomePage() {
             </div>
             
             <div className="space-y-6">
-              {loading ? (
+              {isLoading ? (
                 [1, 2].map(i => <Skeleton key={i} className="h-64 rounded-2xl" />)
               ) : filteredActivities.length > 0 ? (
                 <AnimatePresence mode="popLayout">

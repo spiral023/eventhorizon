@@ -8,12 +8,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { getActivities } from "@/services/apiClient";
+import { useActivities } from "@/hooks/use-activities";
 import type { Activity, EventCategory } from "@/types/domain";
 import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { getActivityDurationMinutes, formatDuration as formatDurationUtil, type ActivityFilters, defaultFilters } from "@/utils/activityUtils";
 import "leaflet/dist/leaflet.css";
+
+const EMPTY_ACTIVITIES: Activity[] = [];
 
 // Category icons for quick filters
 const CategoryIcons: Record<EventCategory, React.ReactNode> = {
@@ -211,9 +213,9 @@ function MapMarkers({
 }
 
 export default function MapPage() {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const { data: activitiesData, isLoading: loading } = useActivities();
+  const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [loading, setLoading] = useState(true);
   const [geocodeCache, setGeocodeCache] = useState<Record<string, [number, number]>>({});
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
 
@@ -229,6 +231,14 @@ export default function MapPage() {
 
   const clearFilters = () => setFilters(defaultFilters);
 
+  const activities = useMemo(() => {
+    return [...resolvedActivities].sort((a, b) => {
+      const timeA = a.travelTimeMinutesWalking ?? Infinity;
+      const timeB = b.travelTimeMinutesWalking ?? Infinity;
+      return timeA - timeB;
+    });
+  }, [resolvedActivities]);
+
   // Filtered activities based on category selection
   const filteredActivities = useMemo(() => {
     if (filters.categories.length === 0) return activities;
@@ -240,21 +250,6 @@ export default function MapPage() {
     const mins = getActivityDurationMinutes(activity);
     return mins ? formatDurationUtil(mins) : "-";
   };
-
-  useEffect(() => {
-    const fetchActivities = async () => {
-      const result = await getActivities();
-      // Sort activities by walking time from office (ascending)
-      const sorted = result.data.sort((a, b) => {
-        const timeA = a.travelTimeMinutesWalking ?? Infinity;
-        const timeB = b.travelTimeMinutesWalking ?? Infinity;
-        return timeA - timeB;
-      });
-      setActivities(sorted);
-      setLoading(false);
-    };
-    fetchActivities();
-  }, []);
 
   useEffect(() => {
     const missing = activities.filter((activity) =>

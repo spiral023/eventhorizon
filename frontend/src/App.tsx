@@ -36,7 +36,17 @@ const VerifyEmailPage = lazy(() => import("@/pages/VerifyEmailPage"));
 const DevSentryTest = lazy(() => import("@/pages/DevSentryTest"));
 const OnboardingPage = lazy(() => import("@/pages/OnboardingPage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      gcTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
+    },
+  },
+});
 
 // Keep layout mounted across route changes
 function AppShell() {
