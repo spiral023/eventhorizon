@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,25 +16,25 @@ import { clearPendingInviteCode, getPendingInviteCode } from "@/lib/pendingRoomI
 import { joinRoom } from "@/services/apiClient";
 
 // Pages
-import HomePage from "@/pages/HomePage";
-import LoginPage from "@/pages/LoginPage";
-import JoinRoomPage from "@/pages/JoinRoomPage";
-import RoomsPage from "@/pages/RoomsPage";
-import RoomDetailPage from "@/pages/RoomDetailPage";
-import CreateEventPage from "@/pages/CreateEventPage";
-import EventDetailPage from "@/pages/EventDetailPage";
-import ActivitiesPage from "@/pages/ActivitiesPage";
-import ActivityDetailPage from "@/pages/ActivityDetailPage";
-import TeamPage from "@/pages/TeamPage";
-import ProfilePage from "@/pages/ProfilePage";
-import MapPage from "@/pages/MapPage";
-import SettingsPage from "@/pages/SettingsPage";
-import NotFound from "@/pages/NotFound";
-import RequestResetPasswordPage from "@/pages/RequestResetPasswordPage";
-import ResetPasswordPage from "@/pages/ResetPasswordPage";
-import VerifyEmailPage from "@/pages/VerifyEmailPage";
-import DevSentryTest from "@/pages/DevSentryTest";
-import OnboardingPage from "@/pages/OnboardingPage";
+const HomePage = lazy(() => import("@/pages/HomePage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const JoinRoomPage = lazy(() => import("@/pages/JoinRoomPage"));
+const RoomsPage = lazy(() => import("@/pages/RoomsPage"));
+const RoomDetailPage = lazy(() => import("@/pages/RoomDetailPage"));
+const CreateEventPage = lazy(() => import("@/pages/CreateEventPage"));
+const EventDetailPage = lazy(() => import("@/pages/EventDetailPage"));
+const ActivitiesPage = lazy(() => import("@/pages/ActivitiesPage"));
+const ActivityDetailPage = lazy(() => import("@/pages/ActivityDetailPage"));
+const TeamPage = lazy(() => import("@/pages/TeamPage"));
+const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
+const MapPage = lazy(() => import("@/pages/MapPage"));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const RequestResetPasswordPage = lazy(() => import("@/pages/RequestResetPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
+const VerifyEmailPage = lazy(() => import("@/pages/VerifyEmailPage"));
+const DevSentryTest = lazy(() => import("@/pages/DevSentryTest"));
+const OnboardingPage = lazy(() => import("@/pages/OnboardingPage"));
 
 const queryClient = new QueryClient();
 
@@ -286,7 +286,18 @@ const App = () => {
               v7_relativeSplatPath: true,
             }}
           >
-            <AppRoutes />
+            <Suspense
+              fallback={(
+                <div className="min-h-screen gradient-bg flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-primary/20 animate-pulse" />
+                    <p className="text-muted-foreground">Seite wird geladen...</p>
+                  </div>
+                </div>
+              )}
+            >
+              <AppRoutes />
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

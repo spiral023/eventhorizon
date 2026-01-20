@@ -1,4 +1,4 @@
-import type { Activity, Event, Room, User } from "@/types/domain";
+﻿import type { Activity, Event, Room, User } from "@/types/domain";
 
 export type MockState = {
   rooms: Room[];
@@ -41,7 +41,7 @@ const mockRooms: Room[] = [
   {
     id: "room-3",
     name: "Sales-Team",
-    description: "Vertriebsteam AktivitÇÏten",
+    description: "Vertriebsteam Aktivitäten",
     inviteCode: "L2M-3N4-P5Q",
     memberCount: 15,
     createdAt: "2024-03-01T10:00:00Z",
@@ -53,7 +53,7 @@ const mockRooms: Room[] = [
   },
   {
     id: "room-4",
-    name: "Mein persÇônlicher Raum",
+    name: "Mein persönlicher Raum",
     description: "Hier kann ich alles ausprobieren",
     inviteCode: "R6S-7T8-U9V",
     memberCount: 1,
@@ -70,16 +70,16 @@ const mockActivities: Activity[] = [
   {
     id: "act-1",
     slug: "masters-of-escape-team-raetselspass-in-linz",
-    title: "Masters of Escape: Team-RÇÏtselspaÇY in Linz",
+    title: "Masters of Escape: Team-Rätselspaß in Linz",
     category: "action",
     tags: ["escape-game", "teambuilding", "puzzle"],
     locationRegion: "OOE",
     locationCity: "Linz",
-    locationAddress: "KaarstraÇYe 9, 4040 Linz",
+    locationAddress: "Kaarstraße 9, 4040 Linz",
     estPricePerPerson: 28,
-    priceComment: "Reine SpielgebÇ¬hr ca. 25ƒ?"30 ƒ'ª p.P. (je nach TeamgrÇôÇYe); bei mehreren RÇÏumen gleichzeitig oft Rabatte auf Anfrage.",
-    shortDescription: "TeamstÇÏrkende RÇÏtsel, Spannung, Kooperation, unvergesslicher SpaÇY.",
-    longDescription: "Adrenalin, Teamgeist und RÇÏtselspaÇY: In dieser Escape Room Challenge wachst Ihr als Team zusammen, kommuniziert besser und feiert gemeinsam den Erfolg.",
+    priceComment: "Reine Spielgebühr ca. 25-30 € p.P. (je nach Teamgröße); bei mehreren Räumen gleichzeitig oft Rabatte auf Anfrage.",
+    shortDescription: "Teamstärkende Rätsel, Spannung, Kooperation, unvergesslicher Spaß.",
+    longDescription: "Adrenalin, Teamgeist und Rätselspaß: In dieser Escape Room Challenge wachst ihr als Team zusammen, kommuniziert besser und feiert gemeinsam den Erfolg.",
     imageUrl: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&h=600&fit=crop",
     season: "all_year",
     typicalDurationHours: 3.5,
@@ -125,7 +125,7 @@ const mockEvents: Event[] = [
     shortCode: "B55-2EB-FF8",
     roomId: "room-1",
     name: "Sommer-Teamevent 2024",
-    description: "Unser jビhrliches Sommer-Teamevent mit Action und Spaひ!",
+    description: "Unser jährliches Sommer-Teamevent mit Action und Spaß!",
     phase: "voting",
     timeWindow: { type: "month", value: 7 },
     votingDeadline: "2024-12-20T23:59:59Z",
@@ -174,3 +174,6 @@ export const mockState: MockState = {
   favoriteActivityIds,
   currentUser,
 };
+
+
+
