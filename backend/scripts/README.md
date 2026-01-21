@@ -32,6 +32,17 @@ npm install
   ```bash
   python scripts/test_email.py you@example.com
   ```
+- `trace_team_analysis.py`: Trace für Team-Analyse. Liest einen Raum per Invite-Code/URL aus der DB, druckt den kompletten Prompt, die OpenRouter-Antwort (inkl. Metadaten) und den deterministischen Synergy-Score.
+  ```bash
+  # lokal (venv)
+  python scripts/trace_team_analysis.py --room-url http://localhost:5173/rooms/WFT-D2P-2Z5
+  # im Container (dev)
+  docker compose -f ../docker-compose.dev.yml exec backend python scripts/trace_team_analysis.py --room-url http://localhost:5173/rooms/WFT-D2P-2Z5
+  # prod (auf der prod-shell)
+  python scripts/trace_team_analysis.py --room-url https://event-horizon.sp23.online/rooms/D34-5AA-9ZP
+  # optional: Request/Response als JSON speichern
+  python scripts/trace_team_analysis.py --room-url http://localhost:5173/rooms/WFT-D2P-2Z5 --output /tmp/ai-trace.json
+  ```
 
 ## Skripte (Apify / OpenRouter, Node.js)
 

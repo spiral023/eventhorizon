@@ -141,12 +141,27 @@ def _calculate_normalized_category_distribution(
     )
 
 
+def _has_non_default_preferences(prefs: Optional[dict]) -> bool:
+    if not isinstance(prefs, dict):
+        return False
+    found_value = False
+    for key in ("physical", "mental", "social", "competition"):
+        value = prefs.get(key)
+        if isinstance(value, (int, float)):
+            found_value = True
+            if float(value) != 3:
+                return True
+    return False if found_value else False
+
+
 def _calculate_team_preference_averages(members: List[User]) -> Dict[str, Optional[float]]:
     totals = {"physical": 0.0, "mental": 0.0, "social": 0.0, "competition": 0.0}
     counts = {"physical": 0, "mental": 0, "social": 0, "competition": 0}
 
     for member in members:
         prefs = member.activity_preferences or {}
+        if not _has_non_default_preferences(prefs):
+            continue
         for key in totals.keys():
             value = prefs.get(key)
             if isinstance(value, (int, float)):
@@ -187,9 +202,14 @@ def _calculate_synergy_score(members: List[User]) -> float:
 
     weighted_distance = 0.0
     weight_sum = 0.0
+    active_members = [
+        member
+        for member in members
+        if _has_non_default_preferences(member.activity_preferences or {})
+    ]
     for key, weight in weights.items():
         values = []
-        for member in members:
+        for member in active_members:
             prefs = member.activity_preferences or {}
             raw_value = prefs.get(key)
             if isinstance(raw_value, (int, float)):
@@ -208,13 +228,7 @@ def _calculate_synergy_score(members: List[User]) -> float:
 
 
 def _has_activity_preferences(prefs: Optional[dict]) -> bool:
-    if not isinstance(prefs, dict):
-        return False
-    for key in ("physical", "mental", "social", "competition"):
-        value = prefs.get(key)
-        if isinstance(value, (int, float)):
-            return True
-    return False
+    return _has_non_default_preferences(prefs)
 
 
 def _build_coverage_stat(count: int, total: int) -> Dict[str, float]:

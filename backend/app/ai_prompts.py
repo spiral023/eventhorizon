@@ -13,7 +13,7 @@ HALTE DICH AN DIE LÄNGENVORGABEN."""
 
 TEAM_ANALYSIS_USER_PROMPT = """Führe eine umfassende Team-Analyse durch:
 
-**Team-Mitglieder ({member_count} Personen):**
+**Team-Präferenzen (aggregiert, {member_count} Personen):**
 {members_summary}
 {distribution_context}
 **Verfügbare Aktivitäten:**

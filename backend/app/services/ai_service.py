@@ -7,6 +7,7 @@ Alle Calls verwenden Structured Outputs für type-safe Responses.
 
 from openai import OpenAI
 from typing import List, Dict, Any, Optional, Union
+from statistics import mean, median, pstdev
 import json
 import os
 import logging
@@ -553,11 +554,68 @@ class AIService:
         return "".join(parts) + guidance
 
     def _summarize_members(self, members: List[Dict]) -> str:
-        """Format member data for AI context"""
-        lines = []
-        for m in members[:20]:  # Limit to prevent token overflow
-            prefs = m.get("activity_preferences", {})
-            lines.append(f"- {m.get('name', 'Unknown')}: " f"Präferenzen={prefs}")
+        """Aggregate member preferences for AI context (no personal identifiers)."""
+        total_members = len(members)
+        if total_members == 0:
+            return "Keine Präferenzdaten vorhanden."
+
+        dimensions = ["physical", "mental", "social", "competition"]
+        values_by_dimension = {dim: [] for dim in dimensions}
+        members_with_any = 0
+
+        def has_non_default_preferences(preferences: Dict[str, Any]) -> bool:
+            found_value = False
+            for dim in dimensions:
+                value = preferences.get(dim)
+                if isinstance(value, (int, float)):
+                    found_value = True
+                    if float(value) != 3:
+                        return True
+            return False if found_value else False
+
+        for member in members:
+            prefs = member.get("activity_preferences") or {}
+            if not has_non_default_preferences(prefs):
+                continue
+            has_any = False
+            for dim in dimensions:
+                value = prefs.get(dim)
+                if isinstance(value, (int, float)):
+                    values_by_dimension[dim].append(float(value))
+                    has_any = True
+            if has_any:
+                members_with_any += 1
+
+        if sum(len(values) for values in values_by_dimension.values()) == 0:
+            return "Keine abweichenden Präferenzdaten vorhanden."
+
+        lines = [
+            f"- Abweichende Präferenzdaten vorhanden für {members_with_any}/{total_members} Personen.",
+            "- Skala: 0 (niedrig) bis 5 (hoch).",
+            "- Standardwerte (alle 3) werden ignoriert.",
+        ]
+
+        for dim in dimensions:
+            values = values_by_dimension[dim]
+            if not values:
+                lines.append(f"- {dim}: keine Werte")
+                continue
+
+            dim_mean = mean(values)
+            dim_median = median(values)
+            dim_std = pstdev(values) if len(values) > 1 else 0.0
+            dim_min = min(values)
+            dim_max = max(values)
+            high = sum(1 for v in values if v >= 4)
+            low = sum(1 for v in values if v <= 2)
+            mid = len(values) - high - low
+
+            lines.append(
+                f"- {dim}: n={len(values)}, Mittel={dim_mean:.1f}, Median={dim_median:.1f}, "
+                f"Streuung={dim_std:.1f}, Min={dim_min:.0f}, Max={dim_max:.0f}, "
+                f"High(>=4)={high}, Mid(=3)={mid}, Low(<=2)={low}"
+            )
+
         return "\n".join(lines)
 
     def _summarize_activities(
