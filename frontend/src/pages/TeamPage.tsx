@@ -74,6 +74,9 @@ export default function TeamPage() {
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [hasEnoughMembers, setHasEnoughMembers] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [roomsError, setRoomsError] = useState<string | null>(null);
+  const [recommendationsError, setRecommendationsError] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     setActivities(resolvedActivities);
@@ -126,9 +129,20 @@ export default function TeamPage() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setRoomsError(null);
+      setRecommendationsError(null);
       
       // Fetch rooms to populate the dropdown
       const roomsResult = await getRooms();
+      if (roomsResult.error) {
+        setRooms([]);
+        setCurrentRoom(null);
+        setHasEnoughMembers(false);
+        setRecommendations(null);
+        setRoomsError(roomsResult.error.message || "Räume konnten nicht geladen werden.");
+        setLoading(false);
+        return;
+      }
       const availableRooms = roomsResult.data || [];
       const sortedRooms = sortRoomsByMembers(availableRooms);
       const eligibleRooms = sortedRooms.filter((room) => (room.memberCount ?? 0) >= 2);
@@ -160,16 +174,24 @@ export default function TeamPage() {
 
       try {
         const recsResult = await getTeamRecommendations(targetRoomId);
-        setRecommendations(recsResult.data);
+        if (recsResult.error || !recsResult.data) {
+          setRecommendations(null);
+          setRecommendationsError(
+            recsResult.error?.message || "Team-Analyse konnte nicht geladen werden."
+          );
+        } else {
+          setRecommendations(recsResult.data);
+        }
       } catch (error) {
         console.error("Failed to fetch team data:", error);
         toast.error("Fehler beim Laden der Team-Daten");
+        setRecommendationsError("Team-Analyse konnte nicht geladen werden.");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [roomId]);
+  }, [roomId, refreshNonce]);
 
   const handleFavoriteToggle = async (activityId: string) => {
     const result = await toggleFavorite(activityId);
@@ -254,8 +276,41 @@ export default function TeamPage() {
   }
 
   // If loading is done but no room/recommendations found (e.g. user has no rooms)
-  if (!isLoading && (!currentRoom || !recommendations)) {
-    if (currentRoom && !hasEnoughMembers) {
+  if (!isLoading) {
+    if (roomsError) {
+      return (
+        <div className="p-8 text-center">
+          <PageHeader title="Team-Analyse" />
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <p className="text-muted-foreground">{roomsError}</p>
+              <Button onClick={() => setRefreshNonce((prev) => prev + 1)} className="rounded-xl">
+                Erneut versuchen
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    if (!currentRoom) {
+      return (
+        <div className="p-8 text-center">
+          <PageHeader title="Team-Analyse" />
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground">
+                {roomId
+                  ? "Dieser Raum ist nicht verfügbar oder du hast keinen Zugriff."
+                  : "Du bist noch keinem Raum beigetreten. Erstelle oder trete einem Raum bei, um die Team-Analyse zu nutzen."}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    if (!hasEnoughMembers) {
       return (
         <div className="p-8 text-center">
           <PageHeader title="Team-Analyse" />
@@ -275,18 +330,23 @@ export default function TeamPage() {
       );
     }
 
-    return (
-      <div className="p-8 text-center">
-        <PageHeader title="Team-Analyse" />
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground">
-              Du bist noch keinem Raum beigetreten. Erstelle oder trete einem Raum bei, um die Team-Analyse zu nutzen.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    if (recommendationsError || !recommendations) {
+      return (
+        <div className="p-8 text-center">
+          <PageHeader title="Team-Analyse" />
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <p className="text-muted-foreground">
+                {recommendationsError || "Die Team-Analyse ist aktuell nicht verfügbar."}
+              </p>
+              <Button onClick={() => setRefreshNonce((prev) => prev + 1)} className="rounded-xl">
+                Erneut versuchen
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
   }
 
   // Safe check for recommendations existence (typescript satisfaction)
