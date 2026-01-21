@@ -287,7 +287,9 @@ async def _run(invite_code: str, model: str, temperature: float, max_tokens: int
     print(synergy_score)
 
     try:
-        llm_data = json.loads(completion.choices[0].message.content)
+        llm_data = ai_service._normalize_team_analysis_payload(
+            json.loads(completion.choices[0].message.content)
+        )
     except Exception:
         llm_data = {}
 

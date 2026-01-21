@@ -204,7 +204,7 @@ class AIService:
             temperature=0.5,
         )
 
-        data = json.loads(response)
+        data = self._normalize_team_analysis_payload(json.loads(response))
         def _normalize_listing_id(raw_id: Any) -> Optional[str]:
             if raw_id is None:
                 return None
@@ -490,6 +490,47 @@ class AIService:
         return json.loads(response)
 
     # Helper methods
+    def _normalize_team_analysis_payload(self, data: Any) -> Dict[str, Any]:
+        if not isinstance(data, dict):
+            return {}
+
+        alias_map = {
+            "teamGoals": "preferredGoals",
+            "personalityProfile": "teamPersonality",
+            "deepDives": "insights",
+        }
+        for source_key, target_key in alias_map.items():
+            if source_key in data and target_key not in data:
+                data[target_key] = data[source_key]
+
+        list_fields = [
+            "preferredGoals",
+            "recommendedActivityIds",
+            "strengths",
+            "challenges",
+            "insights",
+        ]
+        for key in list_fields:
+            value = data.get(key)
+            if value is None:
+                data[key] = []
+            elif isinstance(value, list):
+                data[key] = value
+            elif isinstance(value, str):
+                data[key] = [value]
+            else:
+                data[key] = []
+
+        team_personality = data.get("teamPersonality")
+        if not isinstance(team_personality, str):
+            data["teamPersonality"] = ""
+
+        social_vibe = data.get("socialVibe")
+        if social_vibe not in ("low", "medium", "high"):
+            data["socialVibe"] = "medium"
+
+        return data
+
     def _format_distribution_context(
         self,
         distribution_context: Optional[Union[Dict[str, Any], List[Dict]]],
