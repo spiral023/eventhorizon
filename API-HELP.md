@@ -103,8 +103,8 @@ Kurzuebersicht der wichtigsten API-Aufrufe (FastAPI, Prefix `API_V1_STR=/api/v1`
 ## AI-Features
 
 - **Verbindung testen:** `POST /ai/test` `{ "message": "Ping", "model": "<optional>" }`.
-- **Team-Praeferenzen pro Room:** `GET /ai/rooms/{room_id}/recommendations`.
-- **Aktivitaets-Vorschlaege fuer Event:** `GET /ai/events/{event_id}/suggestions?use_team_preferences=true`.
+- **Team-Präferenzen pro Room:** `GET /ai/rooms/{room_id}/recommendations`.
+- **Aktivitaets-Vorschläge fuer Event:** `GET /ai/events/{event_id}/suggestions?use_team_preferences=true`.
 - **Einladungen generieren + mailen:** `POST /ai/events/{event_id}/invites` (nur Event-Creator; nutzt `FRONTEND_URL` fuer Links).
 - **Voting-Reminder senden:** `POST /ai/events/{event_id}/voting-reminders` (erfordert `voting_deadline`).
 

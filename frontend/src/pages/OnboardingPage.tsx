@@ -33,6 +33,7 @@ import {
 import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
 import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
 import { RoomCard, RoomCardSkeleton } from "@/components/shared/RoomCard";
+import { CompanyAutocomplete } from "@/components/shared/CompanyAutocomplete";
 import { toast } from "@/hooks/use-toast";
 import { getRooms, updateUser } from "@/services/apiClient";
 import { useAuthStore } from "@/stores/authStore";
@@ -88,6 +89,7 @@ export default function OnboardingPage() {
 
   const [hobbies, setHobbies] = useState<string[]>([]);
   const [newHobby, setNewHobby] = useState("");
+  const [companyId, setCompanyId] = useState<number | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
   const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(() => getPendingInviteCode());
@@ -122,6 +124,7 @@ export default function OnboardingPage() {
     setSocial([preferences.social ?? 3]);
     setCompetition([preferences.competition ?? 3]);
     setHobbies(user.hobbies ?? []);
+    setCompanyId(user.companyId ?? null);
     setIsInitialized(true);
   }, [user, isInitialized]);
 
@@ -213,6 +216,7 @@ export default function OnboardingPage() {
     setIsSaving(true);
     const result = await updateUser({
       hobbies,
+      companyId,
       activityPreferences: {
         physical: physical[0],
         mental: mental[0],
@@ -385,6 +389,14 @@ export default function OnboardingPage() {
                       </div>
                       <Slider value={competition} onValueChange={setCompetition} min={0} max={5} step={1} />
                     </div>
+                  </div>
+                  <div className="rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+                    <CompanyAutocomplete
+                      id="onboarding-company"
+                      label="Firma"
+                      value={companyId}
+                      onChange={setCompanyId}
+                    />
                   </div>
                   <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
                     <Label htmlFor="onboarding-light-mode" className="text-sm font-medium">

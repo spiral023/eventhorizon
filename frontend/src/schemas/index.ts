@@ -203,6 +203,7 @@ export const UserSchema = z.object({
   email: z.string().email(),
   avatarUrl: z.string().optional(),
   phone: z.string().optional(),
+  companyId: z.number().optional(),
   department: z.string().optional(),
   position: z.string().optional(),
   location: z.string().optional(),

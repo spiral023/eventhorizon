@@ -234,7 +234,7 @@ docker compose -f docker-compose.dev.yml exec backend alembic upgrade head
 ## 11. Aktivitäten seeden (lädt Activities aus: /app/data/activities.json)
 
 ```bash
-docker compose -f docker-compose.dev.yml exec backend python scripts/seed_activities. (-- force zum überschreiben)
+docker compose -f docker-compose.dev.yml exec backend python scripts/seed_activities.py (-- force zum überschreiben)
 ```
 
 ## 12. Nano Banana Bilder in .webp Dateien konvertieren

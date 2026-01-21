@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { PageError } from "@/components/shared/PageError";
 import { getCurrentUser } from "@/services/apiClient";
+import { getCompanyById } from "@/data/companies";
 
 interface ActivityPreferences {
   physical: number; // 0-5
@@ -24,6 +25,7 @@ export interface UserProfile {
   lastName: string;
   email: string;
   phone?: string;
+  companyId?: number | null;
   department: string;
   position?: string;
   location?: string;
@@ -82,6 +84,7 @@ export default function ProfilePage() {
           lastName: result.data.lastName,
           email: result.data.email,
           phone: result.data.phone,
+          companyId: result.data.companyId ?? null,
           department: result.data.department || "",
           position: result.data.position,
           location: result.data.location,
@@ -114,10 +117,11 @@ export default function ProfilePage() {
   const profileCompleteness = () => {
     if (!user) return 0;
     let filled = 0;
-    const total = 10;
+    const total = 11;
     if (user.name) filled++;
     if (user.email) filled++;
     if (user.phone) filled++;
+    if (user.companyId) filled++;
     if (user.department) filled++;
     if (user.position) filled++;
     if (user.location) filled++;
@@ -127,6 +131,8 @@ export default function ProfilePage() {
     if (user.activityPreferences) filled++;
     return Math.round((filled / total) * 100);
   };
+
+  const company = user ? getCompanyById(user.companyId ?? null) : undefined;
 
   if (isLoading) {
     return (
@@ -202,6 +208,12 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Phone className="h-4 w-4 flex-shrink-0" />
                     <span>{user.phone}</span>
+                  </div>
+                )}
+                {company && (
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Building className="h-4 w-4 flex-shrink-0" />
+                    <span>{company.name}</span>
                   </div>
                 )}
                 {user.location && (

@@ -5,6 +5,7 @@ export interface ApiUser {
   last_name: string;
   avatar_url?: string;
   phone?: string;
+  company_id?: number;
   department?: string;
   position?: string;
   location?: string;
@@ -219,6 +220,7 @@ export interface ApiUserUpdate {
   first_name?: string;
   last_name?: string;
   phone?: string;
+  company_id?: number | null;
   department?: string;
   position?: string;
   location?: string;

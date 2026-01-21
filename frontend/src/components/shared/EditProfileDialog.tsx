@@ -31,6 +31,7 @@ import { updateUser, uploadAvatar } from "@/services/apiClient";
 import type { UserProfile } from "@/pages/ProfilePage";
 import { useAuthStore } from "@/stores/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CompanyAutocomplete } from "@/components/shared/CompanyAutocomplete";
 
 interface EditProfileDialogProps {
   user: UserProfile;
@@ -47,6 +48,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [department, setDepartment] = useState(user.department);
   const [position, setPosition] = useState(user.position || "");
   const [location, setLocation] = useState(user.location || "");
+  const [companyId, setCompanyId] = useState<number | null>(user.companyId ?? null);
   const [birthday, setBirthday] = useState<Date | undefined>(
     user.birthday ? new Date(user.birthday) : undefined
   );
@@ -160,6 +162,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim() || undefined,
+        companyId,
         department: department.trim(),
         position: position.trim() || undefined,
         location: location.trim() || undefined,
@@ -186,6 +189,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         lastName: lastName.trim(),
         name: `${firstName.trim()} ${lastName.trim()}`,
         phone: phone.trim() || undefined,
+        companyId,
         department: department.trim(),
         position: position.trim() || undefined,
         location: location.trim() || undefined,
@@ -221,6 +225,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
       // Use explicit null (casted to any) or empty values to clear fields
       const result = await updateUser({
         phone: "",
+        companyId: null,
         department: "",
         position: "",
         location: "",
@@ -243,6 +248,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
 
       // Update local state variables to reflect the reset
       setPhone("");
+      setCompanyId(null);
       setDepartment("");
       setPosition("");
       setLocation("");
@@ -368,6 +374,15 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       className="rounded-xl"
                     />
                   </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <CompanyAutocomplete
+                    id="profile-company"
+                    label="Firma"
+                    value={companyId}
+                    onChange={setCompanyId}
+                  />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">

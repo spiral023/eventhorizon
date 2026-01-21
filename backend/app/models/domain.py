@@ -78,6 +78,7 @@ class User(Base):
     last_name = Column(String, nullable=False)
     avatar_url = Column(String)
     phone = Column(String)
+    company_id = Column(Integer)
     department = Column(String)
     position = Column(String)
     location = Column(String)

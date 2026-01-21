@@ -21,6 +21,7 @@ export async function updateUser(updates: {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  companyId?: number | null;
   department?: string;
   position?: string;
   location?: string;
@@ -41,6 +42,7 @@ export async function updateUser(updates: {
   if (updates.firstName !== undefined) apiUpdates.first_name = updates.firstName;
   if (updates.lastName !== undefined) apiUpdates.last_name = updates.lastName;
   if (updates.phone !== undefined) apiUpdates.phone = updates.phone;
+  if (updates.companyId !== undefined) apiUpdates.company_id = updates.companyId;
   if (updates.department !== undefined) apiUpdates.department = updates.department;
   if (updates.position !== undefined) apiUpdates.position = updates.position;
   if (updates.location !== undefined) apiUpdates.location = updates.location;

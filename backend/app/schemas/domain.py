@@ -14,6 +14,7 @@ class UserBase(BaseSchema):
     last_name: str
     avatar_url: Optional[str] = None
     phone: Optional[str] = None
+    company_id: Optional[int] = None
     department: Optional[str] = None
     position: Optional[str] = None
     location: Optional[str] = None
@@ -31,6 +32,7 @@ class UserUpdate(BaseSchema):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+    company_id: Optional[int] = None
     department: Optional[str] = None
     position: Optional[str] = None
     location: Optional[str] = None

@@ -38,6 +38,7 @@ export function mapUserFromApi(apiUser: ApiUser): User {
     name: `${apiUser.first_name} ${apiUser.last_name}`.trim(),
     avatarUrl: apiUser.avatar_url,
     phone: apiUser.phone,
+    companyId: apiUser.company_id,
     department: apiUser.department,
     position: apiUser.position,
     location: apiUser.location,

@@ -72,6 +72,7 @@ export async function updateUser(updates: {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  companyId?: number | null;
   department?: string;
   position?: string;
   location?: string;
