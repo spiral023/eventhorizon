@@ -4,6 +4,7 @@ from app.api.endpoints import (
     activities,
     ai,
     auth,
+    companies,
     dev,
     emails,
     events,
@@ -28,5 +29,6 @@ router.include_router(sentry_tunnel.router)
 router.include_router(misc.router)
 router.include_router(search.router)
 router.include_router(activities.router)
+router.include_router(companies.router)
 router.include_router(rooms.router)
 router.include_router(events.router)

@@ -78,7 +78,7 @@ class User(Base):
     last_name = Column(String, nullable=False)
     avatar_url = Column(String)
     phone = Column(String)
-    company_id = Column(Integer)
+    company_id = Column(Integer, ForeignKey("company.id", ondelete="SET NULL"))
     department = Column(String)
     position = Column(String)
     location = Column(String)
@@ -103,6 +103,27 @@ class User(Base):
     created_rooms = relationship("Room", back_populates="creator")
     favorite_activities = relationship("Activity", secondary=user_favorites, back_populates="favorited_by")
     event_participations = relationship("EventParticipant", back_populates="user")
+    company = relationship("Company", back_populates="users")
+
+
+class Company(Base):
+    __tablename__ = "company"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    address = Column(String, nullable=False)
+    postal_code = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    industry = Column(String, nullable=False)
+    coordinates = Column(JSON)  # [lat, lng]
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    users = relationship("User", back_populates="company")
+    travel_times = relationship(
+        "CompanyActivityTravelTime",
+        back_populates="company",
+        cascade="all, delete-orphan",
+    )
 
 class Room(Base):
     __tablename__ = "room"
@@ -203,6 +224,19 @@ class Activity(Base):
     
     favorited_by = relationship("User", secondary=user_favorites, back_populates="favorite_activities")
     comments = relationship("ActivityComment", back_populates="activity", cascade="all, delete-orphan")
+
+
+class CompanyActivityTravelTime(Base):
+    __tablename__ = "company_activity_travel_time"
+
+    company_id = Column(Integer, ForeignKey("company.id", ondelete="CASCADE"), primary_key=True)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activity.id", ondelete="CASCADE"), primary_key=True)
+    walk_minutes = Column(Integer)
+    drive_minutes = Column(Integer)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    company = relationship("Company", back_populates="travel_times")
+    activity = relationship("Activity")
 
 class Event(Base):
     __tablename__ = "event"

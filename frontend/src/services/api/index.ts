@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./users";
 export * from "./activities";
+export * from "./companies";
 export * from "./rooms";
 export * from "./events";
 export * from "./favorites";

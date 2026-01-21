@@ -17,7 +17,7 @@ const fallbackTemplate = `
     <div style="padding:24px 24px 16px;border-bottom:2px solid #3b82f6;text-align:center;font-weight:700;color:#3b82f6;">EventHorizon</div>
     <div style="padding:24px;">{% block content %}{% endblock %}</div>
     <div style="padding:16px 24px 24px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center;">
-      <p style="margin:4px 0;">© 2025 EventHorizon | <a href="{{ frontend_url }}" style="color:#6b7280;">Zur App</a></p>
+      <p style="margin:4px 0;">© 2026 EventHorizon | <a href="{{ frontend_url }}" style="color:#6b7280;">Zur App</a></p>
       <p style="margin:4px 0;">Du erhältst diese E-Mail, weil du bei EventHorizon registriert bist.</p>
     </div>
   </div>

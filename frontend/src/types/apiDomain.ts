@@ -20,6 +20,16 @@ export interface ApiUser {
   favorite_activity_ids?: string[];
 }
 
+export interface ApiCompany {
+  id: number;
+  name: string;
+  address: string;
+  postal_code: string;
+  city: string;
+  industry: string;
+  coordinates?: [number, number];
+}
+
 export interface ApiRoomMember {
   id?: string;
   user_id?: string;

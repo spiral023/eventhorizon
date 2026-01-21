@@ -218,6 +218,16 @@ export const UserSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const CompanySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  address: z.string(),
+  postalCode: z.string(),
+  city: z.string(),
+  industry: z.string(),
+  coordinates: z.tuple([z.number(), z.number()]).optional(),
+});
+
 // ============================================
 // FORM INPUT SCHEMAS
 // ============================================

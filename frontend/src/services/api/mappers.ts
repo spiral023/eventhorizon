@@ -19,6 +19,7 @@ import type {
   ApiActivityComment,
   ApiActivityVote,
   ApiActivityVoteInner,
+  ApiCompany,
   ApiDateOption,
   ApiDateResponse,
   ApiEvent,
@@ -72,6 +73,18 @@ export function mapRoomFromApi(apiRoom: ApiRoom): Room {
       role: member.role,
       joinedAt: member.joined_at ?? member.joinedAt,
     })),
+  };
+}
+
+export function mapCompanyFromApi(apiCompany: ApiCompany) {
+  return {
+    id: apiCompany.id,
+    name: apiCompany.name,
+    address: apiCompany.address,
+    postalCode: apiCompany.postal_code,
+    city: apiCompany.city,
+    industry: apiCompany.industry,
+    coordinates: apiCompany.coordinates,
   };
 }
 

@@ -9,8 +9,8 @@ import { EditProfileDialog } from "@/components/shared/EditProfileDialog";
 import { Progress } from "@/components/ui/progress";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { PageError } from "@/components/shared/PageError";
-import { getCurrentUser } from "@/services/apiClient";
-import { getCompanyById } from "@/data/companies";
+import { getCompany, getCurrentUser } from "@/services/apiClient";
+import type { Company } from "@/types/domain";
 
 interface ActivityPreferences {
   physical: number; // 0-5
@@ -61,6 +61,7 @@ const normalizeActivityPreferences = (prefs: unknown): ActivityPreferences | und
 
 export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,7 +133,17 @@ export default function ProfilePage() {
     return Math.round((filled / total) * 100);
   };
 
-  const company = user ? getCompanyById(user.companyId ?? null) : undefined;
+  useEffect(() => {
+    const loadCompany = async () => {
+      if (!user?.companyId) {
+        setCompany(null);
+        return;
+      }
+      const result = await getCompany(user.companyId);
+      setCompany(result.data ?? null);
+    };
+    void loadCompany();
+  }, [user?.companyId]);
 
   if (isLoading) {
     return (

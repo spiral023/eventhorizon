@@ -7,6 +7,15 @@ export type MockState = {
   events: Event[];
   favoriteActivityIds: string[];
   currentUser: User;
+  companies: {
+    id: number;
+    name: string;
+    address: string;
+    postalCode: string;
+    city: string;
+    industry: string;
+    coordinates?: [number, number];
+  }[];
 };
 
 const mockRooms: Room[] = [
@@ -167,6 +176,17 @@ const currentUser: User = {
   favoriteActivityIds: favoriteActivityIds,
 };
 
+const mockCompanies = [
+  {
+    id: 1,
+    name: "RAITEC - Linz",
+    address: "Goethestr. 80",
+    postalCode: "4040",
+    city: "Linz",
+    industry: "IT",
+  },
+];
+
 export const mockState: MockState = {
   rooms: mockRooms,
   activities: mockActivities,
@@ -174,6 +194,7 @@ export const mockState: MockState = {
   events: mockEvents,
   favoriteActivityIds,
   currentUser,
+  companies: mockCompanies,
 };
 
 

@@ -542,7 +542,7 @@ backend/
             {% block content %}{% endblock %}
         </div>
         <div class="footer">
-            <p>© 2025 EventHorizon | <a href="{{ frontend_url }}">Zur App</a></p>
+            <p>© 2026 EventHorizon | <a href="{{ frontend_url }}">Zur App</a></p>
             <p>Du erhältst diese E-Mail, weil du bei EventHorizon registriert bist.</p>
         </div>
     </div>

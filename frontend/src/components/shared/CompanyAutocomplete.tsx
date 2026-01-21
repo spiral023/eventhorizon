@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { getCompanyById, searchCompanies, type Company } from "@/data/companies";
+import { getCompanies } from "@/services/apiClient";
+import type { Company } from "@/types/domain";
 
 interface CompanyAutocompleteProps {
   value?: number | null;
@@ -29,18 +30,45 @@ export function CompanyAutocomplete({
 }: CompanyAutocompleteProps) {
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
 
-  const selectedCompany = useMemo(() => getCompanyById(value), [value]);
+  const selectedCompany = useMemo(
+    () => companies.find((company) => company.id === value),
+    [companies, value]
+  );
 
   useEffect(() => {
     if (isFocused) return;
     setQuery(selectedCompany?.name ?? "");
   }, [selectedCompany, isFocused]);
 
+  useEffect(() => {
+    if (hasFetched || (!isFocused && !value)) return;
+    const loadCompanies = async () => {
+      setIsLoading(true);
+      const result = await getCompanies();
+      setCompanies(result.data || []);
+      setIsLoading(false);
+      setHasFetched(true);
+    };
+    void loadCompanies();
+  }, [hasFetched, isFocused, value]);
+
   const suggestions = useMemo(() => {
     if (query.trim().length < 3) return [];
-    return searchCompanies(query);
-  }, [query]);
+    const normalized = query.trim().toLowerCase();
+    return companies.filter((company) => {
+      return (
+        company.name.toLowerCase().includes(normalized) ||
+        company.city.toLowerCase().includes(normalized) ||
+        company.industry.toLowerCase().includes(normalized) ||
+        company.address.toLowerCase().includes(normalized) ||
+        company.postalCode.includes(normalized)
+      );
+    });
+  }, [companies, query]);
 
   const showSuggestions = isFocused && query.trim().length >= 3;
 
@@ -93,7 +121,9 @@ export function CompanyAutocomplete({
         )}
         {showSuggestions && (
           <div className="absolute z-20 mt-2 w-full rounded-xl border border-border/70 bg-popover p-1 shadow-lg">
-            {suggestions.length > 0 ? (
+            {isLoading ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">Firmen werden geladen...</div>
+            ) : suggestions.length > 0 ? (
               <div className="max-h-60 overflow-y-auto">
                 {suggestions.map((company) => {
                   const isSelected = company.id === selectedCompany?.id;

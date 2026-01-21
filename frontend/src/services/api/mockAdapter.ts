@@ -3,6 +3,7 @@ import type {
   Activity,
   ActivityComment,
   BudgetType,
+  Company,
   DateResponseType,
   Event,
   EventComment,
@@ -66,6 +67,17 @@ export async function logout(): Promise<ApiResult<void>> {
 export async function getCurrentUser(): Promise<ApiResult<User | null>> {
   await delay(100);
   return { data: isLoggedIn ? mockState.currentUser : null };
+}
+
+export async function getCompanies(): Promise<ApiResult<Company[]>> {
+  await delay(200);
+  return { data: mockState.companies as Company[] };
+}
+
+export async function getCompany(companyId: number): Promise<ApiResult<Company | null>> {
+  await delay(150);
+  const company = mockState.companies.find((c) => c.id === companyId) || null;
+  return { data: company as Company | null };
 }
 
 export async function updateUser(updates: {
