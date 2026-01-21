@@ -79,7 +79,6 @@ export interface ApiActivity {
   mental_challenge?: number;
   social_interaction_level?: number;
   competition_level?: number;
-  creativity_level?: number;
   fun_factor?: number;
   teamwork_level?: number;
   accessibility_flags?: string[];

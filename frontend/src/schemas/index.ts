@@ -90,7 +90,6 @@ export const ActivitySchema = z.object({
   mentalChallenge: z.number().min(0).max(5).optional(),
   funFactor: z.number().min(1).max(5).optional(),
   teamworkLevel: z.number().min(1).max(5).optional(),
-  creativityLevel: z.number().min(1).max(5).optional(),
   socialInteractionLevel: z.number().min(0).max(5).optional(),
   competitionLevel: z.number().min(0).max(5).optional(),
   // Logistics

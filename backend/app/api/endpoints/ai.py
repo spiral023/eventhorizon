@@ -159,6 +159,54 @@ def _calculate_team_preference_averages(members: List[User]) -> Dict[str, Option
     return averages
 
 
+def _calculate_synergy_score(members: List[User]) -> float:
+    weights = {
+        "physical": 1.5,
+        "mental": 1.5,
+        "social": 1.0,
+        "competition": 1.0,
+    }
+    pref_min = 1.0
+    pref_max = 5.0
+    pref_range = pref_max - pref_min
+
+    def clamp_pref(value: float) -> float:
+        return max(pref_min, min(pref_max, value))
+
+    def average_pairwise_distance(values: List[float]) -> Optional[float]:
+        count = len(values)
+        if count < 2:
+            return None
+        total = 0.0
+        pairs = 0
+        for i in range(count - 1):
+            for j in range(i + 1, count):
+                total += abs(values[i] - values[j])
+                pairs += 1
+        return (total / pairs) / pref_range if pairs else None
+
+    weighted_distance = 0.0
+    weight_sum = 0.0
+    for key, weight in weights.items():
+        values = []
+        for member in members:
+            prefs = member.activity_preferences or {}
+            raw_value = prefs.get(key)
+            if isinstance(raw_value, (int, float)):
+                values.append(clamp_pref(float(raw_value)))
+        avg_distance = average_pairwise_distance(values)
+        if avg_distance is None:
+            continue
+        weighted_distance += weight * avg_distance
+        weight_sum += weight
+
+    if weight_sum == 0:
+        return 50.0
+
+    score = 100 * (1 - (weighted_distance / weight_sum))
+    return round(max(0.0, min(100.0, score)), 1)
+
+
 def _has_activity_preferences(prefs: Optional[dict]) -> bool:
     if not isinstance(prefs, dict):
         return False
@@ -264,6 +312,7 @@ async def get_team_recommendations(
         total_favorites,
     ) = _calculate_normalized_category_distribution(members, availability_counts)
     team_preferences = _calculate_team_preference_averages(members)
+    synergy_score = _calculate_synergy_score(members)
     favorites_participation = _build_coverage_stat(
         sum(1 for m in members if len(m.favorite_activities) > 0),
         len(members),
@@ -279,6 +328,7 @@ async def get_team_recommendations(
         cached_result["categoryDistribution"] = (
             normalized_distribution if total_favorites > 0 else []
         )
+        cached_result["synergyScore"] = synergy_score
         cached_result["memberCount"] = len(members)
         cached_result["teamPreferences"] = team_preferences
         cached_result["favoritesParticipation"] = favorites_participation
@@ -346,7 +396,7 @@ async def get_team_recommendations(
                 "preferredGoals": ["teambuilding"],
                 "recommendedActivityIds": [],
                 "teamVibe": "mixed",
-                "synergyScore": 50,
+                "synergyScore": synergy_score,
                 "strengths": ["Echte Nutzerdaten vorhanden"],
                 "challenges": ["KI-Analyse aktuell eingeschränkt"],
                 "teamPersonality": "Die Datensammler",
@@ -366,6 +416,7 @@ async def get_team_recommendations(
     
     # Ensure memberCount is set
     result["memberCount"] = len(members)
+    result["synergyScore"] = synergy_score
     result["teamPreferences"] = team_preferences
     result["favoritesParticipation"] = favorites_participation
     result["preferencesCoverage"] = preferences_coverage
