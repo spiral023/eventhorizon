@@ -36,7 +36,8 @@ WICHTIG:
 - Analysiere das Team als Gesamtheit.
 - Nenne NIEMALS einzelne Namen.
 - Formuliere alles auf die Gruppe bezogen.
-- Stelle sicher, dass "Personality Profile" und "Team-Ziele" unterschiedlich sind!"""
+- Stelle sicher, dass "Personality Profile" und "Team-Ziele" unterschiedlich sind!
+- Fülle "recommendedActivityIds" mit 1-3 listing_id Werten aus der Liste (als Strings)"""
 
 ACTIVITY_SUGGESTIONS_SYSTEM_PROMPT = """Du bist ein Experte für Event-Planung.
 Ranke Aktivitäten basierend auf Event-Anforderungen und Team-Präferenzen.

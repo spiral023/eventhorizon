@@ -307,6 +307,14 @@ async def _run(invite_code: str, model: str, temperature: float, max_tokens: int
         elif key in listing_id_map.values():
             mapped_recommended_ids.append(key)
 
+    if not mapped_recommended_ids:
+        mapped_recommended_ids = ai_service._fallback_recommended_activity_ids(
+            activities_data, distribution_context
+        )
+        if mapped_recommended_ids:
+            print("\n=== Fallback Recommendations Applied ===")
+            print(mapped_recommended_ids)
+
     api_response = {
         "categoryDistribution": normalized_distribution,
         "preferredGoals": llm_data.get("preferredGoals", []),

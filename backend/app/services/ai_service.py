@@ -228,18 +228,31 @@ class AIService:
             for a in activities
             if a.get("listing_id") is not None and a.get("id") is not None
         }
-        if listing_id_map:
-            mapped_ids = []
-            for raw_id in data.get("recommendedActivityIds", []):
-                key = _normalize_listing_id(raw_id)
-                if not key:
-                    continue
-                mapped = listing_id_map.get(key)
-                if mapped:
-                    mapped_ids.append(mapped)
-                elif key in listing_id_map.values():
-                    mapped_ids.append(key)
-            data["recommendedActivityIds"] = mapped_ids
+        activity_ids = {
+            str(a.get("id")) for a in activities if a.get("id") is not None
+        }
+        mapped_ids = []
+        for raw_id in data.get("recommendedActivityIds", []):
+            key = _normalize_listing_id(raw_id)
+            if not key:
+                continue
+            if key in activity_ids and key not in mapped_ids:
+                mapped_ids.append(key)
+                continue
+            mapped = listing_id_map.get(key)
+            if mapped and mapped not in mapped_ids:
+                mapped_ids.append(mapped)
+        data["recommendedActivityIds"] = mapped_ids
+
+        if not data.get("recommendedActivityIds"):
+            fallback_ids = self._fallback_recommended_activity_ids(
+                activities, current_distribution
+            )
+            if fallback_ids:
+                logger.info(
+                    "Applied fallback recommendedActivityIds for room %s", room_id
+                )
+                data["recommendedActivityIds"] = fallback_ids
 
         return data
 
@@ -606,9 +619,8 @@ class AIService:
             return "Keine abweichenden Präferenzdaten vorhanden."
 
         lines = [
-            f"- Abweichende Präferenzdaten vorhanden für {members_with_any}/{total_members} Personen.",
+            f"- räferenzdaten vorhanden für {members_with_any}/{total_members} Personen.",
             "- Skala: 0 (niedrig) bis 5 (hoch).",
-            "- Standardwerte (alle 3) werden ignoriert.",
         ]
 
         for dim in dimensions:
@@ -655,6 +667,103 @@ class AIService:
                 f"Saison={a.get('season')}"
             )
         return "\n".join(lines)
+
+    def _normalize_category_value(self, category: Any) -> str:
+        if category is None:
+            return ""
+        if hasattr(category, "value"):
+            return str(category.value)
+        text = str(category)
+        if "." in text:
+            return text.split(".")[-1]
+        return text
+
+    def _fallback_recommended_activity_ids(
+        self,
+        activities: List[Dict],
+        distribution_context: Optional[Union[Dict[str, Any], List[Dict]]],
+        max_count: int = 3,
+    ) -> List[str]:
+        if not activities or max_count <= 0:
+            return []
+
+        preferred_categories: List[str] = []
+        if isinstance(distribution_context, list):
+            preferred_categories = [
+                self._normalize_category_value(item.get("category"))
+                for item in distribution_context
+                if item.get("category")
+            ]
+        elif isinstance(distribution_context, dict):
+            normalized = (
+                distribution_context.get("normalized")
+                or distribution_context.get("normalizedDistribution")
+                or []
+            )
+            raw = (
+                distribution_context.get("raw")
+                or distribution_context.get("rawDistribution")
+                or []
+            )
+            source = normalized or raw
+            preferred_categories = [
+                self._normalize_category_value(item.get("category"))
+                for item in source
+                if item.get("category")
+            ]
+
+        seen_categories = set()
+        ordered_categories = []
+        for category in preferred_categories:
+            if category and category not in seen_categories:
+                ordered_categories.append(category)
+                seen_categories.add(category)
+
+        def sort_key(activity: Dict[str, Any]) -> tuple:
+            listing_id = activity.get("listing_id")
+            if isinstance(listing_id, (int, float)) and not isinstance(listing_id, bool):
+                return (0, int(listing_id), str(activity.get("id") or ""))
+            if listing_id is not None:
+                text = str(listing_id)
+                if text.isdigit():
+                    return (0, int(text), str(activity.get("id") or ""))
+            title = activity.get("title") or ""
+            return (1, title.lower(), str(activity.get("id") or ""))
+
+        sorted_activities = sorted(activities, key=sort_key)
+        picked: List[str] = []
+        picked_set = set()
+
+        for category in ordered_categories:
+            for activity in sorted_activities:
+                activity_id = activity.get("id")
+                if not activity_id:
+                    continue
+                activity_id = str(activity_id)
+                if activity_id in picked_set:
+                    continue
+                if self._normalize_category_value(activity.get("category")) != category:
+                    continue
+                picked.append(activity_id)
+                picked_set.add(activity_id)
+                break
+            if len(picked) >= max_count:
+                break
+
+        if len(picked) < max_count:
+            for activity in sorted_activities:
+                activity_id = activity.get("id")
+                if not activity_id:
+                    continue
+                activity_id = str(activity_id)
+                if activity_id in picked_set:
+                    continue
+                picked.append(activity_id)
+                picked_set.add(activity_id)
+                if len(picked) >= max_count:
+                    break
+
+        return picked
 
     def _format_event_context(self, event: Dict) -> str:
         """Format event details for AI"""
