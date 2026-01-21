@@ -8,6 +8,8 @@ Alle Calls verwenden Structured Outputs für type-safe Responses.
 from openai import OpenAI
 from typing import List, Dict, Any, Optional, Union
 from statistics import mean, median, pstdev
+import re
+import uuid
 import json
 import os
 import logging
@@ -203,6 +205,24 @@ class AIService:
         )
 
         data = json.loads(response)
+        def _normalize_listing_id(raw_id: Any) -> Optional[str]:
+            if raw_id is None:
+                return None
+            if isinstance(raw_id, int):
+                return str(raw_id)
+            text = str(raw_id).strip()
+            if not text:
+                return None
+            try:
+                uuid.UUID(text)
+                return text
+            except Exception:
+                pass
+            match = re.search(r"\d+", text)
+            if match:
+                return match.group(0)
+            return None
+
         listing_id_map = {
             str(a.get("listing_id")): str(a.get("id"))
             for a in activities
@@ -211,7 +231,9 @@ class AIService:
         if listing_id_map:
             mapped_ids = []
             for raw_id in data.get("recommendedActivityIds", []):
-                key = str(raw_id).strip()
+                key = _normalize_listing_id(raw_id)
+                if not key:
+                    continue
                 mapped = listing_id_map.get(key)
                 if mapped:
                     mapped_ids.append(mapped)

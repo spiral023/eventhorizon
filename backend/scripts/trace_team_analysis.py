@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sys
+import uuid
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -83,6 +84,25 @@ def _build_schema() -> dict:
             },
         },
     }
+
+
+def _normalize_listing_id(raw_id):
+    if raw_id is None:
+        return None
+    if isinstance(raw_id, int):
+        return str(raw_id)
+    text = str(raw_id).strip()
+    if not text:
+        return None
+    try:
+        uuid.UUID(text)
+        return text
+    except Exception:
+        pass
+    match = re.search(r"\d+", text)
+    if match:
+        return match.group(0)
+    return None
 
 
 async def _load_room_data(invite_code: str):
@@ -278,7 +298,9 @@ async def _run(invite_code: str, model: str, temperature: float, max_tokens: int
     }
     mapped_recommended_ids = []
     for raw_id in llm_data.get("recommendedActivityIds", []):
-        key = str(raw_id).strip()
+        key = _normalize_listing_id(raw_id)
+        if not key:
+            continue
         mapped = listing_id_map.get(key)
         if mapped:
             mapped_recommended_ids.append(mapped)
