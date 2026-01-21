@@ -165,10 +165,6 @@ class AIService:
                             "type": "string",
                             "enum": ["action", "relax", "mixed"],
                         },
-                        "synergyScore": {
-                            "type": "number",
-                            "description": "0-100 indicating how well the team's preferences align",
-                        },
                         "strengths": {"type": "array", "items": {"type": "string"}},
                         "challenges": {"type": "array", "items": {"type": "string"}},
                         "teamPersonality": {
@@ -186,7 +182,6 @@ class AIService:
                         "preferredGoals",
                         "recommendedActivityIds",
                         "teamVibe",
-                        "synergyScore",
                         "strengths",
                         "challenges",
                         "teamPersonality",

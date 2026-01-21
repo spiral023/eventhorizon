@@ -24,12 +24,11 @@ Aufgabe (STRIKTE LÄNGENVORGABEN):
 2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
 3. Empfehle 1-3 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
 4. Bestimme den Team-Vibe (action/relax/mixed).
-5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
-6. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).
-7. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
-8. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
-9. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
-10. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 25 Wörter!)
+5. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).
+6. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
+7. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
+8. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
+9. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 25 Wörter!)
 
 Berücksichtige:
 - Gemeinsamkeiten und starke Kontraste in den Profilen.
