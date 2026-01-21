@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toggleFavorite } from "@/services/apiClient";
 import type { Activity } from "@/types/domain";
 import { CategoryLabels } from "@/types/domain";
@@ -36,6 +37,15 @@ const ITEMS_PER_PAGE = 9;
 const EMPTY_ACTIVITIES: Activity[] = [];
 const EMPTY_IDS: string[] = [];
 
+const ACTIVITY_SORT_OPTIONS = [
+  { value: "favorites", label: "Favoriten" },
+  { value: "upvotes", label: "Dafür-Stimmen" },
+  { value: "externalRating", label: "Externe Bewertung" },
+  { value: "score", label: "Score" },
+] as const;
+
+type ActivitySortKey = (typeof ACTIVITY_SORT_OPTIONS)[number]["value"];
+
 export default function ActivitiesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -47,6 +57,7 @@ export default function ActivitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
+  const [sortBy, setSortBy] = useState<ActivitySortKey>("favorites");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const isMobile = useIsMobile();
@@ -279,10 +290,34 @@ export default function ActivitiesPage() {
   }, [activities, debouncedSearchQuery, filters, favoriteIds]);
 
   const sortedActivities = useMemo(() => {
-    return [...filteredActivities].sort(
-      (a, b) => (b.favoritesCount || 0) - (a.favoritesCount || 0)
-    );
-  }, [filteredActivities]);
+    const getScore = (activity: Activity) =>
+      [
+        activity.socialInteractionLevel,
+        activity.mentalChallenge,
+        activity.competitionLevel,
+        activity.physicalIntensity,
+      ].reduce((sum, value) => sum + (typeof value === "number" ? value : 0), 0);
+
+    const getSortValue = (activity: Activity) => {
+      switch (sortBy) {
+        case "upvotes":
+          return activity.totalUpvotes ?? 0;
+        case "externalRating":
+          return activity.externalRating ?? 0;
+        case "score":
+          return getScore(activity);
+        case "favorites":
+        default:
+          return activity.favoritesCount ?? 0;
+      }
+    };
+
+    return [...filteredActivities].sort((a, b) => {
+      const diff = getSortValue(b) - getSortValue(a);
+      if (diff !== 0) return diff;
+      return a.title.localeCompare(b.title, "de");
+    });
+  }, [filteredActivities, sortBy]);
 
   const visibleActivities = useMemo(() => {
     if (!isMobile) return sortedActivities;
@@ -298,7 +333,7 @@ export default function ActivitiesPage() {
   // Reset visible count when filters or search changes
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [debouncedSearchQuery, filters]);
+  }, [debouncedSearchQuery, filters, sortBy]);
 
   if (error) {
     return (
@@ -340,7 +375,7 @@ export default function ActivitiesPage() {
 
         <div className="space-y-6">
           {/* Search & Mobile Filter Toggle */}
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -359,6 +394,24 @@ export default function ActivitiesPage() {
                   <X className="h-4 w-4" />
                 </Button>
               )}
+            </div>
+
+            <div className="w-full sm:w-[220px]">
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as ActivitySortKey)}>
+                <SelectTrigger
+                  className="h-11 rounded-xl bg-card/50 border-border/50"
+                  aria-label="Sortierung"
+                >
+                  <SelectValue placeholder="Sortieren nach" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACTIVITY_SORT_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <Sheet open={showFilters} onOpenChange={setShowFilters}>
