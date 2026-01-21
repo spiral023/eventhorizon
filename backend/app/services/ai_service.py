@@ -124,11 +124,10 @@ class AIService:
 
         Returns:
             TeamPreferenceSummary als Dict mit:
-            - categoryDistribution: [{category, percentage}]
             - preferredGoals: [string]
             - recommendedActivityIds: [string]
-            - teamVibe: "action" | "relax" | "mixed"
             - insights: [string]
+            (categoryDistribution und teamVibe werden serverseitig berechnet und nicht vom LLM geliefert)
         """
 
         # Structured Output Schema
@@ -140,19 +139,6 @@ class AIService:
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "categoryDistribution": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "category": {"type": "string"},
-                                    "percentage": {"type": "number"},
-                                    "count": {"type": "integer"},
-                                },
-                                "required": ["category", "percentage", "count"],
-                                "additionalProperties": False,
-                            },
-                        },
                         "preferredGoals": {
                             "type": "array",
                             "items": {"type": "string"},
@@ -160,10 +146,6 @@ class AIService:
                         "recommendedActivityIds": {
                             "type": "array",
                             "items": {"type": "string"},
-                        },
-                        "teamVibe": {
-                            "type": "string",
-                            "enum": ["action", "relax", "mixed"],
                         },
                         "strengths": {"type": "array", "items": {"type": "string"}},
                         "challenges": {"type": "array", "items": {"type": "string"}},
@@ -178,10 +160,8 @@ class AIService:
                         "insights": {"type": "array", "items": {"type": "string"}},
                     },
                     "required": [
-                        "categoryDistribution",
                         "preferredGoals",
                         "recommendedActivityIds",
-                        "teamVibe",
                         "strengths",
                         "challenges",
                         "teamPersonality",

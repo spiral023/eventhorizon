@@ -46,19 +46,6 @@ def _build_schema() -> dict:
             "schema": {
                 "type": "object",
                 "properties": {
-                    "categoryDistribution": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "category": {"type": "string"},
-                                "percentage": {"type": "number"},
-                                "count": {"type": "integer"},
-                            },
-                            "required": ["category", "percentage", "count"],
-                            "additionalProperties": False,
-                        },
-                    },
                     "preferredGoals": {
                         "type": "array",
                         "items": {"type": "string"},
@@ -66,10 +53,6 @@ def _build_schema() -> dict:
                     "recommendedActivityIds": {
                         "type": "array",
                         "items": {"type": "string"},
-                    },
-                    "teamVibe": {
-                        "type": "string",
-                        "enum": ["action", "relax", "mixed"],
                     },
                     "strengths": {"type": "array", "items": {"type": "string"}},
                     "challenges": {"type": "array", "items": {"type": "string"}},
@@ -84,10 +67,8 @@ def _build_schema() -> dict:
                     "insights": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": [
-                    "categoryDistribution",
                     "preferredGoals",
                     "recommendedActivityIds",
-                    "teamVibe",
                     "strengths",
                     "challenges",
                     "teamPersonality",

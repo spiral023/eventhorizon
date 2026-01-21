@@ -20,15 +20,13 @@ TEAM_ANALYSIS_USER_PROMPT = """Führe eine umfassende Team-Analyse durch:
 {activities_summary}
 
 Aufgabe (STRIKTE LÄNGENVORGABEN):
-1. Ermittle die bevorzugten Aktivitätskategorien (Prozentverteilung). Nutze die normalisierte Verteilung als primäre Quelle, Rohdaten nur als Plausibilitäts-/Konfidenzsignal.
-2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
-3. Empfehle 1-3 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
-4. Bestimme den Team-Vibe (action/relax/mixed).
-5. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).
-6. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
-7. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
-8. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
-9. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 25 Wörter!)
+1. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
+2. Empfehle 1-3 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
+3. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).
+4. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
+5. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
+6. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
+7. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 25 Wörter!)
 
 Berücksichtige:
 - Gemeinsamkeiten und starke Kontraste in den Profilen.

@@ -181,7 +181,7 @@ def _calculate_synergy_score(members: List[User]) -> float:
         "social": 1.0,
         "competition": 1.0,
     }
-    pref_min = 1.0
+    pref_min = 0.0
     pref_max = 5.0
     pref_range = pref_max - pref_min
 
@@ -225,6 +225,50 @@ def _calculate_synergy_score(members: List[User]) -> float:
 
     score = 100 * (1 - (weighted_distance / weight_sum))
     return round(max(0.0, min(100.0, score)), 1)
+
+
+def _calculate_team_vibe(
+    normalized_distribution: List[dict],
+    team_preferences: Dict[str, Optional[float]],
+) -> str:
+    action_pct = None
+    relax_pct = None
+    for item in normalized_distribution:
+        category = item.get("category")
+        if category == "action":
+            action_pct = item.get("percentage")
+        elif category == "relax":
+            relax_pct = item.get("percentage")
+
+    if action_pct is not None or relax_pct is not None:
+        if action_pct is None:
+            return "relax"
+        if relax_pct is None:
+            return "action"
+        diff = action_pct - relax_pct
+        if diff >= 8:
+            return "action"
+        if diff <= -8:
+            return "relax"
+        return "mixed"
+
+    pref_values = [
+        v
+        for v in [
+            team_preferences.get("physical"),
+            team_preferences.get("competition"),
+        ]
+        if isinstance(v, (int, float))
+    ]
+    if not pref_values:
+        return "mixed"
+
+    avg_pref = sum(pref_values) / len(pref_values)
+    if avg_pref >= 3.5:
+        return "action"
+    if avg_pref <= 2.5:
+        return "relax"
+    return "mixed"
 
 
 def _has_activity_preferences(prefs: Optional[dict]) -> bool:
@@ -327,6 +371,7 @@ async def get_team_recommendations(
     ) = _calculate_normalized_category_distribution(members, availability_counts)
     team_preferences = _calculate_team_preference_averages(members)
     synergy_score = _calculate_synergy_score(members)
+    team_vibe = _calculate_team_vibe(normalized_distribution, team_preferences)
     favorites_participation = _build_coverage_stat(
         sum(1 for m in members if len(m.favorite_activities) > 0),
         len(members),
@@ -339,10 +384,9 @@ async def get_team_recommendations(
     if cached_result:
         logger.info(f"Returning cached team analysis for room {room_id}")
         response.headers["X-AI-Cache"] = "hit"
-        cached_result["categoryDistribution"] = (
-            normalized_distribution if total_favorites > 0 else []
-        )
+        cached_result["categoryDistribution"] = normalized_distribution
         cached_result["synergyScore"] = synergy_score
+        cached_result["teamVibe"] = team_vibe
         cached_result["memberCount"] = len(members)
         cached_result["teamPreferences"] = team_preferences
         cached_result["favoritesParticipation"] = favorites_participation
@@ -409,7 +453,7 @@ async def get_team_recommendations(
                 "categoryDistribution": [], # Will be overwritten
                 "preferredGoals": ["teambuilding"],
                 "recommendedActivityIds": [],
-                "teamVibe": "mixed",
+                "teamVibe": team_vibe,
                 "synergyScore": synergy_score,
                 "strengths": ["Echte Nutzerdaten vorhanden"],
                 "challenges": ["KI-Analyse aktuell eingeschränkt"],
@@ -425,11 +469,11 @@ async def get_team_recommendations(
     result = ai_result
     
     # Overwrite with real data if available
-    if total_favorites > 0:
-        result["categoryDistribution"] = normalized_distribution
+    result["categoryDistribution"] = normalized_distribution
     
     # Ensure memberCount is set
     result["memberCount"] = len(members)
+    result["teamVibe"] = team_vibe
     result["synergyScore"] = synergy_score
     result["teamPreferences"] = team_preferences
     result["favoritesParticipation"] = favorites_participation
