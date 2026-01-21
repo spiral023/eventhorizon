@@ -24,3 +24,5 @@ sentry-sdk[fastapi]==2.44.0
 pandas>=2.0.0
 openpyxl>=3.1.0
 slowapi==0.1.9
+croniter==2.0.5
+PyYAML==6.0.2

@@ -69,6 +69,46 @@ services:
       timeout: 10s
       retries: 3
 
+  scheduled-scripts:
+    build: ./backend
+    restart: always
+    command: ["python", "scripts/scheduled_scripts.py"]
+    volumes:
+      - ./backend/scripts/scheduled_jobs.yml:/app/scripts/scheduled_jobs.yml:ro
+    environment:
+      POSTGRES_SERVER: db
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-eventhorizon}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTESERVICE_API_KEY: ${OPENROUTESERVICE_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
+      BETTER_AUTH_JWKS_URL: http://auth:3000/api/auth/jwks
+      BETTER_AUTH_ISSUER: ${BETTER_AUTH_JWT_ISSUER:-eventhorizon-auth}
+      BETTER_AUTH_AUDIENCE: ${BETTER_AUTH_JWT_AUDIENCE:-eventhorizon-api}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_STORAGE_BUCKET: ${AWS_STORAGE_BUCKET}
+      AWS_STORAGE_BUCKET_BASE_URL: ${AWS_STORAGE_BUCKET_BASE_URL}
+      AVATAR_MAX_SIZE_MB: ${AVATAR_MAX_SIZE_MB:-5}
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.1}
+      SENTRY_PROFILES_SAMPLE_RATE: ${SENTRY_PROFILES_SAMPLE_RATE:-0.1}
+      SCHEDULED_JOBS_FILE: /app/scripts/scheduled_jobs.yml
+      TZ: Europe/Vienna
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
   frontend:
     build:
       context: ./frontend

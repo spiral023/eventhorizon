@@ -1,0 +1,7 @@
+timezone: Europe/Vienna
+jobs:
+  - name: enrich_company_travel_times
+    schedule: "0 1 * * *"
+    command: "python scripts/enrich_company_travel_times.py"
+    enabled: true
+    allow_overlap: false

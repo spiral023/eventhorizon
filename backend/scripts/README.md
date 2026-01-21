@@ -73,3 +73,17 @@ Hinweis: Details zur Apify-Integration stehen in `APIFY.md`.
 
 - Im Container ausführen, damit die gleichen env vars/Netzwerke wie das Backend greifen.
 - Bei Import/Seed: vorher `alembic upgrade head`, damit das Schema aktuell ist.
+
+## Scheduled scripts
+
+The scheduler runs scripts based on a YAML config. Default config file:
+`backend/scripts/scheduled_jobs.yml`.
+
+Run the scheduler locally:
+```bash
+python scripts/scheduled_scripts.py
+```
+
+Override via env:
+- `SCHEDULED_JOBS` (YAML or JSON string)
+- `SCHEDULED_JOBS_FILE` (path inside container)
