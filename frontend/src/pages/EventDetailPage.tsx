@@ -273,11 +273,19 @@ export default function EventDetailPage() {
   };
 
   const handleSelectActivity = async (activityId: string) => {
-    if (!eventCode) return;
+    const resolvedEventCode = event?.shortCode || event?.id || eventCode;
+    if (!resolvedEventCode) return;
     setActionLoading(true);
-    const result = await selectWinningActivity(eventCode, activityId);
-    if (result.data) {
-      setEvent(result.data);
+    const result = await selectWinningActivity(resolvedEventCode, activityId);
+    let updatedEvent = result.data ?? null;
+    if (!updatedEvent) {
+      const freshResult = await getEventByCode(resolvedEventCode);
+      updatedEvent = freshResult.data ?? null;
+    }
+    if (updatedEvent) {
+      setEvent({ ...updatedEvent });
+      setActiveTab(updatedEvent.phase);
+      prevPhaseRef.current = updatedEvent.phase;
     }
     setActionLoading(false);
   };
@@ -298,11 +306,19 @@ export default function EventDetailPage() {
   };
 
   const handleFinalizeDate = async (dateOptionId: string) => {
-    if (!eventCode) return;
+    const resolvedEventCode = event?.shortCode || event?.id || eventCode;
+    if (!resolvedEventCode) return;
     setActionLoading(true);
-    const result = await finalizeDateOption(eventCode, dateOptionId);
-    if (result.data) {
-      setEvent(result.data);
+    const result = await finalizeDateOption(resolvedEventCode, dateOptionId);
+    let updatedEvent = result.data ?? null;
+    if (!updatedEvent) {
+      const freshResult = await getEventByCode(resolvedEventCode);
+      updatedEvent = freshResult.data ?? null;
+    }
+    if (updatedEvent) {
+      setEvent({ ...updatedEvent });
+      setActiveTab(updatedEvent.phase);
+      prevPhaseRef.current = updatedEvent.phase;
       trackKeyFlowCounter("schedule.confirm", "success");
     } else {
       trackKeyFlowCounter("schedule.confirm", "failure");

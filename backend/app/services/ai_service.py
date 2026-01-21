@@ -11,6 +11,17 @@ import json
 import os
 import logging
 
+from app.ai_prompts import (
+    TEAM_ANALYSIS_SYSTEM_PROMPT,
+    TEAM_ANALYSIS_USER_PROMPT,
+    ACTIVITY_SUGGESTIONS_SYSTEM_PROMPT,
+    ACTIVITY_SUGGESTIONS_USER_PROMPT,
+    EVENT_INVITE_SYSTEM_PROMPT,
+    EVENT_INVITE_USER_PROMPT,
+    VOTING_REMINDER_SYSTEM_PROMPT,
+    VOTING_REMINDER_USER_PROMPT,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -193,46 +204,16 @@ class AIService:
         messages = [
             {
                 "role": "system",
-                "content": """Du bist ein charismatischer Experte für Team-Psychologie, Gruppendynamik und Event-Planung.
-                Deine Aufgabe ist es, aus den individuellen Profilen eines Teams ein tiefgreifendes Gesamtprofil zu erstellen.
-                Analysiere die Präferenzen der Team-Mitglieder und erstelle ein Profil, das Spaß macht zu lesen.
-                Antworte auf Deutsch: locker, modern, wertschätzend und mit einem leichten Augenzwinkern.
-                Vermeide steifes 'Behördendeutsch', klinische Begriffe oder trockene Analysen.
-                WICHTIG: Erstelle ein Gesamtprofil des Teams, ohne auf einzelne Individuen namentlich einzugehen.
-                Behandle das Team als eine Einheit.
-                HALTE DICH AN DIE LÄNGENVORGABEN.""",
+                "content": TEAM_ANALYSIS_SYSTEM_PROMPT,
             },
             {
                 "role": "user",
-                "content": f"""Führe eine umfassende Team-Analyse durch:
-
-**Team-Mitglieder ({len(members)} Personen):**
-{members_summary}
-{distribution_context}
-**Verfügbare Aktivitäten:**
-{activities_summary}
-
-Aufgabe (STRIKTE LÄNGENVORGABEN):
-1. Ermittle die bevorzugten Aktivit?tskategorien (Prozentverteilung). Nutze die normalisierte Verteilung als primaere Quelle, Rohdaten nur als Plausibilitaets-/Konfidenzsignal.
-2. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
-3. Empfehle 1-3 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
-4. Bestimme den Team-Vibe (action/relax/mixed).
-5. Berechne einen Synergy-Score (0-100): Wie gut harmonieren die Interessen?
-6. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).
-7. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
-8. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
-9. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
-10. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 25 Wörter!)
-
-Berücksichtige:
-- Gemeinsamkeiten und starke Kontraste in den Profilen.
-- Physische Anforderungen vs. angegebene Hobbys.
-
-WICHTIG:
-- Analysiere das Team als Gesamtheit.
-- Nenne NIEMALS einzelne Namen.
-- Formuliere alles auf die Gruppe bezogen.
-- Stelle sicher, dass "Personality Profile" und "Team-Ziele" unterschiedlich sind!""",
+                "content": TEAM_ANALYSIS_USER_PROMPT.format(
+                    member_count=len(members),
+                    members_summary=members_summary,
+                    distribution_context=distribution_context,
+                    activities_summary=activities_summary,
+                ),
             },
         ]
 
@@ -327,28 +308,15 @@ WICHTIG:
         messages = [
             {
                 "role": "system",
-                "content": """Du bist ein Experte für Event-Planung.
-                Ranke Aktivitäten basierend auf Event-Anforderungen und Team-Präferenzen.
-                Bewerte jeden Match-Faktor von 0-100. Score = Durchschnitt aller Faktoren.""",
+                "content": ACTIVITY_SUGGESTIONS_SYSTEM_PROMPT,
             },
             {
                 "role": "user",
-                "content": f"""Event-Details:
-{event_context}
-
-Team-Präferenzen:
-{team_context}
-
-Verfügbare Aktivitäten:
-{activities_list}
-
-Aufgabe:
-Empfehle die 5 besten Aktivitäten für dieses Event.
-
-Bewertungskriterien:
-- preferenceMatch: Passt zu Team-Präferenzen? (100 = perfekt, 0 = nicht passend)
-
-Gib eine kurze, überzeugende Begründung auf Deutsch.""",
+                "content": ACTIVITY_SUGGESTIONS_USER_PROMPT.format(
+                    event_context=event_context,
+                    team_context=team_context,
+                    activities_list=activities_list,
+                ),
             },
         ]
 
@@ -398,27 +366,20 @@ Gib eine kurze, überzeugende Begründung auf Deutsch.""",
         messages = [
             {
                 "role": "system",
-                "content": """Du bist ein freundlicher Event-Manager.
-                Schreibe persönliche, motivierende Einladungen auf Deutsch.
-                Ton: Professionell aber warm, kurz und prägnant.""",
+                "content": EVENT_INVITE_SYSTEM_PROMPT,
             },
             {
                 "role": "user",
-                "content": f"""Schreibe eine Event-Einladung:
-
-Empfänger: {recipient.get('name', 'Team-Mitglied')}
-Rolle: {role}
-
-Event:
-- Name: {event.get('name')}
-- Beschreibung: {event.get('description', 'Kein Text')}
-- Phase: {event.get('phase')}
-- Budget: {event.get('budget_amount')} € {event.get('budget_type')}
-- Teilnehmer: ~{event.get('participant_count_estimate', '?')} Personen
-
-Betreff: Kurz und einladend (max 60 Zeichen)
-Text: 2-3 Absätze, persönlich, informativ
-Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")""",
+                "content": EVENT_INVITE_USER_PROMPT.format(
+                    recipient_name=recipient.get("name", "Team-Mitglied"),
+                    role=role,
+                    event_name=event.get("name"),
+                    event_description=event.get("description", "Kein Text"),
+                    event_phase=event.get("phase"),
+                    event_budget_amount=event.get("budget_amount"),
+                    event_budget_type=event.get("budget_type"),
+                    participant_count=event.get("participant_count_estimate", "?"),
+                ),
             },
         ]
 
@@ -476,21 +437,16 @@ Call-to-Action: Button-Text (z.B. "Jetzt abstimmen!")""",
         messages = [
             {
                 "role": "system",
-                "content": """Du bist ein freundlicher Reminder-Bot.
-                Schreibe kurze, motivierende Erinnerungen auf Deutsch.
-                Kein Druck, aber klarer Call-to-Action.""",
+                "content": VOTING_REMINDER_SYSTEM_PROMPT,
             },
             {
                 "role": "user",
-                "content": f"""Schreibe eine Abstimmungs-Erinnerung:
-
-Empfänger: {recipient.get('name')}
-Event: {event.get('name')}
-Deadline: in {days_until_deadline} Tag(en)
-Dringlichkeit: {urgency}
-
-Betreff: Freundlich und klar
-Text: Kurz, erinnert an Deadline, motiviert zum Abstimmen""",
+                "content": VOTING_REMINDER_USER_PROMPT.format(
+                    recipient_name=recipient.get("name"),
+                    event_name=event.get("name"),
+                    days_until_deadline=days_until_deadline,
+                    urgency=urgency,
+                ),
             },
         ]
 
