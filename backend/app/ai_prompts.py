@@ -21,7 +21,7 @@ TEAM_ANALYSIS_USER_PROMPT = """Führe eine umfassende Team-Analyse durch:
 
 Aufgabe (STRIKTE LÄNGENVORGABEN):
 1. Identifiziere die 3 wichtigsten Team-Ziele (jeweils ca. 30 Zeichen!). Konkrete Handlungsziele, KEINE Wiederholung des Personality Profiles.
-2. Empfehle 1-3 Aktivitäten (IDs), die perfekt zum Teamprofil passen.
+2. Empfehle 1-3 Aktivitäten (listing_id in eckigen Klammern), die perfekt zum Teamprofil passen.
 3. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).
 4. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
 5. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").

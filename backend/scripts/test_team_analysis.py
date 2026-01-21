@@ -161,6 +161,7 @@ async def run_analysis(room_id):
         activities_data = [
             {
                 "id": str(a.id),
+                "listing_id": a.listing_id,
                 "title": a.title,
                 "category": a.category,
                 "est_price_pp": a.est_price_per_person,

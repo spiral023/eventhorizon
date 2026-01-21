@@ -125,7 +125,7 @@ class AIService:
         Returns:
             TeamPreferenceSummary als Dict mit:
             - preferredGoals: [string]
-            - recommendedActivityIds: [string]
+            - recommendedActivityIds: [string] (LLM liefert listing_id, wird serverseitig zu UUIDs gemappt)
             - insights: [string]
             (categoryDistribution und teamVibe werden serverseitig berechnet und nicht vom LLM geliefert)
         """
@@ -175,7 +175,9 @@ class AIService:
 
         # Prepare context
         members_summary = self._summarize_members(members)
-        activities_summary = self._summarize_activities(activities, include_price=False)
+        activities_summary = self._summarize_activities(
+            activities, include_price=False, id_field="listing_id"
+        )
         distribution_context = self._format_distribution_context(current_distribution)
         messages = [
             {
@@ -200,7 +202,24 @@ class AIService:
             temperature=0.5,
         )
 
-        return json.loads(response)
+        data = json.loads(response)
+        listing_id_map = {
+            str(a.get("listing_id")): str(a.get("id"))
+            for a in activities
+            if a.get("listing_id") is not None and a.get("id") is not None
+        }
+        if listing_id_map:
+            mapped_ids = []
+            for raw_id in data.get("recommendedActivityIds", []):
+                key = str(raw_id).strip()
+                mapped = listing_id_map.get(key)
+                if mapped:
+                    mapped_ids.append(mapped)
+                elif key in listing_id_map.values():
+                    mapped_ids.append(key)
+            data["recommendedActivityIds"] = mapped_ids
+
+        return data
 
     def suggest_activities_for_event(
         self,
@@ -594,14 +613,20 @@ class AIService:
         return "\n".join(lines)
 
     def _summarize_activities(
-        self, activities: List[Dict], include_price: bool = True
+        self,
+        activities: List[Dict],
+        include_price: bool = True,
+        id_field: str = "id",
     ) -> str:
         """Format activities for AI context"""
         lines = []
         for a in activities[:50]:  # Limit to top 50
             price_part = f"Preis={a.get('est_price_pp')}€, " if include_price else ""
+            activity_id = a.get(id_field)
+            if activity_id is None:
+                activity_id = "n/a"
             lines.append(
-                f"- [{a.get('id')}] {a.get('title')}: "
+                f"- [{activity_id}] {a.get('title')}: "
                 f"Kategorie={a.get('category')}, "
                 f"{price_part}"
                 f"Region={a.get('location_region')}, "

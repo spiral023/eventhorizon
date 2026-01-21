@@ -137,6 +137,7 @@ async def _load_room_data(invite_code: str):
         activities_data = [
             {
                 "id": str(a.id),
+                "listing_id": a.listing_id,
                 "title": a.title,
                 "category": a.category,
                 "est_price_pp": a.est_price_per_person,
@@ -204,7 +205,9 @@ async def _run(invite_code: str, model: str, temperature: float, max_tokens: int
         raise RuntimeError("OPENROUTER_API_KEY not set - cannot call OpenRouter")
 
     members_summary = ai_service._summarize_members(members_data)
-    activities_summary = ai_service._summarize_activities(activities_data, include_price=False)
+    activities_summary = ai_service._summarize_activities(
+        activities_data, include_price=False, id_field="listing_id"
+    )
     distribution_summary = ai_service._format_distribution_context(distribution_context)
 
     messages = [
@@ -268,10 +271,24 @@ async def _run(invite_code: str, model: str, temperature: float, max_tokens: int
     except Exception:
         llm_data = {}
 
+    listing_id_map = {
+        str(a.get("listing_id")): a.get("id")
+        for a in activities_data
+        if a.get("listing_id") is not None and a.get("id") is not None
+    }
+    mapped_recommended_ids = []
+    for raw_id in llm_data.get("recommendedActivityIds", []):
+        key = str(raw_id).strip()
+        mapped = listing_id_map.get(key)
+        if mapped:
+            mapped_recommended_ids.append(mapped)
+        elif key in listing_id_map.values():
+            mapped_recommended_ids.append(key)
+
     api_response = {
         "categoryDistribution": normalized_distribution,
         "preferredGoals": llm_data.get("preferredGoals", []),
-        "recommendedActivityIds": llm_data.get("recommendedActivityIds", []),
+        "recommendedActivityIds": mapped_recommended_ids,
         "teamVibe": team_vibe,
         "synergyScore": synergy_score,
         "strengths": llm_data.get("strengths", []),
