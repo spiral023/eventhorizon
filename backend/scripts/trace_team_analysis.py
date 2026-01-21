@@ -18,8 +18,12 @@ from app.ai_prompts import (
     TEAM_ANALYSIS_USER_PROMPT,
 )
 from app.api.endpoints.ai import (
+    _build_coverage_stat,
     _calculate_normalized_category_distribution,
     _calculate_synergy_score,
+    _calculate_team_preference_averages,
+    _calculate_team_vibe,
+    _has_activity_preferences,
 )
 from app.db.session import async_session
 from app.models.domain import Room, RoomMember, User, Activity
@@ -156,8 +160,30 @@ async def _load_room_data(invite_code: str):
             else None
         )
 
+        team_preferences = _calculate_team_preference_averages(members)
+        favorites_participation = _build_coverage_stat(
+            sum(1 for m in members if len(m.favorite_activities) > 0),
+            len(members),
+        )
+        preferences_coverage = _build_coverage_stat(
+            sum(1 for m in members if _has_activity_preferences(m.activity_preferences)),
+            len(members),
+        )
         synergy_score = _calculate_synergy_score(members)
-        return room, members_data, activities_data, distribution_context, synergy_score
+        team_vibe = _calculate_team_vibe(normalized_distribution, team_preferences)
+
+        return (
+            room,
+            members_data,
+            activities_data,
+            distribution_context,
+            normalized_distribution,
+            team_preferences,
+            favorites_participation,
+            preferences_coverage,
+            synergy_score,
+            team_vibe,
+        )
 
 
 async def _run(invite_code: str, model: str, temperature: float, max_tokens: int, output_path: str | None):
@@ -166,7 +192,12 @@ async def _run(invite_code: str, model: str, temperature: float, max_tokens: int
         members_data,
         activities_data,
         distribution_context,
+        normalized_distribution,
+        team_preferences,
+        favorites_participation,
+        preferences_coverage,
         synergy_score,
+        team_vibe,
     ) = await _load_room_data(invite_code)
 
     if not ai_service.client:
@@ -232,10 +263,39 @@ async def _run(invite_code: str, model: str, temperature: float, max_tokens: int
     print("\n=== Deterministic Synergy Score ===")
     print(synergy_score)
 
+    try:
+        llm_data = json.loads(completion.choices[0].message.content)
+    except Exception:
+        llm_data = {}
+
+    api_response = {
+        "categoryDistribution": normalized_distribution,
+        "preferredGoals": llm_data.get("preferredGoals", []),
+        "recommendedActivityIds": llm_data.get("recommendedActivityIds", []),
+        "teamVibe": team_vibe,
+        "synergyScore": synergy_score,
+        "strengths": llm_data.get("strengths", []),
+        "challenges": llm_data.get("challenges", []),
+        "teamPersonality": llm_data.get("teamPersonality", ""),
+        "socialVibe": llm_data.get("socialVibe", "medium"),
+        "insights": llm_data.get("insights", []),
+        "memberCount": len(members_data),
+        "teamPreferences": team_preferences,
+        "favoritesParticipation": favorites_participation,
+        "preferencesCoverage": preferences_coverage,
+    }
+
+    print("\n=== Simulated API Response (server-side fields applied) ===")
+    print(json.dumps(api_response, indent=2, ensure_ascii=False))
+
     if output_path:
         with open(output_path, "w", encoding="utf-8") as handle:
             json.dump(
-                {"request": request_payload, "response": response_dump},
+                {
+                    "request": request_payload,
+                    "response": response_dump,
+                    "api_response": api_response,
+                },
                 handle,
                 indent=2,
                 ensure_ascii=False,
