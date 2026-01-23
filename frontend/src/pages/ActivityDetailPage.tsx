@@ -21,7 +21,6 @@ import {
   Calendar,
   BookOpen,
   Target,
-  Accessibility,
   CloudSun,
   Facebook,
   Instagram,
@@ -860,21 +859,6 @@ export default function ActivityDetailPage() {
                 )}
                 {activity.maxCapacity && (
                   <DetailRow icon={Users} label="Max. Kapazität" value={`${activity.maxCapacity} Personen`} />
-                )}
-                {activity.accessibilityFlags && activity.accessibilityFlags.length > 0 && (
-                  <div className="py-2">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Accessibility className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">Barrierefreiheit</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 ml-7">
-                      {activity.accessibilityFlags.map((flag) => (
-                        <Badge key={flag} variant="outline" className="text-xs">
-                          {flag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
                 )}
               </CardContent>
             </Card>

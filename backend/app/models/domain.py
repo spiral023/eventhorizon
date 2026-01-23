@@ -169,24 +169,17 @@ class Activity(Base):
     coordinates = Column(JSON) # [lat, lng]
     
     est_price_per_person = Column(Float)
-    price_includes = Column(Text)
     price_comment = Column(Text)
     
     # Descriptions
     short_description = Column(String, nullable=False)
     long_description = Column(Text)
-    description = Column(Text) # generic/middle description
-    
     customer_voice = Column(Text)
 
     image_url = Column(String)
-    gallery_urls = Column(ARRAY(String))
     
     season = Column(SQLEnum(Season))
     
-    accessibility_flags = Column(ARRAY(String))
-
-    duration = Column(String)
     typical_duration_hours = Column(Float)
     
     group_size_min = Column(Integer)
@@ -213,10 +206,6 @@ class Activity(Base):
     primary_goal = Column(String)
     
     total_upvotes = Column(Integer, default=0, nullable=False)
-
-    # Travel
-    travel_time_from_office_minutes = Column(Integer)
-    travel_time_from_office_minutes_walking = Column(Integer)
 
     weather_dependent = Column(Boolean, default=False)
     

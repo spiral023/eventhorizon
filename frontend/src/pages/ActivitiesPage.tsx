@@ -184,7 +184,6 @@ export default function ActivitiesPage() {
           activity.title.toLowerCase().includes(query) ||
           (activity.shortDescription?.toLowerCase().includes(query) ?? false) ||
           (activity.longDescription?.toLowerCase().includes(query) ?? false) ||
-          (activity.description?.toLowerCase().includes(query) ?? false) ||
           activity.locationRegion.toLowerCase().includes(query) ||
           activity.tags.some((tag) => tag.toLowerCase().includes(query))
         );

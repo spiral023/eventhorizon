@@ -99,7 +99,6 @@ const mockActivities: Activity[] = [
     mentalChallenge: 5,
     socialInteractionLevel: 5,
     competitionLevel: 1,
-    accessibilityFlags: ["wheelchair"],
     weatherDependent: false,
     externalRating: 4.9,
     travelTimeMinutes: 5,

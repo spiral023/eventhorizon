@@ -338,7 +338,7 @@ export function ActivityFilterPanel({
         >
           <span className="flex items-center gap-2">
             <Car className="h-4 w-4 text-primary" />
-            Fahrtzeit vom Büro
+            Fahrzeit von der Firma
           </span>
           <ChevronDown className={cn(
             "h-4 w-4 transition-transform",
@@ -373,7 +373,7 @@ export function ActivityFilterPanel({
         >
           <span className="flex items-center gap-2">
             <Footprints className="h-4 w-4 text-primary" />
-            Gehzeit vom Büro
+            Gehzeit von der Firma
           </span>
           <ChevronDown className={cn(
             "h-4 w-4 transition-transform",

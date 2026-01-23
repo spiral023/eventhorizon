@@ -76,9 +76,7 @@ export interface ApiActivity {
   long_description?: string;
   customer_voice?: string;
   image_url: string;
-  gallery_urls?: string[];
   season: string;
-  duration?: string;
   typical_duration_hours?: number;
   group_size_min?: number;
   group_size_max?: number;
@@ -92,7 +90,6 @@ export interface ApiActivity {
   competition_level?: number;
   fun_factor?: number;
   teamwork_level?: number;
-  accessibility_flags?: string[];
   weather_dependent?: boolean;
   external_rating?: number;
   review_count?: number;

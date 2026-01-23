@@ -60,17 +60,12 @@ def map_json_to_model(
 
         short_description=activity_json.get("short_description", ""),
         long_description=activity_json.get("long_description"),
-        description=activity_json.get("description"),
         customer_voice=activity_json.get("customer_voice"),
 
         image_url=activity_json.get("image_url"),
 
         season=Season(activity_json.get("season")) if activity_json.get("season") else None,
         weather_dependent=activity_json.get("weather_dependent", False),
-
-        accessibility_flags=activity_json.get("accessibility_flags", []),
-
-        duration=activity_json.get("duration"),
         typical_duration_hours=activity_json.get("typical_duration_hours"),
 
         group_size_min=activity_json.get("recommended_group_size_min") or activity_json.get("min_participants"),
@@ -93,9 +88,6 @@ def map_json_to_model(
         primary_goal=activity_json.get("primary_goal"),
         facebook=activity_json.get("facebook"),
         instagram=activity_json.get("instagram"),
-
-        travel_time_from_office_minutes=activity_json.get("travel_time_from_office_minutes"),
-        travel_time_from_office_minutes_walking=activity_json.get("travel_time_from_office_minutes_walking"),
 
         created_at=existing_activity.created_at if existing_activity else datetime.utcnow()
     )

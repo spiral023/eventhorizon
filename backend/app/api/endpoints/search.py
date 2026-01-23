@@ -10,6 +10,7 @@ from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.domain import Activity, Event, Room, RoomMember, User
 from app.schemas.domain import SearchResult
+from app.services.travel_time_service import apply_company_travel_times
 
 router = APIRouter()
 
@@ -31,12 +32,14 @@ async def search_global(
         .where(
             or_(
                 Activity.title.ilike(query_str),
-                Activity.description.ilike(query_str),
+                Activity.short_description.ilike(query_str),
+                Activity.long_description.ilike(query_str),
             )
         )
         .limit(10)
     )
     activities = activities_result.scalars().all()
+    await apply_company_travel_times(activities, current_user.company_id, db)
 
     # 2. Rooms (User is member or creator)
     rooms_result = await db.execute(

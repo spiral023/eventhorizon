@@ -22,6 +22,7 @@ import { SchedulingPhase } from "@/components/events/phase/SchedulingPhase";
 import { EventActionsPanel } from "@/components/events/EventActionsPanel";
 import { BookingRequestDialog } from "@/components/activities/BookingRequestDialog";
 import { JoinSuccessOverlay } from "@/components/shared/JoinSuccessOverlay";
+import { getActivityDurationMinutes, formatDuration as formatDurationUtil } from "@/utils/activityUtils";
 import {
   getEventByCode,
   getActivities,
@@ -371,12 +372,10 @@ export default function EventDetailPage() {
     : undefined;
 
   const formatDuration = (activity: Activity | null) => {
-    if (!activity) return "–";
-    if (activity.duration) return activity.duration;
-    if (typeof activity.typicalDurationHours === "number") {
-      return `${activity.typicalDurationHours}h`;
-    }
-    return "–";
+    if (!activity) return "—";
+    const mins = getActivityDurationMinutes(activity);
+    if (mins) return formatDurationUtil(mins);
+    return "—";
   };
 
   const activityVotesById = new Map<string, ActivityVote>();

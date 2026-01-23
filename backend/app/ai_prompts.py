@@ -24,18 +24,16 @@ Aufgabe (STRIKTE LÄNGENVORGABEN):
 2. Empfehle 1-3 Aktivitäten (listing_id in eckigen Klammern), die perfekt zum Teamprofil passen.
 3. Identifiziere 2-3 Stärken (jeweils ca. 15 Wörter!).
 4. Nenne 2 "Stolpersteine" (Herausforderungen), aber verpacke sie humorvoll oder charmant-konstruktiv (jeweils ca. 15 Wörter!)
-5. Gib dem Team ein "Personality Profile" (ca. 2-5 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
+5. Gib dem Team ein "Personality Profile" (ca. 2-4 Wörter!). Nutze eine kreative, bildhafte Bezeichnung (z.B. "Die abenteuerlustigen Gourmets", "Die Genuss-Entdecker", "Die Rätsel-Rambos", "Die Adrenalin-Aperitif-Allianz", "Die Dopaminjäger").
 6. Bestimme den 'Social Vibe' (low/medium/high) - wie viel Interaktion wird bevorzugt?
-7. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 25 Wörter!)
+7. Gib dem Team 3 spannende "Deep Dives" oder "Aha-Momente" zur Dynamik (Insights). Vermeide Offensichtliches, sei originell! (jeweils ca. 16 Wörter!)
 
 Berücksichtige:
 - Gemeinsamkeiten und starke Kontraste in den Profilen.
 - Physische Anforderungen vs. angegebene Hobbys.
 
 WICHTIG:
-- Analysiere das Team als Gesamtheit.
-- Nenne NIEMALS einzelne Namen.
-- Formuliere alles auf die Gruppe bezogen.
+- Analysiere das Team als Gesamtheit und formuliere alles auf die Gruppe bezogen.
 - Stelle sicher, dass "Personality Profile" und "Team-Ziele" unterschiedlich sind!
 - Fülle "recommendedActivityIds" mit 1-3 listing_id Werten aus der Liste (als Strings)"""
 

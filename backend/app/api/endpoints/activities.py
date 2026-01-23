@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_current_user
 from app.api.helpers import resolve_activity_identifier, resolve_room_identifier
 from app.db.session import get_db
 from app.models.domain import Activity, ActivityComment, RoomMember, User, user_favorites
@@ -20,6 +20,7 @@ from app.schemas.domain import (
     BookingRequest,
 )
 from app.services.email_service import email_service
+from app.services.travel_time_service import apply_company_travel_times
 
 router = APIRouter()
 
@@ -106,6 +107,7 @@ async def get_activities(
     limit: int = 100,
     room_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user),
 ):
     result = await db.execute(select(Activity).offset(skip).limit(limit))
     activities = result.scalars().all()
@@ -158,6 +160,12 @@ async def get_activities(
         activity.favorites_count = counts_map.get(activity.id, 0)
         activity.favorites_in_room_count = room_counts_map.get(activity.id, 0)
 
+    await apply_company_travel_times(
+        activities,
+        current_user.company_id if current_user else None,
+        db,
+    )
+
     return activities
 
 
@@ -173,7 +181,11 @@ async def get_user_favorites(
 
 
 @router.get("/activities/{identifier}", response_model=ActivitySchema)
-async def get_activity(identifier: str, db: AsyncSession = Depends(get_db)):
+async def get_activity(
+    identifier: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user),
+):
     try:
         activity_id = UUID(identifier)
         result = await db.execute(select(Activity).where(Activity.id == activity_id))
@@ -194,6 +206,12 @@ async def get_activity(identifier: str, db: AsyncSession = Depends(get_db)):
         .where(user_favorites.c.activity_id == activity.id)
     )
     activity.favorites_count = count_result.scalar_one()
+
+    await apply_company_travel_times(
+        [activity],
+        current_user.company_id if current_user else None,
+        db,
+    )
 
     return activity
 

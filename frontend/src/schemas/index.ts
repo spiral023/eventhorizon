@@ -69,15 +69,12 @@ export const ActivitySchema = z.object({
   locationCity: z.string().optional(),
   locationAddress: z.string().optional(),
   estPricePerPerson: z.number().min(0),
-  priceIncludes: z.string().optional(),
   priceComment: z.string().optional(),
   shortDescription: z.string().min(1).max(200),
   longDescription: z.string().optional(),
   customerVoice: z.string().optional(),
   imageUrl: z.string().url(),
-  galleryUrls: z.array(z.string().url()).optional(),
   season: SeasonSchema,
-  duration: z.string().optional(),
   typicalDurationHours: z.number().optional(),
   groupSizeMin: z.number().min(1).optional(),
   groupSizeMax: z.number().min(1).optional(),
@@ -98,7 +95,6 @@ export const ActivitySchema = z.object({
   leadTimeMinDays: z.number().optional(),
   preparationNeeded: z.string().optional(),
   equipmentProvided: z.boolean().optional(),
-  accessibilityFlags: z.array(z.string()).optional(),
   weatherDependent: z.boolean().optional(),
   accessibilityNotes: z.string().optional(), // kept for compat
   bookingUrl: z.string().url().optional(), // kept for compat

@@ -38,12 +38,8 @@ FIELD_MAPPING = {
     "outdoor_seating": "outdoor_seating",
     "facebook": "facebook",
     "instagram": "instagram",
-    "description": "description",
     "weather_dependent": "weather_dependent",
-    "accessibility_flags": "accessibility_flags",
     "external_rating": "external_rating",
-    "travel_time_from_office_minutes": "travel_time_from_office_minutes",
-    "travel_time_from_office_minutes_walking": "travel_time_from_office_minutes_walking",
     "primary_goal": "primary_goal",
     "competition_level": "competition_level",
 

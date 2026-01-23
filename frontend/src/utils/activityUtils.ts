@@ -49,12 +49,6 @@ export const getActivityDurationMinutes = (activity: Activity): number | undefin
   if (typeof activity.typicalDurationHours === "number") {
     return activity.typicalDurationHours * 60;
   }
-  if (typeof activity.duration === "string") {
-    const match = activity.duration.match(/(\d+(?:\.\d+)?)/);
-    if (match) {
-      return parseFloat(match[1]) * 60;
-    }
-  }
   return undefined;
 };
 

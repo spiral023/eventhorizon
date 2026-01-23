@@ -246,7 +246,6 @@ export default function MapPage() {
   }, [activities, filters.categories]);
 
   const getDisplayDuration = (activity: Activity) => {
-    if (activity.duration) return activity.duration;
     const mins = getActivityDurationMinutes(activity);
     return mins ? formatDurationUtil(mins) : "-";
   };
@@ -393,7 +392,7 @@ export default function MapPage() {
 
                 {/* Legend */}
                 <div className="absolute bottom-4 left-4 z-[1000] bg-card/95 backdrop-blur-sm border border-border/50 rounded-xl p-3 shadow-lg">
-                  <p className="text-xs font-semibold mb-2">Gehzeit vom Büro</p>
+                  <p className="text-xs font-semibold mb-2">Gehzeit von der Firma</p>
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2 text-xs">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#22c55e" }} />

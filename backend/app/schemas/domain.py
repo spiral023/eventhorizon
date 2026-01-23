@@ -108,11 +108,9 @@ class ActivityBase(BaseSchema):
     est_price_pp: Optional[float] = Field(None, validation_alias="est_price_per_person", serialization_alias="est_price_pp")
     price_comment: Optional[str] = None
     
-    accessibility_flags: Optional[List[str]] = []
     weather_dependent: bool = False
     
     image_url: Optional[str] = None
-    description: Optional[str] = ""
     short_description: str
     long_description: Optional[str] = None
     customer_voice: Optional[str] = None

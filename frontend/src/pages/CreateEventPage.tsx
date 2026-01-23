@@ -31,6 +31,7 @@ import { CreateEventSchema, type CreateEventInput } from "@/schemas";
 import { createEvent } from "@/services/apiClient";
 import type { Activity, Region, Season, EventTimeWindow } from "@/types/domain";
 import { RegionLabels, SeasonLabels, MonthLabels, CategoryLabels, CategoryColors } from "@/types/domain";
+import { getActivityDurationMinutes, formatDuration as formatDurationUtil } from "@/utils/activityUtils";
 import { cn } from "@/lib/utils";
 import { trackKeyFlowCounter } from "@/lib/metrics";
 
@@ -516,7 +517,10 @@ export default function CreateEventPage() {
                           {activity.estPricePerPerson ? `${activity.estPricePerPerson}€` : 'N/A'}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {activity.typicalDurationHours ? `${activity.typicalDurationHours}h` : activity.duration || 'N/A'}
+                          {(() => {
+                            const durationMinutes = getActivityDurationMinutes(activity);
+                            return durationMinutes ? formatDurationUtil(durationMinutes) : "N/A";
+                          })()}
                         </div>
                         {activity.website && (
                           <a

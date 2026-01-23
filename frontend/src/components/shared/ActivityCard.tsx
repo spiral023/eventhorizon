@@ -27,7 +27,6 @@ export function ActivityCard({
   showTags = true
 }: ActivityCardProps) {
   const displayDuration = useMemo(() => {
-    if (activity.duration) return activity.duration;
     const mins = getActivityDurationMinutes(activity);
     return mins ? formatDurationUtil(mins) : "-";
   }, [activity]);

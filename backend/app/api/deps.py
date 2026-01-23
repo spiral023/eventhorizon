@@ -143,3 +143,15 @@ async def get_current_user(
     if user is None or not user.is_active:
         raise _credentials_exception()
     return user
+
+
+async def get_optional_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> User | None:
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        return None
+    try:
+        return await get_current_user(credentials, db)
+    except HTTPException:
+        return None
