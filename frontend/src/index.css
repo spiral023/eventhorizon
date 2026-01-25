@@ -170,4 +170,43 @@
     opacity: 1 !important;
     transform: none !important;
   }
+
+  .eh-cluster-icon {
+    background: transparent;
+    border: none;
+  }
+
+  .eh-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    color: #ffffff;
+    font-weight: 700;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.24);
+    background-image: none !important;
+  }
+
+  .eh-cluster--sm {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+    background-color: #22c55e !important;
+  }
+
+  .eh-cluster--md {
+    width: 40px;
+    height: 40px;
+    font-size: 12px;
+    background-color: #f59e0b !important;
+  }
+
+  .eh-cluster--lg {
+    width: 48px;
+    height: 48px;
+    font-size: 13px;
+    background-color: #ef4444 !important;
+  }
+
 }

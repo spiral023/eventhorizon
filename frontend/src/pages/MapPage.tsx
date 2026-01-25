@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { DivIcon, LatLngBounds } from "leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import L, { DivIcon, LatLngBounds } from "leaflet";
 import { motion } from "framer-motion";
 import { MapPin, Euro, Clock, ExternalLink, Car, FootprintsIcon, X, Zap, UtensilsCrossed, Sparkles, PartyPopper, Landmark, TreePine } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,9 @@ import { CategoryLabels, CategoryColors, RegionLabels } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { getActivityDurationMinutes, formatDuration as formatDurationUtil, type ActivityFilters, defaultFilters } from "@/utils/activityUtils";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 const EMPTY_ACTIVITIES: Activity[] = [];
 
@@ -70,6 +73,30 @@ function createColoredIcon(walkingTime: number | undefined): DivIcon {
     iconAnchor: [14, 28],
     popupAnchor: [0, -28],
   });
+}
+
+function createClusterIcon(cluster: L.MarkerCluster): DivIcon {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? "sm" : count < 50 ? "md" : "lg";
+  const color = size === "sm" ? "#22c55e" : size === "md" ? "#f59e0b" : "#ef4444";
+
+  return L.divIcon({
+    html: `<div class="eh-cluster eh-cluster--${size}" style="background-color:${color};"><span>${count}</span></div>`,
+    className: "eh-cluster-icon",
+    iconSize: size === "sm" ? [34, 34] : size === "md" ? [40, 40] : [48, 48],
+  });
+}
+
+function fitMapToMarkers(
+  map: L.Map,
+  activityMarkers: { activity: Activity; position: [number, number] }[]
+) {
+  if (activityMarkers.length > 0) {
+    const bounds = new LatLngBounds(activityMarkers.map((marker) => marker.position));
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+  } else {
+    map.setView(AUSTRIA_CENTER, 7);
+  }
 }
 
 // Region defaults (Austria)
@@ -138,78 +165,75 @@ async function geocodeAddress(address: string): Promise<[number, number] | null>
 
   
 
-  // Component for map event handling
-
-  function MapEventHandlers({ 
-
-    activityMarkers, 
-
-    selectedActivity 
-
-  }: { 
-
-    activityMarkers: { activity: Activity; position: [number, number] }[];
-
-    selectedActivity: Activity | null;
-
-  }) {
-
-    const map = useMap();
-
-  
-
-    // Fit all markers on initial load or when activityMarkers change
-
-    useEffect(() => {
-
-      if (activityMarkers.length > 0) {
-
-        const bounds = new LatLngBounds(activityMarkers.map(m => m.position));
-
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
-
-      } else {
-
-        map.setView(AUSTRIA_CENTER, 7); // Fallback if no markers
-
-      }
-
-    }, [activityMarkers, map]);
-
-  
-
-
-
-    
-
-    return null;
-
-  }
-
-  
-
-  // Component for markers to avoid context issues
-function MapMarkers({
+// Component for map event handling
+function MapEventHandlers({
   activityMarkers,
-  onSelect
+  selectedActivity,
+}: {
+  activityMarkers: { activity: Activity; position: [number, number] }[];
+  selectedActivity: Activity | null;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    fitMapToMarkers(map, activityMarkers);
+  }, [activityMarkers, map]);
+
+  useEffect(() => {
+    if (!selectedActivity) return;
+    const selectedMarker = activityMarkers.find(
+      (marker) => marker.activity.id === selectedActivity.id
+    );
+    if (selectedMarker) {
+      const targetZoom = Math.max(map.getZoom(), 13);
+      map.flyTo(selectedMarker.position, targetZoom, { duration: 0.6 });
+    }
+  }, [activityMarkers, map, selectedActivity]);
+
+  return null;
+}
+
+function ClusteredMarkers({
+  activityMarkers,
+  onSelect,
 }: {
   activityMarkers: { activity: Activity; position: [number, number] }[];
   onSelect: (activity: Activity) => void;
 }) {
-  return (
-    <>
-      {activityMarkers.map(({ activity, position }) => (
-        <Marker
-          key={activity.id}
-          position={position}
-          icon={createColoredIcon(activity.travelTimeMinutesWalking)}
-          eventHandlers={{
-            click: () => onSelect(activity),
-          }}
-        />
-      ))}
-    </>
-  );
+  const map = useMap();
+
+  useEffect(() => {
+    const clusterGroup = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: true,
+      maxClusterRadius: 42,
+      disableClusteringAtZoom: 14,
+      iconCreateFunction: createClusterIcon,
+    });
+
+    activityMarkers.forEach(({ activity, position }) => {
+      const marker = L.marker(position, {
+        icon: createColoredIcon(activity.travelTimeMinutesWalking),
+        title: activity.title,
+        alt: activity.title,
+        riseOnHover: true,
+        keyboard: true,
+      });
+
+      marker.on("click", () => onSelect(activity));
+      clusterGroup.addLayer(marker);
+    });
+
+    map.addLayer(clusterGroup);
+
+    return () => {
+      clusterGroup.clearLayers();
+      map.removeLayer(clusterGroup);
+    };
+  }, [activityMarkers, map, onSelect]);
+
+  return null;
 }
 
 export default function MapPage() {
@@ -369,7 +393,7 @@ export default function MapPage() {
         >
           <Card className="bg-card/60 border-border/50 rounded-2xl overflow-hidden">
             <CardContent className="p-0">
-              <div className="h-[600px] relative z-0">
+              <div className="h-[480px] sm:h-[600px] relative z-0">
                 <MapContainer
                   center={mapCenter}
                   zoom={7}
@@ -384,7 +408,7 @@ export default function MapPage() {
                     activityMarkers={activityMarkers}
                     selectedActivity={selectedActivity}
                   />
-                  <MapMarkers
+                  <ClusteredMarkers
                     activityMarkers={activityMarkers}
                     onSelect={setSelectedActivity}
                   />

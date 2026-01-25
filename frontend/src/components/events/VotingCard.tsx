@@ -65,6 +65,7 @@ export function VotingCard({
   const forVoters = participants.filter(p => forVoterIds.includes(p.userId));
   const againstVoters = participants.filter(p => againstVoterIds.includes(p.userId));
   const favoritesCount = typeof activity.favoritesInRoomCount === "number" ? activity.favoritesInRoomCount : undefined;
+  const showForVotesMeta = votes || favoritesCount !== undefined;
 
   const formatNumber = (value: number, options: Intl.NumberFormatOptions) =>
     new Intl.NumberFormat("de-DE", options).format(value);
@@ -132,11 +133,24 @@ export function VotingCard({
     metaItems.push({
       key: "favorites",
       className: "gap-1 text-pink-500 font-medium",
-      tooltip: "Favoriten im Raum",
+      tooltip: "Favoriten im Raum insgesamt",
       content: (
         <>
           <Heart className="h-3.5 w-3.5 fill-current" />
           <span>{favoritesCount}</span>
+        </>
+      ),
+    });
+  }
+  if (showForVotesMeta) {
+    metaItems.push({
+      key: "forVotes",
+      className: "gap-1 text-success font-medium",
+      tooltip: "Dafür-Stimmen im Raum insgesamt",
+      content: (
+        <>
+          <ThumbsUp className="h-3.5 w-3.5" />
+          <span>{forVotes}</span>
         </>
       ),
     });
