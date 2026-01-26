@@ -21,7 +21,6 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
 import { favoriteActivityIdsQueryKey, useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
-import { MOTION } from "@/lib/motion";
 import { 
   getActivityDurationMinutes, 
   getActiveFilterCount, 
@@ -31,7 +30,7 @@ import {
   defaultFilters
 } from "@/utils/activityUtils";
 
-import { motion, AnimatePresence } from "framer-motion";
+
 
 const ITEMS_PER_PAGE = 9;
 const EMPTY_ACTIVITIES: Activity[] = [];
@@ -50,9 +49,6 @@ export default function ActivitiesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -93,15 +89,8 @@ export default function ActivitiesPage() {
   const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
   const resolvedFavoriteIds = favoritesEnabled ? (favoriteIdsData ?? EMPTY_IDS) : EMPTY_IDS;
 
-  useEffect(() => {
-    setActivities(resolvedActivities);
-  }, [resolvedActivities]);
-
-  useEffect(() => {
-    setFavoriteIds(resolvedFavoriteIds);
-  }, [resolvedFavoriteIds]);
-
   const isLoading = isLoadingActivities || (favoritesEnabled && isLoadingFavorites);
+  const showLoading = isLoading || activitiesData === undefined;
   const error = activitiesError ? "Aktivitäten konnten nicht geladen werden." : null;
   const handleRetry = () => {
     refetchActivities();
@@ -174,7 +163,7 @@ export default function ActivitiesPage() {
   }, [debouncedSearchQuery, searchParams, setSearchParams]);
 
   const filteredActivities = useMemo(() => {
-    return activities.filter((activity) => {
+    return resolvedActivities.filter((activity) => {
       const durationMinutes = getActivityDurationMinutes(activity);
 
       // Search Query
@@ -271,7 +260,7 @@ export default function ActivitiesPage() {
       }
 
       // Favorites Only
-      if (filters.favoritesOnly && !favoriteIds.includes(activity.id)) {
+      if (filters.favoritesOnly && !resolvedFavoriteIds.includes(activity.id)) {
         return false;
       }
 
@@ -286,7 +275,7 @@ export default function ActivitiesPage() {
 
       return true;
     });
-  }, [activities, debouncedSearchQuery, filters, favoriteIds]);
+  }, [resolvedActivities, debouncedSearchQuery, filters, resolvedFavoriteIds]);
 
   const sortedActivities = useMemo(() => {
     const getScore = (activity: Activity) =>
@@ -439,7 +428,7 @@ export default function ActivitiesPage() {
             </Sheet>
           </div>
 
-          {isLoading ? (
+          {showLoading ? (
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <ActivityCardSkeleton key={i} />
@@ -469,48 +458,31 @@ export default function ActivitiesPage() {
                 </p>
               </div>
 
-              <motion.div layout className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                <AnimatePresence mode="popLayout">
-                  {visibleActivities.map((activity) => (
-                    <motion.div
-                      layout
-                      key={activity.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={MOTION.card}
-                    >
-                      <ActivityCard
-                        activity={activity}
-                        isFavorite={favoriteIds.includes(activity.id)}
-                        onFavoriteToggle={async (id) => {
-                          if (!isAuthenticated) {
-                            toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
-                            return;
-                          }
-                          const result = await toggleFavorite(id);
-                          if (result.error) {
-                            toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
-                            return;
-                          }
-                          const isFav = result.data?.isFavorite ?? false;
-                          updateFavoriteCaches(id, isFav, result.data?.favoritesCount);
-                          setFavoriteIds((prev) =>
-                            isFav ? [...prev, id] : prev.filter((favId) => favId !== id)
-                          );
-                          setActivities((prev) =>
-                            prev.map((a) =>
-                              a.id === id ? { ...a, favoritesCount: result.data?.favoritesCount ?? a.favoritesCount } : a
-                            )
-                          );
-                        }}
-                        showTags={false}
-                        onClick={() => navigate(`/activities/${activity.slug}`)}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {visibleActivities.map((activity) => (
+                  <div key={activity.id}>
+                    <ActivityCard
+                      activity={activity}
+                      isFavorite={resolvedFavoriteIds.includes(activity.id)}
+                      onFavoriteToggle={async (id) => {
+                        if (!isAuthenticated) {
+                          toast.error("Bitte anmelden oder registrieren, um Favoriten zu speichern.");
+                          return;
+                        }
+                        const result = await toggleFavorite(id);
+                        if (result.error) {
+                          toast.error(result.error.message || "Favorit konnte nicht aktualisiert werden.");
+                          return;
+                        }
+                        const isFav = result.data?.isFavorite ?? false;
+                        updateFavoriteCaches(id, isFav, result.data?.favoritesCount);
+                      }}
+                      showTags={false}
+                      onClick={() => navigate(`/activities/${activity.slug}`)}
+                    />
+                  </div>
+                ))}
+              </div>
 
               {hasMore && (
                 <div className="flex justify-center pt-4">

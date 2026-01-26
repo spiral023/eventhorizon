@@ -89,7 +89,9 @@ function AppShell() {
   return (
     <AppLayout>
       <AnimatePresence mode="wait">
-        <Outlet key={location.pathname} />
+        <PageTransition key={location.pathname}>
+          <Outlet />
+        </PageTransition>
       </AnimatePresence>
     </AppLayout>
   );
@@ -145,9 +147,9 @@ function AppRoutes() {
 
       {/* App layout for all in-app pages */}
       <Route element={<AppShell />}>
-        <Route index element={<PageTransition><HomePage /></PageTransition>} />
-        <Route path="activities" element={<PageTransition><ActivitiesPage /></PageTransition>} />
-        <Route path="activities/:slug" element={<PageTransition><ActivityDetailPage /></PageTransition>} />
+        <Route index element={<HomePage />} />
+        <Route path="activities" element={<ActivitiesPage />} />
+        <Route path="activities/:slug" element={<ActivityDetailPage />} />
 
         {/* Guest-visible but auth-gated sections show inline notice */}
         <Route
@@ -158,10 +160,10 @@ function AppRoutes() {
             />
           }
         >
-          <Route path="rooms" element={<PageTransition><RoomsPage /></PageTransition>} />
-          <Route path="rooms/:accessCode" element={<PageTransition><RoomDetailPage /></PageTransition>} />
-          <Route path="rooms/:accessCode/events/new" element={<PageTransition><CreateEventPage /></PageTransition>} />
-          <Route path="rooms/:accessCode/events/:eventCode" element={<PageTransition><EventDetailPage /></PageTransition>} />
+          <Route path="rooms" element={<RoomsPage />} />
+          <Route path="rooms/:accessCode" element={<RoomDetailPage />} />
+          <Route path="rooms/:accessCode/events/new" element={<CreateEventPage />} />
+          <Route path="rooms/:accessCode/events/:eventCode" element={<EventDetailPage />} />
         </Route>
 
         <Route
@@ -172,20 +174,20 @@ function AppRoutes() {
             />
           }
         >
-          <Route path="team" element={<PageTransition><TeamPage /></PageTransition>} />
-          <Route path="team/:roomId" element={<PageTransition><TeamPage /></PageTransition>} />
+          <Route path="team" element={<TeamPage />} />
+          <Route path="team/:roomId" element={<TeamPage />} />
         </Route>
 
         {/* Strictly protected routes */}
         <Route element={<AuthenticatedSection />}>
-          <Route path="onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
-          <Route path="profile" element={<PageTransition><ProfilePage /></PageTransition>} />
-          <Route path="settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+          <Route path="onboarding" element={<OnboardingPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        <Route path="map" element={<PageTransition><MapPage /></PageTransition>} />
-        <Route path="dev/sentry-test" element={<PageTransition><DevSentryTest /></PageTransition>} />
-        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+        <Route path="map" element={<MapPage />} />
+        <Route path="dev/sentry-test" element={<DevSentryTest />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
