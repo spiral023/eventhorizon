@@ -208,7 +208,6 @@ function ClusteredMarkers({
       spiderfyOnMaxZoom: true,
       zoomToBoundsOnClick: true,
       maxClusterRadius: 42,
-      disableClusteringAtZoom: 14,
       iconCreateFunction: createClusterIcon,
     });
 
