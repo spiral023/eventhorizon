@@ -6,7 +6,7 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.api.deps import get_current_user
+from app.api.deps import get_optional_current_user
 from app.db.session import get_db
 from app.models.domain import Activity, Event, Room, RoomMember, User
 from app.schemas.domain import SearchResult
@@ -19,7 +19,7 @@ router = APIRouter()
 async def search_global(
     q: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User | None = Depends(get_optional_current_user),
 ):
     if not q or len(q) < 2:
         return SearchResult()
@@ -39,31 +39,38 @@ async def search_global(
         .limit(10)
     )
     activities = activities_result.scalars().all()
-    await apply_company_travel_times(activities, current_user.company_id, db)
+    await apply_company_travel_times(
+        activities,
+        current_user.company_id if current_user else None,
+        db,
+    )
 
     # 2. Rooms (User is member or creator)
-    rooms_result = await db.execute(
-        select(Room)
-        .outerjoin(RoomMember, Room.id == RoomMember.room_id)
-        .where(
-            and_(
-                or_(
-                    Room.name.ilike(query_str),
-                    Room.description.ilike(query_str),
-                ),
-                or_(
-                    Room.created_by_user_id == current_user.id,
-                    and_(
-                        RoomMember.user_id == current_user.id,
-                        RoomMember.room_id == Room.id,
+    if current_user:
+        rooms_result = await db.execute(
+            select(Room)
+            .outerjoin(RoomMember, Room.id == RoomMember.room_id)
+            .where(
+                and_(
+                    or_(
+                        Room.name.ilike(query_str),
+                        Room.description.ilike(query_str),
                     ),
-                ),
+                    or_(
+                        Room.created_by_user_id == current_user.id,
+                        and_(
+                            RoomMember.user_id == current_user.id,
+                            RoomMember.room_id == Room.id,
+                        ),
+                    ),
+                )
             )
+            .distinct()
+            .limit(10)
         )
-        .distinct()
-        .limit(10)
-    )
-    rooms = rooms_result.scalars().all()
+        rooms = rooms_result.scalars().all()
+    else:
+        rooms = []
 
     # Calculate member counts for rooms in one query (avoid N+1)
     room_ids = [room.id for room in rooms]
@@ -80,17 +87,20 @@ async def search_global(
         room.member_count = counts_map.get(room.id, 0) + 1  # +1 for creator
 
     # 3. Events (In user's rooms)
-    user_room_ids_result = await db.execute(
-        select(Room.id)
-        .outerjoin(RoomMember, Room.id == RoomMember.room_id)
-        .where(
-            or_(
-                Room.created_by_user_id == current_user.id,
-                RoomMember.user_id == current_user.id,
+    if current_user:
+        user_room_ids_result = await db.execute(
+            select(Room.id)
+            .outerjoin(RoomMember, Room.id == RoomMember.room_id)
+            .where(
+                or_(
+                    Room.created_by_user_id == current_user.id,
+                    RoomMember.user_id == current_user.id,
+                )
             )
         )
-    )
-    user_room_ids = [row.id for row in user_room_ids_result.fetchall()]
+        user_room_ids = [row.id for row in user_room_ids_result.fetchall()]
+    else:
+        user_room_ids = []
 
     if user_room_ids:
         events_result = await db.execute(
