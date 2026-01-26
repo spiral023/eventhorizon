@@ -122,13 +122,11 @@ function RestrictedSection({ title, description }: { title: string; description:
 
   if (!isAuthenticated) {
     return (
-      <PageTransition>
-        <GuestAccessNotice
-          title={title}
-          description={description}
-          loginState={{ from: location }}
-        />
-      </PageTransition>
+      <GuestAccessNotice
+        title={title}
+        description={description}
+        loginState={{ from: location }}
+      />
     );
   }
 

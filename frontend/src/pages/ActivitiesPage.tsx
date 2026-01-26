@@ -21,6 +21,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
 import { favoriteActivityIdsQueryKey, useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
+import { MOTION } from "@/lib/motion";
 import { 
   getActivityDurationMinutes, 
   getActiveFilterCount, 
@@ -29,6 +30,7 @@ import {
   type ActivityFilters,
   defaultFilters
 } from "@/utils/activityUtils";
+import { motion } from "framer-motion";
 
 
 
@@ -44,6 +46,22 @@ const ACTIVITY_SORT_OPTIONS = [
 ] as const;
 
 type ActivitySortKey = (typeof ACTIVITY_SORT_OPTIONS)[number]["value"];
+
+const gridVariants = {
+  hidden: { opacity: 1 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.035,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: MOTION.card },
+};
 
 export default function ActivitiesPage() {
   const navigate = useNavigate();
@@ -458,9 +476,14 @@ export default function ActivitiesPage() {
                 </p>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <motion.div
+                className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+                variants={gridVariants}
+                initial="hidden"
+                animate="show"
+              >
                 {visibleActivities.map((activity) => (
-                  <div key={activity.id}>
+                  <motion.div key={activity.id} variants={cardVariants}>
                     <ActivityCard
                       activity={activity}
                       isFavorite={resolvedFavoriteIds.includes(activity.id)}
@@ -480,9 +503,9 @@ export default function ActivitiesPage() {
                       showTags={false}
                       onClick={() => navigate(`/activities/${activity.slug}`)}
                     />
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               {hasMore && (
                 <div className="flex justify-center pt-4">
