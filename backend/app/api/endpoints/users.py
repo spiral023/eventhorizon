@@ -231,10 +231,8 @@ async def get_birthdays(
     visible_users = []
     
     for u in all_users:
-        if u.birthday:
-            # Show if public OR if it's the current user themselves
-            if not u.is_birthday_private or u.id == current_user.id:
-                visible_users.append(u)
+        if u.birthday and not u.is_birthday_private:
+            visible_users.append(u)
             
     users_with_birthday_count = len(visible_users)
     rate = (users_with_birthday_count / total_count * 100) if total_count > 0 else 0.0

@@ -50,6 +50,7 @@ export function mapUserFromApi(apiUser: ApiUser): User {
     position: apiUser.position,
     location: apiUser.location,
     birthday: apiUser.birthday,
+    isBirthdayPrivate: apiUser.is_birthday_private ?? false,
     bio: apiUser.bio,
     hobbies: apiUser.hobbies || [],
     activityPreferences: apiUser.activity_preferences,
