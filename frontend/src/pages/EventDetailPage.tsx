@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Check, ArrowRight, ChevronDown, Info, MoreVertical, Heart } from "lucide-react";
+import { ArrowLeft, MapPin, Euro, Users, Calendar, Clock, CheckCircle, Check, ArrowRight, ChevronDown, Info, MoreVertical, Heart, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -382,6 +382,120 @@ export default function EventDetailPage() {
   event.activityVotes.forEach((activityVote) => {
     activityVotesById.set(activityVote.activityId, activityVote);
   });
+
+  const escapeIcsText = (value: string) =>
+    value
+      .replace(/\\/g, "\\\\")
+      .replace(/;/g, "\\;")
+      .replace(/,/g, "\\,")
+      .replace(/\n/g, "\\n");
+
+  const formatIcsDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getDate()}`.padStart(2, "0");
+    return `${year}${month}${day}`;
+  };
+
+  const formatIcsDateTimeLocal = (date: Date) => {
+    const hours = `${date.getHours()}`.padStart(2, "0");
+    const minutes = `${date.getMinutes()}`.padStart(2, "0");
+    const seconds = `${date.getSeconds()}`.padStart(2, "0");
+    return `${formatIcsDate(date)}T${hours}${minutes}${seconds}`;
+  };
+
+  const formatIcsDateTimeUtc = (date: Date) =>
+    date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}Z$/, "Z");
+
+  const handleDownloadCalendar = () => {
+    if (!finalDateOption) return;
+
+    const locationParts = [
+      chosenActivity?.locationAddress,
+      chosenActivity?.locationCity,
+      chosenActivity ? RegionLabels[chosenActivity.locationRegion] : RegionLabels[event.locationRegion],
+    ].filter(Boolean);
+
+    const location = locationParts.join(", ");
+    const summary = `${event.name}${chosenActivity ? ` – ${chosenActivity.title}` : ""}`;
+    const activityUrl = chosenActivity
+      ? `${window.location.origin}/activities/${chosenActivity.slug}`
+      : undefined;
+
+    const dateLabel = new Date(finalDateOption.date).toLocaleDateString("de-DE", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const timeLabel = finalDateOption.startTime
+      ? `${finalDateOption.startTime}${finalDateOption.endTime ? `–${finalDateOption.endTime}` : ""} Uhr`
+      : "";
+    const descriptionParts = [
+      `Event: ${event.name}`,
+      chosenActivity ? `Aktivität: ${chosenActivity.title}` : null,
+      event.description ? `Beschreibung: ${event.description}` : null,
+      chosenActivity?.shortDescription ? `Details: ${chosenActivity.shortDescription}` : null,
+      `Termin: ${dateLabel}${timeLabel ? `, ${timeLabel}` : ""}`,
+      chosenActivity?.website ? `Homepage: ${chosenActivity.website}` : null,
+      chosenActivity?.menuUrl ? `Speisekarte: ${chosenActivity.menuUrl}` : null,
+      activityUrl ? `Aktivität: ${activityUrl}` : null,
+    ].filter(Boolean);
+
+    const uid = `${event.id}-${finalDateOption.id}@eventhorizon`;
+    const dtstamp = formatIcsDateTimeUtc(new Date());
+
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//EventHorizon//DE",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:${uid}`,
+      `DTSTAMP:${dtstamp}`,
+      `SUMMARY:${escapeIcsText(summary)}`,
+      location ? `LOCATION:${escapeIcsText(location)}` : null,
+      `DESCRIPTION:${escapeIcsText(descriptionParts.join("\n"))}`,
+    ].filter(Boolean) as string[];
+
+    if (!finalDateOption.startTime) {
+      const startDate = new Date(finalDateOption.date);
+      const endDate = new Date(finalDateOption.date);
+      endDate.setDate(endDate.getDate() + 1);
+      lines.push(`DTSTART;VALUE=DATE:${formatIcsDate(startDate)}`);
+      lines.push(`DTEND;VALUE=DATE:${formatIcsDate(endDate)}`);
+    } else {
+      const startDateTime = new Date(`${finalDateOption.date}T${finalDateOption.startTime}`);
+      lines.push(`DTSTART:${formatIcsDateTimeLocal(startDateTime)}`);
+
+      if (finalDateOption.endTime) {
+        const endDateTime = new Date(`${finalDateOption.date}T${finalDateOption.endTime}`);
+        lines.push(`DTEND:${formatIcsDateTimeLocal(endDateTime)}`);
+      } else if (chosenActivity) {
+        const durationMinutes = getActivityDurationMinutes(chosenActivity);
+        if (durationMinutes) {
+          lines.push(`DURATION:PT${durationMinutes}M`);
+        }
+      }
+    }
+
+    lines.push("END:VEVENT", "END:VCALENDAR");
+
+    const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safeName = event.name.replace(/[^\w\-]+/g, "-").replace(/-+/g, "-");
+    link.href = url;
+    link.download = `${safeName || "event"}-${finalDateOption.date}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const getActivityScore = (activityId: string) => {
     const votes = activityVotesById.get(activityId)?.votes || [];
@@ -926,6 +1040,15 @@ export default function EventDetailPage() {
                       </span>
                     </div>
                   )}
+
+                  <Button
+                    variant="secondary"
+                    className="mt-6 w-full sm:w-auto rounded-full"
+                    onClick={handleDownloadCalendar}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Kalendereintrag herunterladen
+                  </Button>
                 </CardContent>
               </Card>
             )}

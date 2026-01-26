@@ -134,6 +134,89 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
 
       <Separator />
 
+      {/* Prominent finalization CTA for owner */}
+      {isOwner && event.dateOptions.length > 0 && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <Badge className="w-fit bg-primary/10 text-primary border border-primary/20">Abschluss</Badge>
+                <h3 className="text-lg font-semibold">Termin festlegen</h3>
+                <p className="text-sm text-muted-foreground">
+                  Lege den finalen Termin fest und schließe die Planung ab.
+                </p>
+              </div>
+              <Dialog open={isFinalizeOpen} onOpenChange={setIsFinalizeOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full sm:w-auto rounded-full px-5 shadow-md">
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Termin festlegen
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Finalen Termin wählen</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
+                    {sortedDates.map((opt) => {
+                      const score = getScore(opt);
+                      const isTopScore = topScore > 0 && score === topScore;
+                      return (
+                        <div key={opt.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                          <div>
+                            <div className="font-medium">
+                              {format(new Date(opt.date), "EEE, d. MMM", { locale: de })}
+                            </div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <span>{score} Punkte</span>
+                              {isTopScore && (
+                                <Badge className="bg-yellow-500 text-white border-white border px-2 py-0.5">
+                                  <Trophy className="mr-1 h-3 w-3" />
+                                  Sieger
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => setDateToConfirm(opt.id)}
+                          >
+                            Festlegen
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <AlertDialog open={!!dateToConfirm} onOpenChange={(open) => !open && setDateToConfirm(null)}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Termin festlegen?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Möchtest du diesen Termin final festlegen? Das Event wechselt dann in die Info-Phase und alle Teilnehmer werden benachrichtigt.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                      if (dateToConfirm) {
+                        onFinalize(dateToConfirm);
+                        setDateToConfirm(null);
+                        setIsFinalizeOpen(false);
+                      }
+                    }}>
+                      Bestätigen
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Controls & Proposal */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
         <div className="w-full sm:w-auto flex gap-2">
@@ -149,76 +232,6 @@ export const SchedulingPhase: React.FC<SchedulingPhaseProps> = ({ event, onUpdat
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto">
-            {isOwner && event.dateOptions.length > 0 && (
-                <>
-                    <Dialog open={isFinalizeOpen} onOpenChange={setIsFinalizeOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="secondary" className="w-full sm:w-auto">
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Termin fixieren
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Finalen Termin wählen</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
-                                {sortedDates.map((opt) => {
-                                    const score = getScore(opt);
-                                    const isTopScore = topScore > 0 && score === topScore;
-                                    return (
-                                        <div key={opt.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
-                                            <div>
-                                                <div className="font-medium">
-                                                    {format(new Date(opt.date), "EEE, d. MMM", { locale: de })}
-                                                </div>
-                                                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                                    <span>{score} Punkte</span>
-                                                    {isTopScore && (
-                                                        <Badge className="bg-yellow-500 text-white border-white border px-2 py-0.5">
-                                                            <Trophy className="mr-1 h-3 w-3" />
-                                                            Sieger
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <Button 
-                                                size="sm" 
-                                                onClick={() => setDateToConfirm(opt.id)}
-                                            >
-                                                Wählen
-                                            </Button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-
-                    <AlertDialog open={!!dateToConfirm} onOpenChange={(open) => !open && setDateToConfirm(null)}>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Termin fixieren?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Möchtest du diesen Termin final setzen? Das Event wechselt dann in die Info-Phase und alle Teilnehmer werden benachrichtigt.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => {
-                                    if (dateToConfirm) {
-                                        onFinalize(dateToConfirm);
-                                        setDateToConfirm(null);
-                                        setIsFinalizeOpen(false);
-                                    }
-                                }}>
-                                    Bestätigen
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </>
-            )}
             <div className="w-full sm:w-auto">
                 <DateProposal event={event} onUpdate={onUpdate} />
             </div>
