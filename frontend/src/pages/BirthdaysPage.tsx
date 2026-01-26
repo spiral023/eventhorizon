@@ -172,7 +172,10 @@ export default function BirthdaysPage() {
               )} />
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Nächster Geburtstag</span>
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Cake className="h-4 w-4" />
+                    Nächster Geburtstag
+                  </CardTitle>
                   <Badge variant={nextBirthdayUser.daysUntil <= 1 ? "destructive" : "secondary"} className="rounded-md">
                     {getDaysLabel(nextBirthdayUser.daysUntil)}
                   </Badge>
@@ -224,15 +227,18 @@ export default function BirthdaysPage() {
                       axisLine={false} 
                       tickLine={false} 
                       tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                      interval={0} 
+                      interval={0}
+                      dy={5}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted)/0.3)' }} />
+                    <Tooltip 
+                      content={<CustomTooltip />} 
+                      cursor={{ fill: 'hsl(var(--muted)/0.2)', radius: 4 }} 
+                    />
                     <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                       {birthdaysPerMonth.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
-                          fill={entry.count > 0 ? 'hsl(var(--primary))' : 'hsl(var(--muted))'} 
-                          fillOpacity={entry.count > 0 ? 0.8 : 0.3}
+                          fill={entry.count > 0 ? 'hsl(var(--primary))' : 'hsl(var(--muted)/0.3)'} 
                         />
                       ))}
                     </Bar>
@@ -248,14 +254,14 @@ export default function BirthdaysPage() {
         </Card>
 
         {/* Card 3: Data Completeness */}
-        <Card className="rounded-2xl border-border/50 bg-card/60 backdrop-blur-sm flex flex-col justify-center">
-          <CardHeader className="pb-2">
+        <Card className="rounded-2xl border-border/50 bg-card/60 backdrop-blur-sm flex flex-col h-full">
+          <CardHeader className="pb-2 min-h-[60px]">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4" />
               Datenbestand
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex flex-col justify-end pb-4">
             <div className="flex items-end gap-2 mb-2">
               <div className="text-3xl font-bold">{Math.round(data.stats.rate)}%</div>
               <div className="text-sm text-muted-foreground mb-1.5">eingetragen</div>
@@ -338,8 +344,8 @@ export default function BirthdaysPage() {
                                 <TableCell className="text-right pr-6 py-3">
                                     <div className="flex flex-col items-end gap-0.5">
                                         <Badge 
-                                            variant={user.daysUntil <= 1 ? "destructive" : user.daysUntil <= 30 ? "secondary" : "outline"} 
-                                            className={cn("font-normal px-2 py-0.5 text-xs", user.daysUntil > 30 && "text-muted-foreground border-border")}
+                                            variant={user.daysUntil <= 1 ? "destructive" : "secondary"} 
+                                            className={cn("font-normal px-2 py-0.5 text-xs rounded-md", user.daysUntil > 30 && "bg-muted text-muted-foreground hover:bg-muted/80")}
                                         >
                                             {getDaysLabel(user.daysUntil)}
                                         </Badge>
