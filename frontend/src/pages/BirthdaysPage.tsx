@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getBirthdays } from "@/services/apiClient";
+import { getBirthdays, updateUser } from "@/services/apiClient";
 import type { BirthdayPageResponse, BirthdayUser } from "@/types/domain";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PageLoading } from "@/components/shared/PageLoading";
@@ -20,6 +20,20 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function BirthdaysPage() {
   const [data, setData] = useState<BirthdayPageResponse | null>(null);
@@ -27,6 +41,12 @@ export default function BirthdaysPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: keyof BirthdayUser; direction: 'asc' | 'desc' }>({ key: 'daysUntil', direction: 'asc' });
+  const currentUser = useAuthStore((state) => state.user);
+  const refreshAuth = useAuthStore((state) => state.refresh);
+  const [birthdayDialogOpen, setBirthdayDialogOpen] = useState(false);
+  const [birthdayValue, setBirthdayValue] = useState("");
+  const [birthdayPrivate, setBirthdayPrivate] = useState(false);
+  const [birthdaySaving, setBirthdaySaving] = useState(false);
 
   useEffect(() => {
     loadBirthdays();
@@ -55,6 +75,36 @@ export default function BirthdaysPage() {
       key,
       direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc',
     }));
+  };
+
+  useEffect(() => {
+    if (!birthdayDialogOpen) return;
+    const rawBirthday = currentUser?.birthday;
+    setBirthdayValue(rawBirthday ? rawBirthday.slice(0, 10) : "");
+    setBirthdayPrivate(currentUser?.isBirthdayPrivate ?? false);
+  }, [birthdayDialogOpen, currentUser]);
+
+  const handleSaveBirthday = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!birthdayValue) {
+      toast.error("Bitte wÃ¤hle ein Datum aus.");
+      return;
+    }
+    setBirthdaySaving(true);
+    const result = await updateUser({
+      birthday: birthdayValue,
+      isBirthdayPrivate: birthdayPrivate,
+    });
+    if (result.error) {
+      toast.error(result.error.message || "Geburtstag konnte nicht gespeichert werden.");
+      setBirthdaySaving(false);
+      return;
+    }
+    toast.success("Geburtstag gespeichert.");
+    setBirthdayDialogOpen(false);
+    await refreshAuth();
+    await loadBirthdays();
+    setBirthdaySaving(false);
   };
 
   if (isLoading) {
@@ -120,6 +170,7 @@ export default function BirthdaysPage() {
     return `In ${days} Tagen`;
   };
 
+  const shouldPromptBirthday = Boolean(currentUser && !currentUser.birthday);
   const nextBirthdayUser = data.upcoming.length > 0 ? data.upcoming[0] : null;
   const birthdaysNext30Days = data.all.filter(u => u.daysUntil <= 30).length;
 
@@ -159,6 +210,68 @@ export default function BirthdaysPage() {
         title="Geburtstage"
         description="Behalte den Überblick über die Geburtstage deiner Teamkollegen."
       />
+
+      {shouldPromptBirthday && (
+        <Card className="rounded-2xl border-primary/30 bg-primary/5">
+          <CardContent className="p-4 sm:p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <Cake className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold">Dein Geburtstag fehlt noch</p>
+                <p className="text-sm text-muted-foreground">
+                  Trage ihn ein, damit dein Team ihn rechtzeitig sieht.
+                </p>
+              </div>
+            </div>
+            <Dialog open={birthdayDialogOpen} onOpenChange={setBirthdayDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="rounded-xl">Geburtstag hinzufügen</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[420px]">
+                <DialogHeader>
+                  <DialogTitle>Geburtstag hinterlegen</DialogTitle>
+                  <DialogDescription>
+                    Du kannst jederzeit festlegen, ob er in der Geburtstagsliste sichtbar ist.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSaveBirthday} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="birthday-input">Geburtstag</Label>
+                    <Input
+                      id="birthday-input"
+                      type="date"
+                      value={birthdayValue}
+                      onChange={(e) => setBirthdayValue(e.target.value)}
+                      className="rounded-xl"
+                      max={new Date().toISOString().slice(0, 10)}
+                    />
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="birthday-private"
+                      checked={birthdayPrivate}
+                      onCheckedChange={(checked) => setBirthdayPrivate(checked as boolean)}
+                    />
+                    <Label htmlFor="birthday-private" className="text-xs text-muted-foreground font-normal cursor-pointer">
+                      Geburtstag nicht in "Geburtstage" anzeigen
+                    </Label>
+                  </div>
+                  <DialogFooter className="gap-2 sm:gap-0">
+                    <Button type="button" variant="outline" onClick={() => setBirthdayDialogOpen(false)} className="rounded-xl">
+                      Abbrechen
+                    </Button>
+                    <Button type="submit" disabled={birthdaySaving} className="rounded-xl">
+                      {birthdaySaving ? "Speichern..." : "Speichern"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
       {/* KPI & Summary Row */}
       <div className="grid gap-4 md:grid-cols-3">

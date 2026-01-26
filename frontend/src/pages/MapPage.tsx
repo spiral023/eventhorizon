@@ -180,12 +180,15 @@ function MapEventHandlers({
   }, [activityMarkers, map]);
 
   useEffect(() => {
-    if (!selectedActivity) return;
+    if (!selectedActivity) {
+      fitMapToMarkers(map, activityMarkers);
+      return;
+    }
     const selectedMarker = activityMarkers.find(
       (marker) => marker.activity.id === selectedActivity.id
     );
     if (selectedMarker) {
-      const targetZoom = Math.max(map.getZoom(), 13);
+      const targetZoom = Math.max(map.getZoom(), 15);
       map.flyTo(selectedMarker.position, targetZoom, { duration: 0.6 });
     }
   }, [activityMarkers, map, selectedActivity]);
