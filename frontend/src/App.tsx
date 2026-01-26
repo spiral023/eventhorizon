@@ -27,6 +27,7 @@ const ActivitiesPage = lazy(() => import("@/pages/ActivitiesPage"));
 const ActivityDetailPage = lazy(() => import("@/pages/ActivityDetailPage"));
 const TeamPage = lazy(() => import("@/pages/TeamPage"));
 const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
+const BirthdaysPage = lazy(() => import("@/pages/BirthdaysPage"));
 const MapPage = lazy(() => import("@/pages/MapPage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -180,6 +181,7 @@ function AppRoutes() {
         <Route element={<AuthenticatedSection />}>
           <Route path="onboarding" element={<OnboardingPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="birthdays" element={<BirthdaysPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 

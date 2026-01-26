@@ -32,6 +32,7 @@ import type { UserProfile } from "@/pages/ProfilePage";
 import { useAuthStore } from "@/stores/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CompanyAutocomplete } from "@/components/shared/CompanyAutocomplete";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface EditProfileDialogProps {
   user: UserProfile;
@@ -55,6 +56,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
   const [birthdayInput, setBirthdayInput] = useState<string>(
     user.birthday ? format(new Date(user.birthday), "dd.MM.yyyy") : ""
   );
+  const [isBirthdayPrivate, setIsBirthdayPrivate] = useState(user.isBirthdayPrivate);
   const [bio, setBio] = useState(user.bio || "");
   const [hobbies, setHobbies] = useState<string[]>(user.hobbies);
   const [newHobby, setNewHobby] = useState("");
@@ -167,6 +169,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         position: position.trim() || undefined,
         location: location.trim() || undefined,
         birthday: birthday ? format(birthday, "yyyy-MM-dd") : undefined,
+        isBirthdayPrivate: isBirthdayPrivate,
         bio: bio.trim() || undefined,
         avatarUrl: avatarUrl || undefined,
         hobbies: hobbies,
@@ -194,6 +197,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         position: position.trim() || undefined,
         location: location.trim() || undefined,
         birthday: birthday ? format(birthday, "yyyy-MM-dd") : undefined,
+        isBirthdayPrivate: isBirthdayPrivate,
         bio: bio.trim() || undefined,
         hobbies: hobbies,
         activityPreferences: {
@@ -229,7 +233,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
         department: "",
         position: "",
         location: "",
-        birthday: null as any,
+        birthday: null as unknown as string,
         bio: "",
         avatarUrl: "",
         hobbies: [],
@@ -254,6 +258,7 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
       setLocation("");
       setBirthday(undefined);
       setBirthdayInput("");
+      setIsBirthdayPrivate(false);
       setBio("");
       setHobbies([]);
       setPhysical([3]);
@@ -441,6 +446,16 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
                       onChange={(e) => handleBirthdayInputChange(e.target.value)}
                       className="rounded-xl"
                     />
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Checkbox
+                        id="profile-birthday-privacy"
+                        checked={isBirthdayPrivate}
+                        onCheckedChange={(checked) => setIsBirthdayPrivate(checked as boolean)}
+                      />
+                      <Label htmlFor="profile-birthday-privacy" className="text-xs text-muted-foreground font-normal cursor-pointer">
+                        Geburtstag nicht in "Geburtstage" anzeigen
+                      </Label>
+                    </div>
                   </div>
                   {/* Empty placeholder to keep grid balanced if needed, or just let it flow */}
                 </div>

@@ -1,9 +1,9 @@
 import type { ApiResult } from "@/types/api";
-import type { ApiAvatarUploadInfo, ApiEvent, ApiUser, ApiUserStats, ApiUserUpdate } from "@/types/apiDomain";
-import type { Event, User, UserStats } from "@/types/domain";
+import type { ApiAvatarUploadInfo, ApiEvent, ApiUser, ApiUserStats, ApiUserUpdate, ApiBirthdayPageResponse } from "@/types/apiDomain";
+import type { Event, User, UserStats, BirthdayPageResponse } from "@/types/domain";
 import type { AvatarUploadInfo } from "./types";
 import { getMockAdapter, request, USE_MOCKS } from "./core";
-import { mapEventFromApi, mapUserFromApi } from "./mappers";
+import { mapEventFromApi, mapUserFromApi, mapBirthdayPageResponseFromApi } from "./mappers";
 
 export async function getCurrentUser(): Promise<ApiResult<User | null>> {
   if (USE_MOCKS) {
@@ -26,6 +26,7 @@ export async function updateUser(updates: {
   position?: string;
   location?: string;
   birthday?: string;
+  isBirthdayPrivate?: boolean;
   bio?: string;
   hobbies?: string[];
   activityPreferences?: unknown;
@@ -47,6 +48,7 @@ export async function updateUser(updates: {
   if (updates.position !== undefined) apiUpdates.position = updates.position;
   if (updates.location !== undefined) apiUpdates.location = updates.location;
   if (updates.birthday !== undefined) apiUpdates.birthday = updates.birthday;
+  if (updates.isBirthdayPrivate !== undefined) apiUpdates.is_birthday_private = updates.isBirthdayPrivate;
   if (updates.bio !== undefined) apiUpdates.bio = updates.bio;
   if (updates.hobbies !== undefined) apiUpdates.hobbies = updates.hobbies;
   if (updates.activityPreferences !== undefined) apiUpdates.activity_preferences = updates.activityPreferences;
@@ -169,3 +171,16 @@ export async function getUserEvents(): Promise<ApiResult<Event[]>> {
   }
   return { data: undefined, error: result.error };
 }
+
+export async function getBirthdays(): Promise<ApiResult<BirthdayPageResponse>> {
+  if (USE_MOCKS) {
+    // TODO: Add mock if needed
+    return { data: undefined, error: { code: '501', message: 'Not implemented in mock' } };
+  }
+  const result = await request<ApiBirthdayPageResponse>('/users/birthdays');
+  if (result.data) {
+    return { data: mapBirthdayPageResponseFromApi(result.data) };
+  }
+  return { data: undefined, error: result.error };
+}
+

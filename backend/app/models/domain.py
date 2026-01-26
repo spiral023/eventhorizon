@@ -83,6 +83,7 @@ class User(Base):
     position = Column(String)
     location = Column(String)
     birthday = Column(DateTime)
+    is_birthday_private = Column(Boolean, default=False)
     bio = Column(Text)
     hobbies = Column(ARRAY(String))
     # Preferences

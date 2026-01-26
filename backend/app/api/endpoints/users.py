@@ -6,7 +6,7 @@ from typing import Any, List
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
-from app.models.domain import User, Event, EventParticipant, Vote, DateOption, DateResponse, EventPhase
+from app.models.domain import User, Event, EventParticipant, Vote, DateOption, DateResponse, EventPhase, RoomMember
 from app.schemas.domain import (
     User as UserSchema,
     UserUpdate,
@@ -15,6 +15,9 @@ from app.schemas.domain import (
     AvatarUploadRequest,
     AvatarUploadResponse,
     AvatarProcessRequest,
+    BirthdayPageResponse,
+    BirthdayUser,
+    BirthdayStats,
 )
 from app.services.avatar_service import generate_avatar_upload_url, process_avatar_upload
 
@@ -183,3 +186,108 @@ async def process_avatar(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+@router.get("/birthdays", response_model=BirthdayPageResponse)
+async def get_birthdays(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get birthdays of all users who share a room with the current user.
+    """
+    # 1. Get all room IDs the current user is in
+    user_rooms_query = select(RoomMember.room_id).where(RoomMember.user_id == current_user.id)
+    result_rooms = await db.execute(user_rooms_query)
+    room_ids = result_rooms.scalars().all()
+
+    if not room_ids:
+        return BirthdayPageResponse(
+            stats=BirthdayStats(total_users=0, users_with_birthday=0, rate=0.0),
+            upcoming=[],
+            all=[]
+        )
+
+    # 2. Get all unique users in those rooms
+    # We fetch IDs first to avoid DISTINCT on User model which contains JSON columns (no equality operator)
+    user_ids_result = await db.execute(
+        select(RoomMember.user_id)
+        .where(RoomMember.room_id.in_(room_ids))
+        .distinct()
+    )
+    user_ids = user_ids_result.scalars().all()
+
+    if not user_ids:
+        return BirthdayPageResponse(
+            stats=BirthdayStats(total_users=0, users_with_birthday=0, rate=0.0),
+            upcoming=[],
+            all=[]
+        )
+
+    users_query = select(User).where(User.id.in_(user_ids))
+    result_users = await db.execute(users_query)
+    all_users = result_users.scalars().all()
+
+    total_count = len(all_users)
+    visible_users = []
+    
+    for u in all_users:
+        if u.birthday:
+            # Show if public OR if it's the current user themselves
+            if not u.is_birthday_private or u.id == current_user.id:
+                visible_users.append(u)
+            
+    users_with_birthday_count = len(visible_users)
+    rate = (users_with_birthday_count / total_count * 100) if total_count > 0 else 0.0
+
+    # 3. Process birth dates
+    processed_users = []
+    today = datetime.utcnow().date()
+    
+    for u in visible_users:
+        bday_date = u.birthday.date()
+        
+        # Calculate current age
+        # Subtract 1 if current date is before birthday in current year
+        age = today.year - bday_date.year - ((today.month, today.day) < (bday_date.month, bday_date.day))
+        
+        # Calculate next birthday
+        try:
+            next_bday = bday_date.replace(year=today.year)
+        except ValueError:
+            next_bday = bday_date.replace(year=today.year, day=28)
+            if today.year % 4 == 0 and (today.year % 100 != 0 or today.year % 400 == 0):
+                 next_bday = bday_date.replace(year=today.year, day=29)
+
+        if next_bday < today:
+             try:
+                next_bday = bday_date.replace(year=today.year + 1)
+             except ValueError:
+                next_bday = bday_date.replace(year=today.year + 1, day=28)
+
+        days_until = (next_bday - today).days
+        turning_age = next_bday.year - bday_date.year
+
+        processed_users.append(BirthdayUser(
+            id=u.id,
+            name=u.name,
+            avatar_url=u.avatar_url,
+            birthday=u.birthday,
+            age=age,
+            next_birthday=datetime.combine(next_bday, datetime.min.time()),
+            age_turning=turning_age,
+            days_until=days_until
+        ))
+        
+    # Sort by days until
+    processed_users.sort(key=lambda x: x.days_until)
+    
+    return BirthdayPageResponse(
+        stats=BirthdayStats(
+            total_users=total_count, 
+            users_with_birthday=users_with_birthday_count, 
+            rate=round(rate, 1)
+        ),
+        upcoming=processed_users[:3],
+        all=processed_users
+    )
+

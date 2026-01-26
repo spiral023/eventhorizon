@@ -103,6 +103,16 @@ async def create_room(
         created_by_user_id=current_user.id,
     )
     db.add(room)
+    
+    # Add creator as a member
+    creator_member = RoomMember(
+        room_id=room.id,
+        user_id=current_user.id,
+        role=RoomRole.owner,
+        joined_at=datetime.utcnow(),
+    )
+    db.add(creator_member)
+    
     await db.commit()
     await db.refresh(room)
     return room

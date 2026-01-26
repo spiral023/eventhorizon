@@ -10,6 +10,7 @@ export interface ApiUser {
   position?: string;
   location?: string;
   birthday?: string;
+  is_birthday_private?: boolean;
   bio?: string;
   hobbies?: string[];
   activity_preferences?: unknown; // This will need further refinement if 'any' is not desired
@@ -232,12 +233,36 @@ export interface ApiUserUpdate {
   position?: string;
   location?: string;
   birthday?: string;
+  is_birthday_private?: boolean;
   bio?: string;
   hobbies?: string[];
   activity_preferences?: unknown;
   dietary_restrictions?: string[];
   allergies?: string[];
   avatar_url?: string;
+}
+
+export interface ApiBirthdayUser {
+  id: string;
+  name: string;
+  avatar_url?: string;
+  birthday: string;
+  age: number;
+  next_birthday: string;
+  age_turning: number;
+  days_until: number;
+}
+
+export interface ApiBirthdayStats {
+  total_users: number;
+  users_with_birthday: number;
+  rate: number;
+}
+
+export interface ApiBirthdayPageResponse {
+  stats: ApiBirthdayStats;
+  upcoming: ApiBirthdayUser[];
+  all: ApiBirthdayUser[];
 }
 
 export interface ApiAvatarUploadInfo {

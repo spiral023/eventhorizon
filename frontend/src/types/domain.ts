@@ -127,3 +127,8 @@ export function formatBudget(amount: number, type: BudgetType): string {
   }).format(amount);
   return type === "per_person" ? `${formatted} p.P.` : formatted;
 }
+
+export type BirthdayUser = z.infer<typeof Schemas.BirthdayUserSchema>;
+export type BirthdayStats = z.infer<typeof Schemas.BirthdayStatsSchema>;
+export type BirthdayPageResponse = z.infer<typeof Schemas.BirthdayPageResponseSchema>;
+

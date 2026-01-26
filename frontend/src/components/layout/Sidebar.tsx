@@ -31,7 +31,7 @@ import {
     ChevronDown,
 
     Lock,
-
+    Cake,
   } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,7 @@ interface NavItem {
 const staticNavItems: NavItem[] = [
   { label: "Übersicht", to: "/", icon: Home },
   { label: "Aktivitäten", to: "/activities", icon: Compass },
+  { label: "Geburtstage", to: "/birthdays", icon: Cake },
   { label: "Team-Analyse", to: "/team", icon: Sparkles },
   { label: "Karte", to: "/map", icon: Map },
 ];

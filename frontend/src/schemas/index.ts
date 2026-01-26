@@ -204,6 +204,7 @@ export const UserSchema = z.object({
   position: z.string().optional(),
   location: z.string().optional(),
   birthday: z.string().optional(),
+  isBirthdayPrivate: z.boolean().optional().default(false),
   bio: z.string().optional(),
   hobbies: z.array(z.string()).optional(),
   activityPreferences: z.any().optional(),
@@ -290,3 +291,31 @@ export const ActivityCommentSchema = z.object({
   userName: z.string().optional(),
   userAvatar: z.string().optional(),
 });
+
+// ============================================
+// BIRTHDAY SCHEMAS
+// ============================================
+
+export const BirthdayUserSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  avatarUrl: z.string().nullable().optional(),
+  birthday: z.string().datetime(),
+  age: z.number(),
+  nextBirthday: z.string().datetime(),
+  ageTurning: z.number(),
+  daysUntil: z.number(),
+});
+
+export const BirthdayStatsSchema = z.object({
+  totalUsers: z.number(),
+  usersWithBirthday: z.number(),
+  rate: z.number(),
+});
+
+export const BirthdayPageResponseSchema = z.object({
+  stats: BirthdayStatsSchema,
+  upcoming: z.array(BirthdayUserSchema),
+  all: z.array(BirthdayUserSchema),
+});
+

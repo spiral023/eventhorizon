@@ -13,6 +13,9 @@ import type {
   Room,
   Season,
   User,
+  BirthdayUser,
+  BirthdayStats,
+  BirthdayPageResponse,
 } from "@/types/domain";
 import type {
   ApiActivity,
@@ -27,6 +30,9 @@ import type {
   ApiEventParticipant,
   ApiRoom,
   ApiUser,
+  ApiBirthdayUser,
+  ApiBirthdayStats,
+  ApiBirthdayPageResponse,
 } from "@/types/apiDomain";
 
 export function mapUserFromApi(apiUser: ApiUser): User {
@@ -257,3 +263,33 @@ export function mapActivityCommentFromApi(apiComment: ApiActivityComment): Activ
     userAvatar: apiComment.user_avatar || apiComment.userAvatar,
   };
 }
+
+export function mapBirthdayUserFromApi(apiUser: ApiBirthdayUser): BirthdayUser {
+  return {
+    id: apiUser.id,
+    name: apiUser.name,
+    avatarUrl: apiUser.avatar_url,
+    birthday: apiUser.birthday,
+    age: apiUser.age,
+    nextBirthday: apiUser.next_birthday,
+    ageTurning: apiUser.age_turning,
+    daysUntil: apiUser.days_until,
+  };
+}
+
+export function mapBirthdayStatsFromApi(apiStats: ApiBirthdayStats): BirthdayStats {
+  return {
+    totalUsers: apiStats.total_users,
+    usersWithBirthday: apiStats.users_with_birthday,
+    rate: apiStats.rate,
+  };
+}
+
+export function mapBirthdayPageResponseFromApi(apiResponse: ApiBirthdayPageResponse): BirthdayPageResponse {
+  return {
+    stats: mapBirthdayStatsFromApi(apiResponse.stats),
+    upcoming: apiResponse.upcoming.map(mapBirthdayUserFromApi),
+    all: apiResponse.all.map(mapBirthdayUserFromApi),
+  };
+}
+

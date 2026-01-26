@@ -19,6 +19,7 @@ class UserBase(BaseSchema):
     position: Optional[str] = None
     location: Optional[str] = None
     birthday: Optional[datetime] = None
+    is_birthday_private: Optional[bool] = False
     bio: Optional[str] = None
     hobbies: Optional[List[str]] = None
     activity_preferences: Optional[Any] = None
@@ -37,6 +38,7 @@ class UserUpdate(BaseSchema):
     position: Optional[str] = None
     location: Optional[str] = None
     birthday: Optional[datetime] = None
+    is_birthday_private: Optional[bool] = None
     bio: Optional[str] = None
     hobbies: Optional[List[str]] = None
     activity_preferences: Optional[Any] = None
@@ -309,3 +311,25 @@ class SearchResult(BaseSchema):
     rooms: List[Room] = []
     events: List[Event] = []
     users: List[User] = []
+
+# --- Birthdays ---
+class BirthdayUser(BaseSchema):
+    id: UUID
+    name: str
+    avatar_url: Optional[str] = None
+    birthday: datetime
+    age: int
+    next_birthday: datetime
+    age_turning: int
+    days_until: int
+
+class BirthdayStats(BaseSchema):
+    total_users: int
+    users_with_birthday: int
+    rate: float
+
+class BirthdayPageResponse(BaseSchema):
+    stats: BirthdayStats
+    upcoming: List[BirthdayUser]
+    all: List[BirthdayUser]
+

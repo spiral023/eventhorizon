@@ -30,6 +30,7 @@ export interface UserProfile {
   position?: string;
   location?: string;
   birthday?: string;
+  isBirthdayPrivate: boolean;
   avatarUrl: string;
   hobbies: string[];
   // Neue Felder
@@ -90,6 +91,7 @@ export default function ProfilePage() {
           position: result.data.position,
           location: result.data.location,
           birthday: result.data.birthday,
+          isBirthdayPrivate: result.data.isBirthdayPrivate ?? false,
           avatarUrl: result.data.avatarUrl || "",
           bio: result.data.bio,
           hobbies: result.data.hobbies || [],
@@ -242,7 +244,10 @@ export default function ProfilePage() {
                 {user.birthday && (
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 flex-shrink-0" />
-                    <span>Geburtstag: {new Date(user.birthday).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    <span>
+                      Geburtstag: {new Date(user.birthday).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {user.isBirthdayPrivate && " (privat)"}
+                    </span>
                   </div>
                 )}
               </div>
