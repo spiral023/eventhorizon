@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import select, and_, update
-from app.db.session import async_session_maker
+from app.db.session import async_session
 from app.models.domain import Room, RoomMember, RoomRole, User
 from datetime import datetime
 
@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def fix_room_memberships():
-    async with async_session_maker() as db:
+    async with async_session() as db:
         logger.info("Starting room membership fix...")
         
         # 1. Fetch all rooms
