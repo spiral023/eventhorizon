@@ -1,7 +1,7 @@
 import { useEffect, lazy, Suspense } from "react";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster as Sonner, toast } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { RequireAuth } from "@/components/auth/RequireAuth";
@@ -37,6 +37,23 @@ const DevSentryTest = lazy(() => import("@/pages/DevSentryTest"));
 const OnboardingPage = lazy(() => import("@/pages/OnboardingPage"));
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      // Sentry captures unhandled exceptions automatically, but we can also log here if needed
+      console.error("Global Query Error:", error);
+      toast.error("Fehler beim Laden", {
+        description: error.message || "Daten konnten nicht geladen werden.",
+      });
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      console.error("Global Mutation Error:", error);
+      toast.error("Fehler", {
+        description: error.message || "Aktion konnte nicht durchgeführt werden.",
+      });
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
