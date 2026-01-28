@@ -34,6 +34,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function BirthdaysPage() {
   const [data, setData] = useState<BirthdayPageResponse | null>(null);
@@ -58,13 +59,14 @@ export default function BirthdaysPage() {
     try {
       const result = await getBirthdays();
       if (result.error) {
-        throw new Error(result.error.message);
+        setData(null);
+        setError(getErrorMessage(result.error, "Geburtstage konnten nicht geladen werden."));
+        return;
       }
-      if (result.data) {
-        setData(result.data);
-      }
+      setData(result.data ?? null);
     } catch (err) {
-      setError("Geburtstage konnten nicht geladen werden.");
+      setData(null);
+      setError(getErrorMessage(err, "Geburtstage konnten nicht geladen werden."));
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +89,7 @@ export default function BirthdaysPage() {
   const handleSaveBirthday = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!birthdayValue) {
-      toast.error("Bitte wÃ¤hle ein Datum aus.");
+      toast.error("Bitte wähle ein Datum aus.");
       return;
     }
     setBirthdaySaving(true);
@@ -96,7 +98,7 @@ export default function BirthdaysPage() {
       isBirthdayPrivate: birthdayPrivate,
     });
     if (result.error) {
-      toast.error(result.error.message || "Geburtstag konnte nicht gespeichert werden.");
+      toast.error(getErrorMessage(result.error, "Geburtstag konnte nicht gespeichert werden."));
       setBirthdaySaving(false);
       return;
     }

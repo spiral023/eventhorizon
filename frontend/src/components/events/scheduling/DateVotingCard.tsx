@@ -23,6 +23,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { respondToDateOption, deleteDateOption } from "@/services/apiClient";
 import { toast } from "sonner";
 import type { Event, DateOption, DateResponseType } from "@/types/domain";
+import { getErrorMessage } from "@/lib/errors";
 
 interface DateVotingCardProps {
   event: Event;
@@ -67,7 +68,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
       if (error || !data) throw new Error(error?.message);
       onUpdate(data);
     } catch (err) {
-      toast.error("Fehler", { description: "Konnte nicht abstimmen" });
+      toast.error("Fehler", { description: getErrorMessage(err, "Konnte nicht abstimmen") });
     }
   };
 
@@ -87,7 +88,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
       if (error || !data) throw new Error(error?.message);
       onUpdate(data);
     } catch (err) {
-      toast.error("Fehler", { description: "Konnte Priorität nicht ändern" });
+      toast.error("Fehler", { description: getErrorMessage(err, "Konnte Priorität nicht ändern") });
     }
   };
 
@@ -99,7 +100,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
       onUpdate(data);
       toast.success("Termin gelöscht");
     } catch (err) {
-      toast.error("Fehler", { description: "Konnte Termin nicht löschen" });
+      toast.error("Fehler", { description: getErrorMessage(err, "Konnte Termin nicht löschen") });
     }
   };
 

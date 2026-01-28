@@ -75,15 +75,23 @@ export async function request<T>(endpoint: string, options?: RequestInit): Promi
 
     if (!response.ok) {
       let errorMessage = `HTTP Error ${response.status}`;
+      let detail: ApiError["detail"] | undefined;
+
       if (data && typeof data === "object" && "detail" in data) {
-        errorMessage = (data as ApiError).detail as string;
+        detail = (data as ApiError).detail;
+        if (typeof detail === "string") {
+          errorMessage = detail;
+        } else if (Array.isArray(detail) && detail.length > 0) {
+          const first = detail[0] as { msg?: string };
+          if (first?.msg) errorMessage = String(first.msg);
+        }
       } else if (typeof data === "string" && data.length > 0) {
         errorMessage = data;
       }
 
       return {
         data: undefined,
-        error: { code: String(response.status), message: errorMessage },
+        error: { code: String(response.status), message: errorMessage, detail },
       };
     }
 

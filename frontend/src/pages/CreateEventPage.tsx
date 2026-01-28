@@ -34,6 +34,7 @@ import { RegionLabels, SeasonLabels, MonthLabels, CategoryLabels, CategoryColors
 import { getActivityDurationMinutes, formatDuration as formatDurationUtil } from "@/utils/activityUtils";
 import { cn } from "@/lib/utils";
 import { trackKeyFlowCounter } from "@/lib/metrics";
+import { getErrorMessage, getFieldErrors } from "@/lib/errors";
 
 type TimeWindowType = "season" | "month" | "weekRange" | "freeText";
 
@@ -124,8 +125,32 @@ export default function CreateEventPage() {
 
       if (result.error || !result.data) {
         trackKeyFlowCounter("event.create", "failure");
+
+        if (result.error) {
+          const fieldErrors = getFieldErrors(result.error);
+          const formFields = new Set<keyof CreateEventInput>([
+            "name",
+            "description",
+            "timeWindow",
+            "fromWeek",
+            "toWeek",
+            "votingDeadline",
+            "budgetType",
+            "budgetAmount",
+            "participantCountEstimate",
+            "locationRegion",
+            "proposedActivityIds",
+          ]);
+
+          Object.entries(fieldErrors).forEach(([field, message]) => {
+            if (formFields.has(field as keyof CreateEventInput)) {
+              form.setError(field as keyof CreateEventInput, { message });
+            }
+          });
+        }
+
         toast.error("Fehler", {
-          description: "Event konnte nicht erstellt werden.",
+          description: getErrorMessage(result.error, "Event konnte nicht erstellt werden."),
         });
         return;
       }
@@ -140,7 +165,7 @@ export default function CreateEventPage() {
     } catch (error) {
       trackKeyFlowCounter("event.create", "failure");
       toast.error("Fehler", {
-        description: "Event konnte nicht erstellt werden.",
+        description: getErrorMessage(error, "Event konnte nicht erstellt werden."),
       });
     } finally {
       setSubmitting(false);
