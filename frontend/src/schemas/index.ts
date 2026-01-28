@@ -158,6 +158,13 @@ export const EventParticipantSchema = z.object({
   dateResponse: DateResponseTypeSchema.optional(),
 });
 
+export const ActivityPreferencesSchema = z.object({
+  physical: z.number().min(0).max(5).optional(),
+  mental: z.number().min(0).max(5).optional(),
+  social: z.number().min(0).max(5).optional(),
+  competition: z.number().min(0).max(5).optional(),
+});
+
 export const EventSchema = z.object({
   id: z.string(),
   shortCode: z.string(),
@@ -207,7 +214,7 @@ export const UserSchema = z.object({
   isBirthdayPrivate: z.boolean().optional().default(false),
   bio: z.string().optional(),
   hobbies: z.array(z.string()).optional(),
-  activityPreferences: z.any().optional(),
+  activityPreferences: ActivityPreferencesSchema.optional(),
   dietaryRestrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
   favoriteActivityIds: z.array(z.string()).optional(),

@@ -22,6 +22,7 @@ export type EventTimeWindow = z.infer<typeof Schemas.EventTimeWindowSchema>;
 export type Room = z.infer<typeof Schemas.RoomSchema>;
 export type RoomMember = z.infer<typeof Schemas.RoomMemberSchema>;
 export type Activity = z.infer<typeof Schemas.ActivitySchema>;
+export type ActivityPreferences = z.infer<typeof Schemas.ActivityPreferencesSchema>;
 export type DateOption = z.infer<typeof Schemas.DateOptionSchema>;
 export type DateResponse = z.infer<typeof Schemas.DateResponseSchema>;
 export type ActivityVote = z.infer<typeof Schemas.ActivityVoteSchema>;

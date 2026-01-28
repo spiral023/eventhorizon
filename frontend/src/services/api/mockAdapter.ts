@@ -2,6 +2,7 @@ import type { ApiResult } from "@/types/api";
 import type {
   Activity,
   ActivityComment,
+  ActivityPreferences,
   BudgetType,
   Company,
   DateResponseType,
@@ -88,10 +89,10 @@ export async function updateUser(updates: {
   department?: string;
   position?: string;
   location?: string;
-  birthday?: string;
+  birthday?: string | null;
   bio?: string;
   hobbies?: string[];
-  activityPreferences?: unknown;
+  activityPreferences?: ActivityPreferences | null;
   dietaryRestrictions?: string[];
   allergies?: string[];
   avatarUrl?: string;

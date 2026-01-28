@@ -1,6 +1,6 @@
 import type { ApiResult } from "@/types/api";
 import type { ApiAvatarUploadInfo, ApiEvent, ApiUser, ApiUserStats, ApiUserUpdate, ApiBirthdayPageResponse } from "@/types/apiDomain";
-import type { Event, User, UserStats, BirthdayPageResponse } from "@/types/domain";
+import type { ActivityPreferences, Event, User, UserStats, BirthdayPageResponse } from "@/types/domain";
 import type { AvatarUploadInfo } from "./types";
 import { getMockAdapter, request, USE_MOCKS } from "./core";
 import { mapEventFromApi, mapUserFromApi, mapBirthdayPageResponseFromApi } from "./mappers";
@@ -25,11 +25,11 @@ export async function updateUser(updates: {
   department?: string;
   position?: string;
   location?: string;
-  birthday?: string;
+  birthday?: string | null;
   isBirthdayPrivate?: boolean;
   bio?: string;
   hobbies?: string[];
-  activityPreferences?: unknown;
+  activityPreferences?: ActivityPreferences | null;
   dietaryRestrictions?: string[];
   allergies?: string[];
   avatarUrl?: string;

@@ -226,14 +226,14 @@ export function EditProfileDialog({ user, onProfileUpdated }: EditProfileDialogP
 
     setLoading(true);
     try {
-      // Use explicit null (casted to any) or empty values to clear fields
+      // Use explicit null or empty values to clear fields
       const result = await updateUser({
         phone: "",
         companyId: null,
         department: "",
         position: "",
         location: "",
-        birthday: null as unknown as string,
+        birthday: null,
         bio: "",
         avatarUrl: "",
         hobbies: [],

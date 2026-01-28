@@ -68,7 +68,9 @@ export async function createEvent(
     proposed_activity_ids: input.proposedActivityIds,
   };
 
-  console.log(`Making API call to create event for room ${accessCode}`, apiPayload);
+  if (import.meta.env.DEV) {
+    console.log(`Making API call to create event for room ${accessCode}`, apiPayload);
+  }
   const result = await request<ApiEvent>(`/rooms/${accessCode}/events`, {
     method: "POST",
     body: JSON.stringify(apiPayload),

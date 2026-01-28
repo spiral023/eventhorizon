@@ -80,7 +80,9 @@ export function ActivityMiniMap({ activity, className }: ActivityMiniMapProps) {
         return;
       }
 
-      console.log("ActivityMiniMap: No valid coordinates found, falling back to geocoding");
+      if (import.meta.env.DEV) {
+        console.log("ActivityMiniMap: No valid coordinates found, falling back to geocoding");
+      }
 
       // 2. Fallback to Geocoding
       const parts = [
@@ -118,11 +120,15 @@ export function ActivityMiniMap({ activity, className }: ActivityMiniMapProps) {
         if (isMounted) {
           if (Array.isArray(data) && data.length > 0) {
             const { lat, lon } = data[0];
-            console.log("ActivityMiniMap: Geocoded position", [lat, lon]);
+            if (import.meta.env.DEV) {
+              console.log("ActivityMiniMap: Geocoded position", [lat, lon]);
+            }
             setPosition([parseFloat(lat), parseFloat(lon)]);
             setFailed(false);
           } else {
-            console.log("ActivityMiniMap: Geocoding found no results");
+            if (import.meta.env.DEV) {
+              console.log("ActivityMiniMap: Geocoding found no results");
+            }
             setFailed(true);
           }
         }

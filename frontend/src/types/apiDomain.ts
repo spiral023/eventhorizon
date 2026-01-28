@@ -1,3 +1,10 @@
+export interface ApiActivityPreferences {
+  physical?: number;
+  mental?: number;
+  social?: number;
+  competition?: number;
+}
+
 export interface ApiUser {
   id: string;
   email: string;
@@ -9,11 +16,11 @@ export interface ApiUser {
   department?: string;
   position?: string;
   location?: string;
-  birthday?: string;
+  birthday?: string | null;
   is_birthday_private?: boolean;
   bio?: string;
   hobbies?: string[];
-  activity_preferences?: unknown; // This will need further refinement if 'any' is not desired
+  activity_preferences?: ApiActivityPreferences | null;
   dietary_restrictions?: string[];
   allergies?: string[];
   created_at?: string;
@@ -232,11 +239,11 @@ export interface ApiUserUpdate {
   department?: string;
   position?: string;
   location?: string;
-  birthday?: string;
+  birthday?: string | null;
   is_birthday_private?: boolean;
   bio?: string;
   hobbies?: string[];
-  activity_preferences?: unknown;
+  activity_preferences?: ApiActivityPreferences | null;
   dietary_restrictions?: string[];
   allergies?: string[];
   avatar_url?: string;

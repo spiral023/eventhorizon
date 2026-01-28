@@ -10,14 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { PageError } from "@/components/shared/PageError";
 import { getCompany, getCurrentUser } from "@/services/apiClient";
-import type { Company } from "@/types/domain";
-
-interface ActivityPreferences {
-  physical: number; // 0-5
-  mental: number;
-  social: number;
-  competition: number;
-}
+import type { ActivityPreferences, Company } from "@/types/domain";
 
 export interface UserProfile {
   name: string;
