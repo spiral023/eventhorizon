@@ -63,7 +63,7 @@ class EmailService:
             template = jinja_env.get_template(template_name)
             return template.render(**context, frontend_url=self.frontend_url)
         except Exception as e:
-            logger.error(f"Error rendering template {template_name}: {e}")
+            logger.exception(f"Error rendering template {template_name}")
             return ""
 
     async def send_email(
@@ -106,7 +106,7 @@ class EmailService:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send email to {to}: {str(e)}")
+            logger.exception(f"Failed to send email to {to}")
             return False
 
     # ========================================

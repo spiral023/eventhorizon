@@ -103,7 +103,7 @@ class AIService:
             return content
 
         except Exception as e:
-            logger.error(f"OpenRouter API Error: {str(e)}")
+            logger.exception("OpenRouter API Error")
             raise Exception(f"OpenRouter API Error: {str(e)}")
 
     def analyze_team_preferences(
@@ -217,6 +217,8 @@ class AIService:
                 uuid.UUID(text)
                 return text
             except Exception:
+                # Not a valid UUID, continue to regex check
+                logger.debug(f"Input '{text}' is not a valid UUID during normalization")
                 pass
             match = re.search(r"\d+", text)
             if match:

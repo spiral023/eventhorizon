@@ -585,7 +585,7 @@ async def get_activity_suggestions(
             team_prefs = team_prefs_response.dict() if team_prefs_response else None
         except Exception as e:
             # Continue without team preferences if analysis fails
-            print(f"Failed to get team preferences: {e}")
+            logger.warning(f"Failed to get team preferences: {e}")
             pass
 
     # Call AI service
@@ -676,7 +676,7 @@ async def send_event_invites(
 
             sent_count += 1
         except Exception as e:
-            print(f"Failed to generate/send invite for {user.name}: {e}")
+            logger.error(f"Failed to generate/send invite for {user.name}: {e}")
             continue
 
     return {"sent": sent_count}
@@ -764,7 +764,7 @@ async def send_voting_reminders(
 
             sent_count += 1
         except Exception as e:
-            print(f"Failed to generate/send reminder for {user.name}: {e}")
+            logger.error(f"Failed to generate/send reminder for {user.name}: {e}")
             continue
 
     return {"sent": sent_count}

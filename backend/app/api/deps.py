@@ -9,6 +9,7 @@ from jose.utils import base64url_decode
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+import sentry_sdk
 
 from app.core.config import settings
 from app.db.session import get_db
@@ -142,6 +143,11 @@ async def get_current_user(
 
     if user is None or not user.is_active:
         raise _credentials_exception()
+    
+    # Set user context for Sentry
+    if settings.SENTRY_DSN:
+        sentry_sdk.set_user({"id": str(user.id), "email": user.email})
+        
     return user
 
 
