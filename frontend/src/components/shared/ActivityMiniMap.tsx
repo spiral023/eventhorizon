@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L, { Icon } from "leaflet";
 import { Activity, RegionLabels } from "@/types/domain";
+import { cn } from "@/lib/utils";
 import "leaflet/dist/leaflet.css";
 
 // Fix Leaflet default marker icon
@@ -149,7 +150,12 @@ export function ActivityMiniMap({ activity, className }: ActivityMiniMapProps) {
 
   if (loading) {
     return (
-      <div className={`bg-muted/30 animate-pulse rounded-lg flex items-center justify-center ${className}`} style={{ minHeight: "200px" }}>
+      <div
+        className={cn(
+          "bg-muted/30 animate-pulse rounded-lg flex items-center justify-center min-h-[200px]",
+          className
+        )}
+      >
         <span className="text-muted-foreground text-sm">Karte wird geladen...</span>
       </div>
     );
@@ -157,29 +163,34 @@ export function ActivityMiniMap({ activity, className }: ActivityMiniMapProps) {
 
   if (!position || failed) {
     return (
-      <div className={`bg-muted/20 rounded-lg flex items-center justify-center text-muted-foreground text-sm ${className}`} style={{ minHeight: "200px" }}>
+      <div
+        className={cn(
+          "bg-muted/20 rounded-lg flex items-center justify-center text-muted-foreground text-sm min-h-[200px]",
+          className
+        )}
+      >
         Standort konnte nicht geladen werden.
       </div>
     );
   }
 
   return (
-    <div className={`relative rounded-lg overflow-hidden border border-border/50 ${className}`}>
-        <MapContainer
-          key={`${position[0]}-${position[1]}`} // Force re-mount when position changes
-          center={position}
-          zoom={15}
-          style={{ height: "100%", width: "100%", minHeight: "200px" }}
-          scrollWheelZoom={false}
-          dragging={!L.Browser.mobile} // Disable dragging on mobile to prevent page scroll hijack
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker position={position} />
-          <MapUpdater position={position} />
-        </MapContainer>
+    <div className={cn("relative rounded-lg overflow-hidden border border-border/50", className)}>
+      <MapContainer
+        key={`${position[0]}-${position[1]}`} // Force re-mount when position changes
+        center={position}
+        zoom={15}
+        className="h-full w-full min-h-[200px]"
+        scrollWheelZoom={false}
+        dragging={!L.Browser.mobile} // Disable dragging on mobile to prevent page scroll hijack
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <Marker position={position} />
+        <MapUpdater position={position} />
+      </MapContainer>
     </div>
   );
 }

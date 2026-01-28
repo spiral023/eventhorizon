@@ -22,7 +22,7 @@ Setze unten `<DB_CONTAINER>` entsprechend.
   ```bash
   docker exec -it <DB_CONTAINER> psql -U user -d eventhorizon
   ```
-- Nützliche psql-Shortcuts: `\\dt` (Tabellen), `\\l` (DBs), `\\q` (quit).
+- Nützliche psql-Shortcuts: `\dt` (Tabellen), `\l` (DBs), `\q` (quit).
 
 ---
 
@@ -42,7 +42,7 @@ Setze unten `<DB_CONTAINER>` entsprechend.
 - Alle Tabellen leeren (hart, zerstört komplette Dev-Daten):  
   ```bash
   docker exec -i <DB_CONTAINER> psql -U user -d eventhorizon -c \
-  "DO $$ DECLARE r RECORD; BEGIN FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE'; END LOOP; END $$;"
+  "DO $$ DECLARE r RECORD; BEGIN FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE'; END LOOP; END $$"
   ```
 
 ---
@@ -95,3 +95,24 @@ Setze unten `<DB_CONTAINER>` entsprechend.
   docker compose -f docker-compose.dev.yml down -v
   docker compose -f docker-compose.dev.yml up -d db
   ```
+
+---
+
+## GUI-Zugriff via Adminer (Prod/Remote)
+
+Der Adminer-Container läuft in Production nur auf `127.0.0.1:8080` und ist von außen nicht direkt erreichbar.
+Zugriff erfolgt sicher per SSH-Tunnel.
+
+1. **SSH-Tunnel aufbauen** (lokal):
+   ```powershell
+   ssh -L 8080:127.0.0.1:8080 user@server-ip
+   ```
+   *(Ersetze `user` und `server-ip` entsprechend)*
+
+2. **Im Browser öffnen**:  
+   [http://localhost:8080](http://localhost:8080)
+
+3. **Login-Daten**:
+   - **System:** `PostgreSQL`
+   - **Server:** `db` (Wichtig! Der Hostname im Docker-Netzwerk)
+   - **Benutzer/Passwort/DB:** Siehe `.env` auf dem Server (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`).
