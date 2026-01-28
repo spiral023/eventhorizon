@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense } from "react";
-import { Toaster as Sonner, toast } from "@/components/ui/sonner";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Outlet } from "react-router-dom";

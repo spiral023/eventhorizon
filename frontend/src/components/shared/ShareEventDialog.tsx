@@ -29,9 +29,6 @@ const formatEventCode = (id: string) => {
   return base.match(/.{1,3}/g)?.join("-") || "XXX-YYY-ZZZ";
 };
 
-// Expose for potential reuse
-export const generateEventCode = formatEventCode;
-
 export function ShareEventDialog({ event, trigger }: ShareEventDialogProps) {
   const [open, setOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);

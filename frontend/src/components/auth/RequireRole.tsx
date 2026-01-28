@@ -25,14 +25,3 @@ export function RequireRole({ children, allowedRoles, fallback }: RequireRolePro
 
   return <>{children}</>;
 }
-
-// Hook for checking role access
-export function useHasRole(allowedRoles: RoomRole[]): boolean {
-  const { accessCode } = useParams<{ accessCode: string }>();
-  const { getRoomRole } = useAuthStore();
-
-  if (!accessCode) return true;
-  
-  const userRole = getRoomRole(accessCode);
-  return allowedRoles.includes(userRole);
-}

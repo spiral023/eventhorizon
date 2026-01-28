@@ -191,17 +191,27 @@ export default function BirthdaysPage() {
     }
   });
 
-  // Custom Tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-popover border border-border text-popover-foreground px-3 py-2 rounded-lg shadow-lg text-xs">
-          <p className="font-semibold mb-1">{payload[0].payload.fullLabel}</p>
-          <p>{payload[0].value} {payload[0].value === 1 ? 'Geburtstag' : 'Geburtstage'}</p>
-        </div>
-      );
+  type BirthdayTooltipPayload = {
+    payload: { fullLabel: string };
+    value: number;
+  };
+
+  type BirthdayTooltipProps = {
+    active?: boolean;
+    payload?: BirthdayTooltipPayload[];
+  };
+
+  const CustomTooltip = ({ active, payload }: BirthdayTooltipProps) => {
+    if (!active || !payload?.length) {
+      return null;
     }
-    return null;
+    const first = payload[0];
+    return (
+      <div className="bg-popover border border-border text-popover-foreground px-3 py-2 rounded-lg shadow-lg text-xs">
+        <p className="font-semibold mb-1">{first.payload.fullLabel}</p>
+        <p>{first.value} {first.value === 1 ? 'Geburtstag' : 'Geburtstage'}</p>
+      </div>
+    );
   };
 
   return (

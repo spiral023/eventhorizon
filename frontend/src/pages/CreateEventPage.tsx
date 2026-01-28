@@ -87,7 +87,7 @@ export default function CreateEventPage() {
     if (resolvedActivities.length === 0) return;
     const allIds = resolvedActivities.map((activity) => activity.id);
     form.setValue("proposedActivityIds", allIds, { shouldValidate: true });
-  }, [activitiesData, form]);
+  }, [resolvedActivities, form]);
 
   const isLoading = activitiesLoading || favoritesLoading;
 

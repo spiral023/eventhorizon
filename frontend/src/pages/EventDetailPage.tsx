@@ -129,7 +129,7 @@ export default function EventDetailPage() {
       setLoading(false);
     };
     fetchData();
-  }, [eventCode, isAuthenticated]);
+  }, [eventCode, isAuthenticated, accessCode, currentUser, getRoomRole, setRoomRole]);
 
   // Update active tab when event phase advances
   useEffect(() => {
@@ -488,7 +488,7 @@ export default function EventDetailPage() {
     const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    const safeName = event.name.replace(/[^\w\-]+/g, "-").replace(/-+/g, "-");
+    const safeName = event.name.replace(/[^\w-]+/g, "-").replace(/-+/g, "-");
     link.href = url;
     link.download = `${safeName || "event"}-${finalDateOption.date}.ics`;
     document.body.appendChild(link);

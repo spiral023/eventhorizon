@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Sparkles, Users, TrendingUp, Heart, Plus, Search, Calendar, CheckCircle2, X } from "lucide-react";
+import { ArrowRight, Sparkles, Users, TrendingUp, Heart, Plus, Search, Calendar, CheckCircle2, X, type LucideIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -387,7 +387,21 @@ export default function HomePage() {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color, delay = 0 }: { label: string; value: number | string; icon: any; color: string; delay?: number }) {
+type StatCardProps = {
+  label: string;
+  value: number | string;
+  icon: LucideIcon;
+  color: string;
+  delay?: number;
+};
+
+type EmptyStateProps = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+};
+
+function StatCard({ label, value, icon: Icon, color, delay = 0 }: StatCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -431,7 +445,7 @@ function SectionHeader({ title, subtitle, link, linkLabel }: { title: string; su
   );
 }
 
-function EmptyState({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
+function EmptyState({ icon: Icon, title, description }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4 rounded-[2rem] border-2 border-dashed border-border/50 bg-secondary/10 text-center">
       <div className="h-16 w-16 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
