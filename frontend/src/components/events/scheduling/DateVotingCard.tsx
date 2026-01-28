@@ -21,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
 import { respondToDateOption, deleteDateOption } from "@/services/apiClient";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { Event, DateOption, DateResponseType } from "@/types/domain";
 
 interface DateVotingCardProps {
@@ -32,7 +32,6 @@ interface DateVotingCardProps {
 
 export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, onUpdate }) => {
   const { user } = useAuthStore();
-  const { toast } = useToast();
   const isOwner = user?.id === event.createdByUserId;
 
   const eventCode = event.shortCode || event.id;
@@ -68,13 +67,13 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
       if (error || !data) throw new Error(error?.message);
       onUpdate(data);
     } catch (err) {
-      toast({ title: "Fehler", description: "Konnte nicht abstimmen", variant: "destructive" });
+      toast.error("Fehler", { description: "Konnte nicht abstimmen" });
     }
   };
 
   const togglePriority = async () => {
     if (!user || !myVote || myVote === "no") {
-        toast({ title: "Nicht möglich", description: "Du musst zugesagt haben, um diesen Termin zu favorisieren.", variant: "destructive" });
+        toast.error("Nicht möglich", { description: "Du musst zugesagt haben, um diesen Termin zu favorisieren." });
         return;
     }
     
@@ -88,7 +87,7 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
       if (error || !data) throw new Error(error?.message);
       onUpdate(data);
     } catch (err) {
-      toast({ title: "Fehler", description: "Konnte Priorität nicht ändern", variant: "destructive" });
+      toast.error("Fehler", { description: "Konnte Priorität nicht ändern" });
     }
   };
 
@@ -98,9 +97,9 @@ export const DateVotingCard: React.FC<DateVotingCardProps> = ({ event, option, o
       const { data, error } = await deleteDateOption(eventCode, option.id);
       if (error || !data) throw new Error(error?.message);
       onUpdate(data);
-      toast({ title: "Termin gelöscht" });
+      toast.success("Termin gelöscht");
     } catch (err) {
-      toast({ title: "Fehler", description: "Konnte Termin nicht löschen", variant: "destructive" });
+      toast.error("Fehler", { description: "Konnte Termin nicht löschen" });
     }
   };
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/authStore";
 import { verifyMagicLink } from "@/lib/authClient";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -38,8 +38,7 @@ export default function VerifyEmailPage() {
         await refresh();
         setStatus("success");
         
-        toast({
-          title: "E-Mail bestätigt",
+        toast.success("E-Mail bestätigt", {
           description: "Du wurdest erfolgreich angemeldet.",
         });
 

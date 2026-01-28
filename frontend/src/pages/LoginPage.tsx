@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthStore } from "@/stores/authStore";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { signInWithMagicLink } from "@/lib/authClient";
 
@@ -78,16 +78,13 @@ export default function LoginPage() {
       const success = await loginWithOtp(email, otp);
       setIsLoading(false);
       if (success) {
-        toast({
-          title: "Erfolgreich angemeldet",
+        toast.success("Erfolgreich angemeldet", {
           description: "Du bist jetzt eingeloggt.",
         });
         navigate(from, { replace: true });
       } else {
-        toast({
-          title: "Login fehlgeschlagen",
+        toast.error("Login fehlgeschlagen", {
           description: "Bitte Code und E-Mail prüfen.",
-          variant: "destructive",
         });
       }
       return;
@@ -95,10 +92,8 @@ export default function LoginPage() {
 
     if (mode === "login" && authVariant === "magic-link") {
       if (!email) {
-        toast({
-          title: "E-Mail fehlt",
+        toast.error("E-Mail fehlt", {
           description: "Bitte gib eine E-Mail-Adresse an.",
-          variant: "destructive",
         });
         return;
       }
@@ -106,23 +101,18 @@ export default function LoginPage() {
       try {
         const { error } = await signInWithMagicLink(email);
         if (error) {
-          toast({
-            title: "Fehler",
+          toast.error("Fehler", {
             description: error.message || "Magic Link konnte nicht gesendet werden.",
-            variant: "destructive",
           });
         } else {
           setMagicLinkSent(true);
-          toast({
-            title: "Magic Link gesendet",
+          toast.success("Magic Link gesendet", {
             description: `Wir haben einen Anmeldelink an ${email} gesendet.`,
           });
         }
       } catch (err) {
-        toast({
-          title: "Fehler",
+        toast.error("Fehler", {
           description: "Ein unerwarteter Fehler ist aufgetreten.",
-          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -131,10 +121,8 @@ export default function LoginPage() {
     }
 
     if (mode === "register" && password !== confirmPassword) {
-      toast({
-        title: "Passwörter stimmen nicht überein",
+      toast.error("Passwörter stimmen nicht überein", {
         description: "Bitte stelle sicher, dass beide Passwörter identisch sind.",
-        variant: "destructive",
       });
       return;
     }
@@ -145,16 +133,13 @@ export default function LoginPage() {
       if (mode === "login") {
         const success = await login(email, password);
         if (success) {
-          toast({
-            title: "Willkommen zurück!",
+          toast.success("Willkommen zurück!", {
             description: "Du wurdest erfolgreich angemeldet.",
           });
           navigate(from, { replace: true });
         } else {
-          toast({
-            title: "Login fehlgeschlagen",
+          toast.error("Login fehlgeschlagen", {
             description: error || "Bitte überprüfe deine Angaben.",
-            variant: "destructive",
           });
         }
       } else {
@@ -162,8 +147,7 @@ export default function LoginPage() {
         if (result.success) {
           const targetEmail = result.email ?? email;
           setVerificationEmail(targetEmail);
-          toast({
-            title: "E-Mail bestätigen",
+          toast.success("E-Mail bestätigen", {
             description: `Wir haben dir einen Bestätigungslink an ${targetEmail} gesendet. Bevor du dich einloggen kannst musst du deine E-Mail-Adresse bestätigen. In Firmennetzen kann die Zustellung bis zu 3 Minuten dauern. Schau zur Sicherheit auch im Spam-Ordner.`,
           });
           setMode("login");
@@ -173,18 +157,14 @@ export default function LoginPage() {
           setPassword("");
           setConfirmPassword("");
         } else {
-          toast({
-            title: "Registrierung fehlgeschlagen",
+          toast.error("Registrierung fehlgeschlagen", {
             description: result.error || error || "Bitte überprüfe deine Angaben.",
-            variant: "destructive",
           });
         }
       }
     } catch {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: "Ein unerwarteter Fehler ist aufgetreten.",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -367,10 +347,8 @@ export default function LoginPage() {
                         variant="outline"
                         onClick={async () => {
                           if (!email) {
-                            toast({
-                              title: "E-Mail fehlt",
+                            toast.error("E-Mail fehlt", {
                               description: "Bitte gib zuerst deine E-Mail an.",
-                              variant: "destructive",
                             });
                             return;
                           }
@@ -379,15 +357,12 @@ export default function LoginPage() {
                           setIsSendingOtp(false);
                           if (ok) {
                             setOtpSent(true);
-                            toast({
-                              title: "Code gesendet",
+                            toast.success("Code gesendet", {
                               description: "Bitte prüfe dein Postfach.",
                             });
                           } else {
-                            toast({
-                              title: "Code konnte nicht gesendet werden",
+                            toast.error("Code konnte nicht gesendet werden", {
                               description: "Versuche es erneut.",
-                              variant: "destructive",
                             });
                           }
                         }}

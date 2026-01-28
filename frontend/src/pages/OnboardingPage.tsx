@@ -34,7 +34,7 @@ import { CreateRoomDialog } from "@/components/shared/CreateRoomDialog";
 import { JoinRoomDialog } from "@/components/shared/JoinRoomDialog";
 import { RoomCard, RoomCardSkeleton } from "@/components/shared/RoomCard";
 import { CompanyAutocomplete } from "@/components/shared/CompanyAutocomplete";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getRooms, updateUser } from "@/services/apiClient";
 import { useAuthStore } from "@/stores/authStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
@@ -227,10 +227,8 @@ export default function OnboardingPage() {
     setIsSaving(false);
 
     if (result.error) {
-      toast({
-        title: "Speichern fehlgeschlagen",
+      toast.error("Speichern fehlgeschlagen", {
         description: "Du kannst die Präferenzen später im Profil anpassen.",
-        variant: "destructive",
       });
       return false;
     }
@@ -239,8 +237,7 @@ export default function OnboardingPage() {
       && window.matchMedia("(max-width: 639px)").matches;
 
     if (!isMobile) {
-      toast({
-        title: "Präferenzen gespeichert",
+      toast.success("Präferenzen gespeichert", {
         description: "Du kannst alles später im Profil anpassen.",
       });
     }

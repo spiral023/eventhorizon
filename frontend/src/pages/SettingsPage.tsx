@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { changePassword } from "@/lib/authClient";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -15,7 +15,6 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Check initial theme
@@ -37,19 +36,15 @@ export default function SettingsPage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmNewPassword) {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: "Die neuen Passwörter stimmen nicht überein.",
-        variant: "destructive",
       });
       return;
     }
 
     if (newPassword.length < 8) {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: "Das neue Passwort muss mindestens 8 Zeichen lang sein.",
-        variant: "destructive",
       });
       return;
     }
@@ -58,14 +53,11 @@ export default function SettingsPage() {
     try {
       const { error } = await changePassword(currentPassword, newPassword);
       if (error) {
-        toast({
-          title: "Fehler",
+        toast.error("Fehler", {
           description: error.message || "Passwort konnte nicht geändert werden.",
-          variant: "destructive",
         });
       } else {
-        toast({
-          title: "Erfolg",
+        toast.success("Erfolg", {
           description: "Passwort erfolgreich geändert.",
         });
         setCurrentPassword("");
@@ -73,10 +65,8 @@ export default function SettingsPage() {
         setConfirmNewPassword("");
       }
     } catch (err) {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: "Ein unerwarteter Fehler ist aufgetreten.",
-        variant: "destructive",
       });
     } finally {
       setIsChangingPassword(false);

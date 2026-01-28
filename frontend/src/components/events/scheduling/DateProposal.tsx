@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { addDateOption } from "@/services/apiClient";
 import type { Event } from "@/types/domain";
@@ -34,7 +34,6 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
   const [dateTimes, setDateTimes] = useState<Record<string, { start?: string; end?: string }>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   const eventCode = event.shortCode || event.id;
   const maxDates = 5;
@@ -68,10 +67,8 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
     if (!dates || dates.length === 0) return;
 
     if (event.dateOptions.length + dates.length > maxDates) {
-      toast({
-        title: "Limit erreicht",
+      toast.error("Limit erreicht", {
         description: `Maximal ${maxDates} Termine erlaubt. Du versuchst ${dates.length} hinzuzufügen, es ist nur noch Platz für ${Math.max(0, maxDates - event.dateOptions.length)}.`,
-        variant: "destructive",
       });
       return;
     }
@@ -88,10 +85,8 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
         const end = (timeConfig.end ?? "").trim();
 
         if (end && !start) {
-          toast({
-            title: "Ungültige Zeit",
+          toast.error("Ungültige Zeit", {
             description: `Für ${format(date, "EEE, dd.MM", { locale: de })} fehlt die Startzeit.`,
-            variant: "destructive",
           });
           setIsLoading(false);
           return;
@@ -116,8 +111,7 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
         onUpdate(latestEvent);
       }
 
-      toast({
-        title: "Termine hinzugefügt",
+      toast.success("Termine hinzugefügt", {
         description: `${dates.length} Termin(e) stehen nun zur Abstimmung bereit.`,
       });
 
@@ -127,10 +121,8 @@ export const DateProposal: React.FC<DateProposalProps> = ({ event, onUpdate }) =
       setStep("select");
       setIsOpen(false);
     } catch (err) {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: err instanceof Error ? err.message : "Konnte Termine nicht hinzufügen",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

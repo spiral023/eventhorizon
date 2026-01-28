@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useActivities } from "@/hooks/use-activities";
 import { useFavoriteActivityIds } from "@/hooks/use-favorite-activity-ids";
 import { CreateEventSchema, type CreateEventInput } from "@/schemas";
@@ -124,28 +124,23 @@ export default function CreateEventPage() {
 
       if (result.error || !result.data) {
         trackKeyFlowCounter("event.create", "failure");
-        toast({
-          title: "Fehler",
+        toast.error("Fehler", {
           description: "Event konnte nicht erstellt werden.",
-          variant: "destructive",
         });
         return;
       }
 
       trackKeyFlowCounter("event.create", "success");
       
-      toast({
-        title: "Event erstellt!",
+      toast.success("Event erstellt!", {
         description: `"${result.data.name}" wurde erfolgreich angelegt.`,
       });
       
       navigate(`/rooms/${accessCode}/events/${result.data.shortCode || result.data.id}`);
     } catch (error) {
       trackKeyFlowCounter("event.create", "failure");
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: "Event konnte nicht erstellt werden.",
-        variant: "destructive",
       });
     } finally {
       setSubmitting(false);

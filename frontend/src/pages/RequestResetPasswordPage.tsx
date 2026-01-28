@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Bitte gib eine gültige E-Mail-Adresse ein." }),
@@ -25,7 +25,6 @@ const formSchema = z.object({
 export default function RequestResetPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,23 +38,18 @@ export default function RequestResetPasswordPage() {
     try {
       const { error } = await requestPasswordReset(values.email, `${window.location.origin}/reset-password`);
       if (error) {
-        toast({
-          title: "Fehler",
+        toast.error("Fehler", {
           description: error.message || "Es gab ein Problem beim Senden der E-Mail.",
-          variant: "destructive",
         });
       } else {
         setIsSubmitted(true);
-        toast({
-          title: "E-Mail gesendet",
+        toast.success("E-Mail gesendet", {
           description: "Falls ein Konto existiert, haben wir eine E-Mail gesendet.",
         });
       }
     } catch (err) {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: "Ein unerwarteter Fehler ist aufgetreten.",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

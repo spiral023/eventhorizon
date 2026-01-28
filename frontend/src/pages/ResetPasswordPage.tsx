@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const formSchema = z
   .object({
@@ -37,7 +37,6 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -55,23 +54,18 @@ export default function ResetPasswordPage() {
     try {
       const { error } = await resetPassword(values.password, token);
       if (error) {
-        toast({
-          title: "Fehler",
+        toast.error("Fehler", {
           description: error.message || "Das Passwort konnte nicht zurückgesetzt werden.",
-          variant: "destructive",
         });
       } else {
         setIsSuccess(true);
-        toast({
-          title: "Erfolg",
+        toast.success("Erfolg", {
           description: "Dein Passwort wurde erfolgreich geändert.",
         });
       }
     } catch (err) {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: "Ein unerwarteter Fehler ist aufgetreten.",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getEventComments, createEventComment, deleteEventComment } from "@/services/apiClient";
 import type { EventComment, EventPhase } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -28,7 +28,6 @@ export const PhaseComments: React.FC<PhaseCommentsProps> = ({ eventId, phase }) 
   const [isSending, setIsSending] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const { toast } = useToast();
   const currentUserId = useAuthStore((state) => state.user?.id);
 
   useEffect(() => {
@@ -52,10 +51,8 @@ export const PhaseComments: React.FC<PhaseCommentsProps> = ({ eventId, phase }) 
       setComments([data, ...comments]);
       setNewComment("");
     } else {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: error?.message || "Kommentar konnte nicht gesendet werden.",
-        variant: "destructive",
       });
     }
     setIsSending(false);
@@ -63,10 +60,8 @@ export const PhaseComments: React.FC<PhaseCommentsProps> = ({ eventId, phase }) 
 
   const handleDelete = async (commentId: string) => {
     if (!currentUserId) {
-      toast({
-        title: "Aktion nicht möglich",
+      toast.error("Aktion nicht möglich", {
         description: "Bitte melde dich an, um Kommentare zu löschen.",
-        variant: "destructive",
       });
       return;
     }
@@ -76,10 +71,8 @@ export const PhaseComments: React.FC<PhaseCommentsProps> = ({ eventId, phase }) 
     setDeletingId(commentId);
     const { error } = await deleteEventComment(eventId, commentId);
     if (error) {
-      toast({
-        title: "Fehler",
+      toast.error("Fehler", {
         description: error.message || "Kommentar konnte nicht gelöscht werden.",
-        variant: "destructive",
       });
     } else {
       setComments((prev) => prev.filter((c) => c.id !== commentId));
