@@ -24,10 +24,7 @@ import {
   CloudSun,
   Facebook,
   Instagram,
-  Trash2,
   MessageCircle,
-  Send,
-  Loader2,
   Share2,
   ArrowRight,
   AlertTriangle,
@@ -39,7 +36,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScaleBar } from "@/components/shared/ScaleBar";
 import { ActivityMiniMap } from "@/components/shared/ActivityMiniMap";
-import { getActivityById, isFavorite, toggleFavorite, getActivityComments, createActivityComment, deleteActivityComment } from "@/services/apiClient";
+import { getActivityById, isFavorite, toggleFavorite, getActivityComments } from "@/services/apiClient";
+import { ActivityComments } from "@/components/activities/ActivityComments";
 import type { Activity, ActivityComment } from "@/types/domain";
 import {
   CategoryLabels,
@@ -52,10 +50,6 @@ import { toast } from "sonner";
 import { activitiesQueryKey, useActivities } from "@/hooks/use-activities";
 import { favoriteActivityIdsQueryKey } from "@/hooks/use-favorite-activity-ids";
 import { useAuthStore } from "@/stores/authStore";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
-import { de } from "date-fns/locale";
 import { BookingRequestDialog } from "@/components/activities/BookingRequestDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -165,9 +159,7 @@ export default function ActivityDetailPage() {
   const resolvedActivities = activitiesData ?? EMPTY_ACTIVITIES;
 
   const { user, isAuthenticated } = useAuthStore();
-  const [comments, setComments] = useState<ActivityComment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
+  const [initialComments, setInitialComments] = useState<ActivityComment[]>([]);
 
   const updateFavoriteCaches = (activityId: string, isFavorite: boolean, favoritesCount?: number) => {
     queryClient.setQueryData<string[]>(favoriteActivityIdsQueryKey, (prev) => {
@@ -210,7 +202,7 @@ export default function ActivityDetailPage() {
       setFavoriteCount(
         favoritesData.favoritesCount ?? activityResult.data?.favoritesCount ?? 0
       );
-      setComments(commentsResult.data || []);
+      setInitialComments(commentsResult.data || []);
       setLoading(false);
     };
     fetchActivity();
@@ -265,34 +257,6 @@ export default function ActivityDetailPage() {
         console.error("Error sharing:", err);
       }
     }
-  };
-
-  const handleSubmitComment = async () => {
-    if (!slug || !newComment.trim()) return;
-    setSubmittingComment(true);
-    const result = await createActivityComment(slug, newComment);
-    if (result.error) {
-      toast.error(result.error.message || "Kommentar konnte nicht gesendet werden");
-    } else if (result.data) {
-      setComments([result.data, ...comments]);
-      setNewComment("");
-      toast.success("Kommentar gesendet");
-    }
-    setSubmittingComment(false);
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    if (!slug) return;
-    const confirmDelete = window.confirm("Diesen Kommentar löschen?");
-    if (!confirmDelete) return;
-
-    const result = await deleteActivityComment(slug, commentId);
-    if (result.error) {
-      toast.error(result.error.message || "Kommentar konnte nicht gelöscht werden");
-      return;
-    }
-    setComments((prev) => prev.filter((c) => c.id !== commentId));
-    toast.success("Kommentar gelöscht");
   };
 
   const sortedActivities = useMemo(() => {
@@ -613,118 +577,7 @@ export default function ActivityDetailPage() {
 
           {/* Comments Section */}
           <motion.section variants={itemVariants}>
-            <Card className="border-border/50 rounded-2xl">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-primary" />
-                  Kommentare
-                  {comments.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 rounded-full text-xs">
-                      {comments.length}
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Comment Input */}
-                {user ? (
-                  <div className="flex gap-3 sm:gap-4">
-                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10 ring-2 ring-primary/20 flex-shrink-0">
-                      <AvatarImage src={user.avatarUrl} alt={user.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                        {user.firstName?.[0]}{user.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-3">
-                      <Textarea
-                        placeholder="Teile deine Erfahrung oder stelle eine Frage..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        className="min-h-[100px] resize-none rounded-xl border-border/50 focus:border-primary/50"
-                      />
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={handleSubmitComment}
-                          disabled={!newComment.trim() || submittingComment}
-                          className="rounded-xl gap-2"
-                        >
-                          {submittingComment ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              Sende...
-                            </>
-                          ) : (
-                            <>
-                              <Send className="h-4 w-4" />
-                              Kommentieren
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-6 px-4 bg-muted/30 rounded-xl border border-dashed border-border/50">
-                    <p className="text-sm text-muted-foreground">
-                      <Link to="/login" className="text-primary hover:underline font-medium">
-                        Anmelden
-                      </Link>
-                      {" "}um einen Kommentar zu schreiben
-                    </p>
-                  </div>
-                )}
-
-                {/* Separator */}
-                {user && comments.length > 0 && <Separator />}
-
-                {/* Comments List */}
-                <div className="space-y-5">
-                  {comments.length === 0 ? (
-                    <div className="text-center py-10">
-                      <MessageCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                      <p className="text-muted-foreground">Noch keine Kommentare vorhanden.</p>
-                      <p className="text-sm text-muted-foreground/70">Sei der Erste!</p>
-                    </div>
-                  ) : (
-                    comments.map((comment, index) => (
-                      <motion.div
-                        key={comment.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="flex gap-3 sm:gap-4 group"
-                      >
-                        <Avatar className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
-                          <AvatarImage src={comment.userAvatar} alt={comment.userName} />
-                          <AvatarFallback>{comment.userName?.[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className="font-semibold text-sm">{comment.userName}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: de })}
-                            </span>
-                            {comment.userId === user?.id && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleDeleteComment(comment.id)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            )}
-                          </div>
-                          <p className="text-sm text-foreground/90 leading-relaxed">
-                            {comment.content}
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            {slug && <ActivityComments slug={slug} initialComments={initialComments} key={slug} />}
           </motion.section>
         </div>
 

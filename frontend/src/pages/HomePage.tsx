@@ -309,7 +309,7 @@ export default function HomePage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Z.B. Paintball, Klettern..."
                   className="w-full bg-secondary/30 border-border/50 rounded-2xl py-3 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/activities?q=${searchQuery}`)}
+                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/activities?q=${encodeURIComponent(searchQuery)}`)}
                 />
                 {searchQuery && (
                   <button 
@@ -334,7 +334,7 @@ export default function HomePage() {
                 {debouncedSearch ? "Gefundene Aktivität" : "Beliebteste Aktivität"}
               </h3>
               <Button variant="link" size="sm" asChild className="text-primary p-0">
-                <Link to="/activities">Mehr</Link>
+                <Link to={searchQuery.trim() ? `/activities?q=${encodeURIComponent(searchQuery.trim())}` : "/activities"}>Mehr</Link>
               </Button>
             </div>
             

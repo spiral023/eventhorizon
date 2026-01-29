@@ -68,7 +68,7 @@ export default function ActivitiesPage() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filters, setFilters] = useState<ActivityFilters>(defaultFilters);
   const [sortBy, setSortBy] = useState<ActivitySortKey>("favorites");
